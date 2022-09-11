@@ -1,0 +1,8 @@
+# macOS
+.DS_Store
+
+# clangd
+.cache
+
+# c++
+build/
