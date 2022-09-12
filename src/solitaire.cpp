@@ -3,18 +3,6 @@
 
 float Solitaire::deltaTime;
 
-void processInput(GLFWwindow *window)
-{
-    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-}
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    glViewport(0, 0, width, height);
-}
-
-
 Solitaire::Solitaire()
 {
     m_appConfig.windowName = "Solitaire";
@@ -31,23 +19,9 @@ void Solitaire::run()
 
 void Solitaire::init()
 {
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-
-    m_window = glfwCreateWindow(m_appConfig.windowWidth, m_appConfig.windowHeight, m_appConfig.windowName.c_str(), NULL, NULL);
-    if (m_window == NULL)
-    {
-        LOG_ERROR("Failed to create GLFW window");
-        glfwTerminate();
-        return;
-    }
-    glfwMakeContextCurrent(m_window);
-    glfwSetFramebufferSizeCallback(m_window, framebuffer_size_callback);
+    m_window = new Window();
+    m_window->init();
+    m_window->createWindow(m_appConfig.windowWidth, m_appConfig.windowHeight, m_appConfig.windowName.c_str());
 
     ASSERT(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress), "Failed to initialize GLAD");
 
@@ -55,19 +29,30 @@ void Solitaire::init()
 
 void Solitaire::mainLoop()
 {
-    while (!glfwWindowShouldClose(m_window))
+    while (!m_window->shouldClose())
     {
-        processInput(m_window);
+        calculateDeltaTime();
 
+        m_window->processInput();
+
+        // renderer
         glClearColor(0.2f, 0.3f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glfwSwapBuffers(m_window);
-        glfwPollEvents();
+        m_window->swapBuffers();
+        m_window->pollEvents();
     }
 }
 
 void Solitaire::terminate()
 {
-    glfwTerminate();
+    m_window->terminate();
+    delete m_window;
+}
+
+void Solitaire::calculateDeltaTime()
+{
+    float currentFrame = (float) glfwGetTime();
+    deltaTime = currentFrame - m_lastFrame;
+    m_lastFrame = currentFrame;
 }
