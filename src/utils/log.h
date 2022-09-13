@@ -25,7 +25,7 @@
 #if DEBUG
 #define ASSERT(exp, msg)                                             \
     if (!(exp))                                                      \
-        std::cout << RED << "[ASSERT] " << __ASSERT_FILE_NAME << ":" \
+        std::cout << RED << "[ASSERT] " << __FILE__ << ":"           \
         << __LINE__ << " \'" << #exp << "\' failed: " << msg         \
         << RESET << std::endl
 #else
