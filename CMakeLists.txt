@@ -45,6 +45,12 @@ message(STATUS "Installing glad via submodule")
 add_subdirectory(external/glad)
 set_property(TARGET Glad PROPERTY FOLDER "Dependencies")
 
+# glm
+message(STATUS "Installing glm via sybmodule")
+set(BUILD_STATIC_LIBS ON)
+add_subdirectory(external/glm)
+set_property(TARGET glm_static PROPERTY FOLDER "Dependencies")
+
 # =============================================================
 
 # Sources
@@ -79,16 +85,19 @@ target_link_libraries(
     ${PROJECT_NAME}
     Glad
     glfw
-)
-
-add_dependencies(
-    ${PROJECT_NAME}
-    glfw
+    glm_static
 )
 
 target_include_directories(
   ${PROJECT_NAME}
   PUBLIC external/glfw
+  PUBLIC external/glm
+)
+
+add_dependencies(
+    ${PROJECT_NAME}
+    glfw
+    glm_static
 )
 
 # =============================================================
