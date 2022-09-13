@@ -4,6 +4,7 @@
 #include <string>
 
 #include "window.h"
+#include "renderer.h"
 
 struct AppConfig
 {
@@ -27,5 +28,6 @@ private:
 
     AppConfig m_appConfig;
     Window* m_window;
+    Renderer* m_renderer;
     float m_lastFrame;
 };

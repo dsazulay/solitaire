@@ -25,6 +25,8 @@ void Solitaire::init()
 
     ASSERT(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress), "Failed to initialize GLAD");
 
+    m_renderer = new Renderer();
+    m_renderer->init();
 }
 
 void Solitaire::mainLoop()
@@ -36,8 +38,7 @@ void Solitaire::mainLoop()
         m_window->processInput();
 
         // renderer
-        glClearColor(0.2f, 0.3f, 0.2f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        m_renderer->clear();
 
         m_window->swapBuffers();
         m_window->pollEvents();
@@ -46,7 +47,10 @@ void Solitaire::mainLoop()
 
 void Solitaire::terminate()
 {
+    m_renderer->terminate();
     m_window->terminate();
+
+    delete m_renderer;
     delete m_window;
 }
 
