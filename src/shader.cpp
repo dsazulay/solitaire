@@ -1,4 +1,7 @@
 #include "shader.h"
+
+#include "utils/log.h"
+
 #include <glad/glad.h>
 
 void Shader::compile(const char *vertexSrc, const char* fragSrc)
@@ -6,6 +9,7 @@ void Shader::compile(const char *vertexSrc, const char* fragSrc)
     unsigned int vertexID, fragID;
     int success;
     char infoLog[512];
+
 
     vertexID = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexID, 1, &vertexSrc, NULL);

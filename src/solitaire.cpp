@@ -1,4 +1,7 @@
 #include "solitaire.h"
+
+#include "resource_manager.h"
+#include "shader.h"
 #include "utils/log.h"
 
 float Solitaire::deltaTime;
@@ -27,6 +30,8 @@ void Solitaire::init()
 
     m_renderer = new Renderer();
     m_renderer->init();
+
+    Shader& shader = ResourceManager::loadShader("../resources/unlit.vert", "../resources/unlit.frag", "Unlit");
 }
 
 void Solitaire::mainLoop()
