@@ -5,7 +5,7 @@
 class Shader
 {
 public:
-    void compile(const char* shader);
+    void compile(const char* vertexSrc, const char* fragSrc);
     void use() const;
     void setInt(const std::string& name, const int value) const;
     void setVec2(const std::string& name, const float x, const float y) const;

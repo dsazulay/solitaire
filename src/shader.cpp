@@ -1,6 +1,51 @@
 #include "shader.h"
 #include <glad/glad.h>
 
+void Shader::compile(const char *vertexSrc, const char* fragSrc)
+{
+    unsigned int vertexID, fragID;
+    int success;
+    char infoLog[512];
+
+    vertexID = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexID, 1, &vertexSrc, NULL);
+    glCompileShader(vertexID);
+
+    glGetShaderiv(vertexID, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(vertexID, 512, nullptr, infoLog);
+        LOG_ERROR("Vertex shader compilation failed: " << infoLog);
+    }
+
+    fragID = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragID, 1, &fragSrc, NULL);
+    glCompileShader(fragID);
+
+    glGetShaderiv(fragID, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(fragID, 512, nullptr, infoLog);
+        LOG_ERROR("Fragment shader compilation failed: " << infoLog);
+    }
+
+    ID = glCreateProgram();
+    glAttachShader(ID, vertexID);
+    glAttachShader(ID, fragID);
+
+    glLinkProgram(ID);
+
+    glGetProgramiv(ID, GL_LINK_STATUS, &success);
+    if (!success)
+    {
+        glGetProgramInfoLog(ID, 512, nullptr, infoLog);
+        LOG_ERROR("Shader program linking failed: " << infoLog);
+    }
+
+    glDeleteShader(vertexID);
+    glDeleteShader(fragID);
+}
+
 void Shader::use() const
 {
     glUseProgram(ID);
