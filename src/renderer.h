@@ -1,15 +1,22 @@
 #pragma once
 
+#include "shader.h"
+
+#include <glm/mat4x4.hpp>
+
 class Renderer
 {
 public:
     void init();
-    //void render(std::vector<Sprite>& sprites);
+    void render();
     void terminate();
     void clear();
 private:
     void initMesh();
-    //void renderSprite(Sprite& sprite);
+    void renderSprite();
+
+    glm::mat4 m_proj;
+    Shader* m_shader;
 
     unsigned int VBO, EBO, VAO;
 

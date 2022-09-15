@@ -30,8 +30,6 @@ void Solitaire::init()
 
     m_renderer = new Renderer();
     m_renderer->init();
-
-    Shader& shader = ResourceManager::loadShader("../resources/unlit.vert", "../resources/unlit.frag", "Unlit");
 }
 
 void Solitaire::mainLoop()
@@ -42,8 +40,7 @@ void Solitaire::mainLoop()
 
         m_window->processInput();
 
-        // renderer
-        m_renderer->clear();
+        m_renderer->render();
 
         m_window->swapBuffers();
         m_window->pollEvents();

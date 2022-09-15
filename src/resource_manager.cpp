@@ -7,7 +7,7 @@
 
 std::map<std::string, Shader> ResourceManager::shaders;
 
-Shader& ResourceManager::loadShader(const char *vertShaderFile, const char *fragShaderFile, std::string name)
+Shader* ResourceManager::loadShader(const char *vertShaderFile, const char *fragShaderFile, std::string name)
 {
     std::string vertexCode;
     std::string fragCode;
@@ -41,5 +41,5 @@ Shader& ResourceManager::loadShader(const char *vertShaderFile, const char *frag
     shader.compile(vertexCode.c_str(), fragCode.c_str());
     shaders[name] = shader;
 
-    return shaders[name];
+    return &shaders[name];
 }

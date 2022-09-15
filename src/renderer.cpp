@@ -1,15 +1,35 @@
 #include "renderer.h"
 #include "glad/glad.h"
+#include "glm/ext/matrix_clip_space.hpp"
+#include "glm/ext/matrix_transform.hpp"
+#include "resource_manager.h"
 
 void Renderer::init()
 {
     initMesh();
+    m_proj = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f, -1.0f, 1.0f);
+    m_shader = ResourceManager::loadShader("../resources/unlit.vert", "../resources/unlit.frag", "Unlit");
 }
 
-//void Renderer::render(int &sprites)
-//{
+void Renderer::render()
+{
+   clear();
+   renderSprite();
+}
 
-//}
+void Renderer::renderSprite()
+{
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::scale(model, glm::vec3(70, 100, 1));
+
+    m_shader->use();
+    m_shader->setMat4("u_proj", m_proj);
+    m_shader->setMat4("u_model", model);
+
+    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+    glBindVertexArray(0);
+}
 
 void Renderer::terminate()
 {
