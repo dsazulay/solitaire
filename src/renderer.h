@@ -1,6 +1,7 @@
 #pragma once
 
 #include "shader.h"
+#include "texture.h"
 
 #include <glm/mat4x4.hpp>
 
@@ -17,6 +18,7 @@ private:
 
     glm::mat4 m_proj;
     Shader* m_shader;
+    Texture* m_texture;
 
     unsigned int VBO, EBO, VAO;
 

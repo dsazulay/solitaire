@@ -10,6 +10,6 @@ uniform mat4 u_model;
 
 void main()
 {
-    v_uv = a_uv;
+    v_uv = a_uv * vec2(0.082, 0.26);
     gl_Position = u_proj * u_model * vec4(a_pos, 0.0, 1.0);
 }

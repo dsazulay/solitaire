@@ -2,10 +2,14 @@
 
 #include "utils/log.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #include <fstream>
 #include <sstream>
 
 std::map<std::string, Shader> ResourceManager::shaders;
+std::map<std::string, Texture> ResourceManager::textures;
 
 Shader* ResourceManager::loadShader(const char *vertShaderFile, const char *fragShaderFile, std::string name)
 {
@@ -42,4 +46,19 @@ Shader* ResourceManager::loadShader(const char *vertShaderFile, const char *frag
     shaders[name] = shader;
 
     return &shaders[name];
+}
+
+Texture* ResourceManager::loadTexture(const char* textureFile, std::string name)
+{
+    stbi_set_flip_vertically_on_load(true);
+    Texture texture;
+
+    int width, height, nrChannels;
+    unsigned char* data = stbi_load(textureFile, &width, &height, &nrChannels, 0);
+    texture.generate(width, height, data);
+
+    textures[name] = texture;
+
+    stbi_image_free(data);
+    return &textures[name];
 }
