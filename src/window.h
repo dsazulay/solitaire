@@ -14,8 +14,13 @@ public:
     void swapBuffers() const;
     void pollEvents();
 
+    static double xpos;
+    static double ypos;
+
 private:
     static void frameBufferCallback(GLFWwindow* window, int width, int height);
+    static void cursorPositionCallback(GLFWwindow* window, double xpos, double ypos);
+    static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 
     GLFWwindow* m_window;
 };

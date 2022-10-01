@@ -2,6 +2,8 @@
 #include "GLFW/glfw3.h"
 #include "utils/log.h"
 
+double Window::xpos, Window::ypos;
+
 void Window::init()
 {
   glfwInit();
@@ -24,6 +26,8 @@ void Window::createWindow(int width, int height, const char *name)
     }
     glfwMakeContextCurrent(m_window);
     glfwSetFramebufferSizeCallback(m_window, frameBufferCallback);
+    glfwSetCursorPosCallback(m_window, cursorPositionCallback);
+    glfwSetMouseButtonCallback(m_window, mouseButtonCallback);
 }
 
 void Window::terminate()
@@ -55,4 +59,21 @@ void Window::pollEvents()
 void Window::frameBufferCallback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
+}
+
+void Window::cursorPositionCallback(GLFWwindow* window, double xpos, double ypos)
+{
+    Window::xpos = xpos;
+    Window::ypos = ypos;
+}
+
+void Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+    {
+    }
+
+    else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
+    {
+    }
 }

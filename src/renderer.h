@@ -4,17 +4,25 @@
 #include "texture.h"
 
 #include <glm/mat4x4.hpp>
+#include <glm/vec2.hpp>
+
+struct Card
+{
+    unsigned int number;
+    unsigned int suit;
+};
+
 
 class Renderer
 {
 public:
     void init();
-    void render();
+    void render(const glm::vec2 (&map)[8][8], std::vector<Card>& deck);
     void terminate();
     void clear();
 private:
     void initMesh();
-    void renderSprite();
+    void renderSprite(glm::vec2 pos, Card card);
 
     glm::mat4 m_proj;
     Shader* m_shader;

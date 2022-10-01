@@ -31,3 +31,4 @@ private:
     Renderer* m_renderer;
     float m_lastFrame;
 };
+
