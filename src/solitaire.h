@@ -5,6 +5,7 @@
 
 #include "window.h"
 #include "renderer.h"
+#include "event.h"
 
 struct AppConfig
 {
@@ -25,6 +26,7 @@ private:
     void mainLoop();
     void terminate();
     void calculateDeltaTime();
+    void onMouseClick(const Event& e);
 
     AppConfig m_appConfig;
     Window* m_window;

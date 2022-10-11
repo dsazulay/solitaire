@@ -17,7 +17,7 @@ class Renderer
 {
 public:
     void init();
-    void render(const glm::vec2 (&map)[8][8], std::vector<Card>& deck);
+    void render(const glm::vec2 (&map)[8][8], std::vector<Card>* deck);
     void terminate();
     void clear();
 private:

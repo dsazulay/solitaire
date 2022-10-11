@@ -1,5 +1,6 @@
 #include "solitaire.h"
 
+#include "dispatcher.h"
 #include "resource_manager.h"
 #include "shader.h"
 #include "utils/log.h"
@@ -13,6 +14,8 @@ float Solitaire::deltaTime;
 
 std::vector<Card> deck;
 glm::vec2 map[8][8];
+std::vector<Card> table[8];
+int selected = -1;
 
 void setBoardLayout()
 {
@@ -25,6 +28,20 @@ void setBoardLayout()
         for (int j = 0; j < 8; j++)
         {
             map[i][j] = glm::vec2(initPosX + i * offsetX, initPosY - j * offsetY);
+        }
+    }
+}
+
+void fillTable(std::vector<Card> deck)
+{
+    int index = 0;
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            table[j].push_back(deck.at(index++));
+            if (index > 51)
+                return;
         }
     }
 }
@@ -59,6 +76,31 @@ void shuffle()
     }
 }
 
+void Solitaire::onMouseClick(const Event& e)
+{
+    const auto& event = static_cast<const MouseClickEvent&>(e);
+    double xpos = event.xpos();
+    int cardSize = 100;
+    for (int i = 0; i < 8; i++)
+    {
+        if (xpos > map[i][0].x - 50 && xpos < map[i][0].x - 50 + cardSize)
+        {
+            if (selected != -1)
+            {
+                table[i].push_back(table[selected].back());
+                table[selected].pop_back();
+                selected = -1;
+                return;
+            }
+
+            if (table[i].size() > 0)
+            {
+                selected = i;
+            }
+        }
+    }
+}
+
 Solitaire::Solitaire()
 {
     m_appConfig.windowName = "Solitaire";
@@ -89,6 +131,10 @@ void Solitaire::init()
     createDeck();
     srand(time(NULL));
     shuffle();
+    fillTable(deck);
+
+    Dispatcher::instance().subscribe(MouseClickEvent::descriptor,
+        std::bind(&Solitaire::onMouseClick, this, std::placeholders::_1));
 }
 
 void Solitaire::mainLoop()
@@ -99,7 +145,7 @@ void Solitaire::mainLoop()
 
         m_window->processInput();
 
-        m_renderer->render(map, deck);
+        m_renderer->render(map, table);
 
         m_window->swapBuffers();
         m_window->pollEvents();

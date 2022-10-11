@@ -1,5 +1,7 @@
 #include "window.h"
 #include "GLFW/glfw3.h"
+#include "dispatcher.h"
+#include "event.h"
 #include "utils/log.h"
 
 double Window::xpos, Window::ypos;
@@ -75,5 +77,7 @@ void Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int
 
     else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
     {
+        MouseClickEvent e(xpos, ypos);
+        Dispatcher::instance().post(e);
     }
 }

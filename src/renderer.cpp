@@ -16,20 +16,17 @@ void Renderer::init()
     m_texture = ResourceManager::loadTexture("../resources/cards_alpha.png", "cards");
 }
 
-void Renderer::render(const glm::vec2 (&map)[8][8], std::vector<Card>& deck)
+void Renderer::render(const glm::vec2 (&map)[8][8], std::vector<Card>* deck)
 {
-   clear();
-   int index = 0;
+    clear();
 
-   for (int i = 0; i < 8; i++)
-   {
-       for (int j = 0; j < 8; j ++)
-       {
-           renderSprite(map[j][i], deck.at(index++));
-           if (index > 51)
-               return;
-       }
-   }
+    for (int j = 0; j < 8; j ++)
+    {
+        for (int i = 0; i < deck[j].size(); i++)
+        {
+            renderSprite(map[j][i], deck[j].at(i));
+        }
+    }
 }
 
 void Renderer::renderSprite(glm::vec2 pos, Card card)
