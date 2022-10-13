@@ -13,9 +13,14 @@
 float Solitaire::deltaTime;
 
 std::vector<Card> deck;
-glm::vec2 map[8][8];
+glm::vec2 map[8][12];
+glm::vec2 openCellsMap[4];
+glm::vec2 foundationMap[4];
 std::vector<Card> table[8];
-int selected = -1;
+std::vector<Card> openCells[4];
+std::vector<Card> foundations[4];
+int selectedX = -1;
+int selectedY = -1;
 
 void setBoardLayout()
 {
@@ -25,10 +30,21 @@ void setBoardLayout()
     float offsetY = 32;
     for (int i = 0; i < 8; i++)
     {
-        for (int j = 0; j < 8; j++)
+        for (int j = 0; j < 12; j++)
         {
             map[i][j] = glm::vec2(initPosX + i * offsetX, initPosY - j * offsetY);
         }
+    }
+
+    for (int i = 0; i < 4; i++)
+    {
+        openCellsMap[i] = glm::vec2(initPosX + i * offsetX, 600);
+    }
+
+    initPosX += 4 * offsetX;
+    for (int i = 0; i < 4; i++)
+    {
+        foundationMap[i] = glm::vec2(initPosX + i * offsetX, 600);
     }
 }
 
@@ -60,6 +76,15 @@ void createDeck()
     }
 }
 
+void createOpenCellsAndFoundations()
+{
+    for (int i = 0; i < 4; i++)
+    {
+        openCells[i].push_back(deck.at(13));
+        foundations[i].push_back(deck.at(26));
+    }
+}
+
 void swap(int i, int j)
 {
     auto tmp = deck[i];
@@ -80,22 +105,82 @@ void Solitaire::onMouseClick(const Event& e)
 {
     const auto& event = static_cast<const MouseClickEvent&>(e);
     double xpos = event.xpos();
+    double ypos = event.ypos();
     int cardSize = 100;
+    int cardHeight = 180;
+
+    //LOG_INFO(xpos << " " << ypos);
+
     for (int i = 0; i < 8; i++)
     {
         if (xpos > map[i][0].x - 50 && xpos < map[i][0].x - 50 + cardSize)
         {
-            if (selected != -1)
+            if (ypos > 121 - 74 && ypos < 121 + 74)
             {
-                table[i].push_back(table[selected].back());
-                table[selected].pop_back();
-                selected = -1;
-                return;
-            }
+                if (xpos < 700)
+                {
+                    if (selectedX != -1)
+                    {
+                        if (selectedY == 20)
+                        {
+                            openCells[i].push_back(openCells[selectedX].back());
+                            openCells[selectedX].pop_back();
+                        }
+                        else
+                        {
+                            openCells[i].push_back(table[selectedX].back());
+                            table[selectedX].pop_back();
+                        }
+                        selectedX = -1;
+                        selectedY = -1;
+                        return;
+                    }
 
-            if (table[i].size() > 0)
+                    selectedX = i;
+                    selectedY = 20;
+                    return;
+                }
+                else
+                {
+                    LOG_INFO("foundations");
+                    return;
+                }
+            }
+            else
             {
-                selected = i;
+                int stackSize = table[i].size();
+                ypos = 720 - ypos;
+                for (int j = 0; j < stackSize - 1; j++)
+                {
+                    if (ypos < map[i][j].y + 74 && ypos > map[i][j].y + 30)
+                    {
+                        LOG_INFO("no support for multiple selection");
+                        return;
+                    }
+                }
+                if (stackSize > 0 && ypos < map[i][stackSize - 1].y + 74 && ypos > map[i][stackSize - 1].y - 74)
+                {
+                    if (selectedX != -1)
+                    {
+                        if (selectedY == 20)
+                        {
+                            table[i].push_back(openCells[selectedX].back());
+                            openCells[selectedX].pop_back();
+                        }
+                        else
+                        {
+                            table[i].push_back(table[selectedX].back());
+                            table[selectedX].pop_back();
+                        }
+                        selectedX = -1;
+                        selectedY = -1;
+                        return;
+                    }
+
+                    selectedX = i;
+                    selectedY = stackSize - 1;
+                    return;
+                }
             }
         }
     }
@@ -129,6 +214,7 @@ void Solitaire::init()
     // Game init
     setBoardLayout();
     createDeck();
+    createOpenCellsAndFoundations();
     srand(time(NULL));
     shuffle();
     fillTable(deck);
@@ -146,6 +232,8 @@ void Solitaire::mainLoop()
         m_window->processInput();
 
         m_renderer->render(map, table);
+        m_renderer->renderOpenCellsAndFoundation(openCellsMap, openCells);
+        m_renderer->renderOpenCellsAndFoundation(foundationMap, foundations);
 
         m_window->swapBuffers();
         m_window->pollEvents();

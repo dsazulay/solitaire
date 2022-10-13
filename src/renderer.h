@@ -17,7 +17,8 @@ class Renderer
 {
 public:
     void init();
-    void render(const glm::vec2 (&map)[8][8], std::vector<Card>* deck);
+    void render(const glm::vec2 (&map)[8][12], std::vector<Card>* deck);
+    void renderOpenCellsAndFoundation(const glm::vec2 (&map)[4], std::vector<Card>* pile);
     void terminate();
     void clear();
 private:

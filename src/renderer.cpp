@@ -16,7 +16,7 @@ void Renderer::init()
     m_texture = ResourceManager::loadTexture("../resources/cards_alpha.png", "cards");
 }
 
-void Renderer::render(const glm::vec2 (&map)[8][8], std::vector<Card>* deck)
+void Renderer::render(const glm::vec2 (&map)[8][12], std::vector<Card>* deck)
 {
     clear();
 
@@ -26,6 +26,14 @@ void Renderer::render(const glm::vec2 (&map)[8][8], std::vector<Card>* deck)
         {
             renderSprite(map[j][i], deck[j].at(i));
         }
+    }
+}
+
+void Renderer::renderOpenCellsAndFoundation(const glm::vec2 (&map)[4], std::vector<Card>* pile)
+{
+    for (int i = 0; i < 4; i++)
+    {
+        renderSprite(map[i], pile[i].back());
     }
 }
 
