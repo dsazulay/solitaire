@@ -71,6 +71,7 @@ void createDeck()
             Card c;
             c.number = j;
             c.suit = i;
+            c.color = i > 1;
             deck.push_back(c);
         }
     }
@@ -81,8 +82,12 @@ void createOpenCellsAndFoundations()
     for (int i = 0; i < 4; i++)
     {
         openCells[i].push_back(deck.at(13));
-        foundations[i].push_back(deck.at(26));
     }
+
+    foundations[0].push_back(deck.at(0));
+    foundations[1].push_back(deck.at(13));
+    foundations[2].push_back(deck.at(26));
+    foundations[3].push_back(deck.at(39));
 }
 
 void swap(int i, int j)
@@ -99,6 +104,14 @@ void shuffle()
         int j = rand() % (i + 1);
         swap(i, j);
     }
+}
+
+bool isLegalMoveTable(int src, int dst)
+{
+    bool diffColor = table[src].back().color != table[dst].back().color;
+    bool nextNumber = table[src].back().number == table[dst].back().number - 1;
+
+    return diffColor && nextNumber;
 }
 
 void Solitaire::onMouseClick(const Event& e)
@@ -169,8 +182,15 @@ void Solitaire::onMouseClick(const Event& e)
                         }
                         else
                         {
-                            table[i].push_back(table[selectedX].back());
-                            table[selectedX].pop_back();
+                            if (!isLegalMoveTable(selectedX, i))
+                            {
+                                LOG_INFO("Invalid move");
+                            }
+                            else
+                            {
+                                table[i].push_back(table[selectedX].back());
+                                table[selectedX].pop_back();
+                            }
                         }
                         selectedX = -1;
                         selectedY = -1;

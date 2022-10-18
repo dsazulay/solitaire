@@ -10,6 +10,7 @@ struct Card
 {
     unsigned int number;
     unsigned int suit;
+    uint8_t color;
 };
 
 
