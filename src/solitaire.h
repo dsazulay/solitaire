@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <string>
 
+#include "freecell.h"
 #include "window.h"
 #include "renderer.h"
 #include "event.h"
@@ -32,5 +33,6 @@ private:
     Window* m_window;
     Renderer* m_renderer;
     float m_lastFrame;
+    Freecell m_freecell;
 };
 

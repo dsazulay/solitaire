@@ -14,6 +14,13 @@ void Renderer::init()
     m_proj = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f, -1.0f, 1.0f);
     m_shader = ResourceManager::loadShader("../resources/unlit.vert", "../resources/unlit.frag", "Unlit");
     m_texture = ResourceManager::loadTexture("../resources/cards_alpha.png", "cards");
+
+    glActiveTexture(GL_TEXTURE0);
+    m_texture->bind();
+
+    m_shader->use();
+    m_shader->setMat4("u_proj", m_proj);
+    m_shader->setInt("u_main_tex", 0);
 }
 
 void Renderer::render(const glm::vec2 (&map)[8][12], std::vector<Card>* deck)
@@ -43,14 +50,8 @@ void Renderer::renderSprite(glm::vec2 pos, Card card)
     model = glm::translate(model, glm::vec3(pos.x, pos.y, 0));
     model = glm::scale(model, glm::vec3(56, 80, 1));
 
-    glActiveTexture(GL_TEXTURE0);
-    m_texture->bind();
-
-    m_shader->use();
-    m_shader->setMat4("u_proj", m_proj);
     m_shader->setMat4("u_model", model);
     m_shader->setVec2("u_offset", card.number, card.suit);
-    m_shader->setInt("u_main_tex", 0);
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
