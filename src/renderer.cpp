@@ -23,7 +23,7 @@ void Renderer::init()
     m_shader->setInt("u_main_tex", 0);
 }
 
-void Renderer::render(const glm::vec2 (&map)[8][12], std::vector<Card>* deck)
+void Renderer::render(const glm::vec2 (&map)[8][12], std::vector<Card*>* deck)
 {
     clear();
 
@@ -36,7 +36,7 @@ void Renderer::render(const glm::vec2 (&map)[8][12], std::vector<Card>* deck)
     }
 }
 
-void Renderer::renderOpenCellsAndFoundation(const glm::vec2 (&map)[4], std::vector<Card>* pile)
+void Renderer::renderOpenCellsAndFoundation(const glm::vec2 (&map)[4], std::vector<Card*>* pile)
 {
     for (int i = 0; i < 4; i++)
     {
@@ -44,14 +44,15 @@ void Renderer::renderOpenCellsAndFoundation(const glm::vec2 (&map)[4], std::vect
     }
 }
 
-void Renderer::renderSprite(glm::vec2 pos, Card card)
+void Renderer::renderSprite(glm::vec2 pos, Card* card)
 {
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(pos.x, pos.y, 0));
     model = glm::scale(model, glm::vec3(56, 80, 1));
 
     m_shader->setMat4("u_model", model);
-    m_shader->setVec2("u_offset", card.number, card.suit);
+    m_shader->setVec2("u_offset", card->number, card->suit);
+    m_shader->setVec3("u_tint", card->selectionTint);
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);

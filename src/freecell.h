@@ -1,6 +1,7 @@
 #pragma once
 
 #include "renderer.h"
+#include <sys/wait.h>
 #include <vector>
 #include <glm/vec2.hpp>
 
@@ -16,9 +17,9 @@ public:
     glm::vec2 m_openCellsMap[4];
     glm::vec2 m_foundationMap[4];
 
-    std::vector<Card> m_table[8];
-    std::vector<Card> m_openCells[4];
-    std::vector<Card> m_foundations[4];
+    std::vector<Card*> m_table[8];
+    std::vector<Card*> m_openCells[4];
+    std::vector<Card*> m_foundations[4];
 
 
     int selectedX = -1;
@@ -31,7 +32,13 @@ private:
     void swap(int i, int j);
     void shuffle();
     void fillTable();
-    bool isLegalMoveTable(int src, int dst);
+    bool isLegalMoveTable(std::vector<Card*>* stack, int src, int dst);
+    bool isLegalMoveFoundation(std::vector<Card*>* stack, int src, int dst);
+    void handleOpenCellsClick(int i);
+    void handleFoundationsClick(int i);
+    void handleTableClick(int i, int j);
+    void deselect();
 
+    Card* m_selected;
     std::vector<Card> m_deck;
 };

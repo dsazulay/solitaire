@@ -1,5 +1,6 @@
 #include "shader.h"
 
+#include "glm/fwd.hpp"
 #include "utils/log.h"
 
 #include <glad/glad.h>
@@ -63,6 +64,11 @@ void Shader::setInt(const std::string& name, const int value) const
 void Shader::setVec2(const std::string& name, const float x, const float y) const
 {
     glUniform2f(glGetUniformLocation(ID, name.c_str()), x, y);
+}
+
+void Shader::setVec3(const std::string& name, const glm::vec3& v) const
+{
+    glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, &v[0]);
 }
 
 void Shader::setMat4(const std::string& name, const glm::mat4& mat) const
