@@ -62,9 +62,10 @@ void Solitaire::mainLoop()
 
         m_window->processInput();
 
-        m_renderer->render(m_freecell.m_map, m_freecell.m_table);
-        m_renderer->renderOpenCellsAndFoundation(m_freecell.m_openCellsMap, m_freecell.m_openCells);
-        m_renderer->renderOpenCellsAndFoundation(m_freecell.m_foundationMap, m_freecell.m_foundations);
+         m_renderer->render(m_freecell.m_map, m_freecell.m_table);
+         m_renderer->renderOpenCellsAndFoundation(m_freecell.m_openCellsMap, m_freecell.m_openCells);
+         m_renderer->renderOpenCellsAndFoundation(m_freecell.m_foundationMap, m_freecell.m_foundations);
+         m_renderer->drawCall();
 
         m_window->swapBuffers();
         m_window->pollEvents();

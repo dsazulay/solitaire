@@ -22,6 +22,7 @@ public:
     void init();
     void render(const glm::vec2 (&map)[8][12], std::vector<Card*>* deck);
     void renderOpenCellsAndFoundation(const glm::vec2 (&map)[4], std::vector<Card*>* pile);
+    void drawCall();
     void terminate();
     void clear();
 private:
@@ -31,6 +32,8 @@ private:
     glm::mat4 m_proj;
     Shader* m_shader;
     Texture* m_texture;
+
+    unsigned int m_instanceCounter;
 
     unsigned int VBO, EBO, VAO;
 
