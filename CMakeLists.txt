@@ -104,6 +104,8 @@ add_dependencies(
 
 # Finish Settings
 
+target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra)
+
 # Change output dir to bin
 set_target_properties(${PROJECT_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
