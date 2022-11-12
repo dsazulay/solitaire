@@ -1,6 +1,7 @@
 #pragma once
 
 #include "renderer.h"
+#include <_types/_uint8_t.h>
 #include <sys/wait.h>
 #include <vector>
 #include <glm/vec2.hpp>
@@ -33,6 +34,7 @@ private:
     void shuffle();
     void fillTable();
     bool isLegalMoveTable(std::vector<Card*>* stack, int src, int dst);
+    bool isLegalMoveTable(std::vector<Card*>* stack, int srcX, int srcY, int dst);
     bool isLegalMoveFoundation(std::vector<Card*>* stack, int src, int dst);
     void handleOpenCellsClick(int i);
     void handleFoundationsClick(int i);
@@ -41,4 +43,5 @@ private:
 
     Card* m_selected;
     std::vector<Card> m_deck;
+    int m_numberOfOpenCells;
 };

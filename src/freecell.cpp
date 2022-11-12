@@ -1,5 +1,6 @@
 #include "freecell.h"
 #include "utils/log.h"
+#include <_types/_uint8_t.h>
 #include <vector>
 
 void Freecell::init()
@@ -9,6 +10,8 @@ void Freecell::init()
     createOpenCellsAndFoundations();
     shuffle();
     fillTable();
+
+    m_numberOfOpenCells = 4;
 }
 
 void Freecell::setBoardLayout()
@@ -120,6 +123,17 @@ bool Freecell::isLegalMoveTable(std::vector<Card*>* stack, int src, int dst)
     return diffColor && nextNumber;
 }
 
+bool Freecell::isLegalMoveTable(std::vector<Card*>* stack, int srcX, int srcY, int dst)
+{
+    if (m_table[dst].size() == 0)
+        return true;
+
+    bool diffColor = stack[srcX][srcY]->color != m_table[dst].back()->color;
+    bool nextNumber = stack[srcX][srcY]->number == m_table[dst].back()->number - 1;
+
+    return diffColor && nextNumber;
+}
+
 bool Freecell::isLegalMoveFoundation(std::vector<Card*>* stack, int src, int dst)
 {
     if (m_foundations[dst].size() == 1)
@@ -149,11 +163,21 @@ void Freecell::handleOpenCellsClick(int i)
         {
             m_openCells[i].push_back(m_foundations[selectedX].back());
             m_foundations[selectedX].pop_back();
+            m_numberOfOpenCells--;
         }
         else
         {
+
+            if (selectedY != m_table[selectedX].size() - 1)
+            {
+                LOG_INFO("Cannot move more than two cards at the same time");
+                deselect();
+                return;
+            }
+
             m_openCells[i].push_back(m_table[selectedX].back());
             m_table[selectedX].pop_back();
+            m_numberOfOpenCells--;
         }
         deselect();
         return;
@@ -186,6 +210,7 @@ void Freecell::handleFoundationsClick(int i)
             }
             m_foundations[i].push_back(m_openCells[selectedX].back());
             m_openCells[selectedX].pop_back();
+            m_numberOfOpenCells++;
         }
         else if (selectedY == 30)
         {
@@ -200,6 +225,13 @@ void Freecell::handleFoundationsClick(int i)
         }
         else
         {
+            if (selectedY != m_table[selectedX].size() - 1)
+            {
+                LOG_INFO("Cannot move more than two cards at the same time");
+                deselect();
+                return;
+            }
+
             if (!isLegalMoveFoundation(m_table, selectedX, i))
             {
                 LOG_INFO("Invalid foundation move");
@@ -240,6 +272,7 @@ void Freecell::handleTableClick(int i, int j)
             }
             m_table[i].push_back(m_openCells[selectedX].back());
             m_openCells[selectedX].pop_back();
+            m_numberOfOpenCells++;
         }
         else if (selectedY == 30)
         {
@@ -254,14 +287,35 @@ void Freecell::handleTableClick(int i, int j)
         }
         else
         {
-            if (!isLegalMoveTable(m_table, selectedX, i))
+            if (!isLegalMoveTable(m_table, selectedX, selectedY, i))
             {
                 LOG_INFO("Invalid move");
                 deselect();
                 return;
             }
-            m_table[i].push_back(m_table[selectedX].back());
-            m_table[selectedX].pop_back();
+
+            auto diff = m_table[selectedX].size() - selectedY;
+            if (m_numberOfOpenCells >= diff - 1)
+            {
+                for (auto n = selectedY; n < m_table[selectedX].size(); n++)
+                {
+                    m_table[i].push_back(m_table[selectedX][n]);
+                }
+
+                for (auto n = 0; n < diff; n++)
+                {
+                    m_table[selectedX].pop_back();
+                }
+            }
+            else
+            {
+                LOG_INFO("Need mor open cells");
+                deselect();
+                return;
+            }
+
+            //m_table[i].push_back(m_table[selectedX].back());
+            //m_table[selectedX].pop_back();
         }
         deselect();
         return;
@@ -273,18 +327,17 @@ void Freecell::handleTableClick(int i, int j)
         return;
     }
 
-    m_selected = m_table[i].back();
+    m_selected = m_table[i][j];
     m_selected->selectionTint = glm::vec3(0.7, 0.7, 0.9);
     selectedX = i;
     selectedY = j;
     return;
-
 }
 
 void Freecell::processInput(double xpos, double ypos)
 {
     int cardSize = 100;
-    int cardHeight = 180;
+    //int cardHeight = 180;
 
     for (int i = 0; i < 8; i++)
     {
@@ -309,7 +362,7 @@ void Freecell::processInput(double xpos, double ypos)
                 {
                     if (ypos < m_map[i][j].y + 74 && ypos > m_map[i][j].y + 30)
                     {
-                        LOG_INFO("No support for multiple selection");
+                        handleTableClick(i, j);
                         return;
                     }
                 }
