@@ -11,6 +11,8 @@ struct Card
 {
     unsigned int number;
     unsigned int suit;
+    unsigned int offsetX;
+    unsigned int offsetY;
     uint8_t color;
     glm::vec3 selectionTint;
 };

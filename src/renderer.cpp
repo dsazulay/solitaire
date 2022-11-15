@@ -13,7 +13,7 @@ void Renderer::init()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     m_proj = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f, -1.0f, 1.0f);
     m_shader = ResourceManager::loadShader("../../resources/unlit.vert", "../../resources/unlit.frag", "Unlit");
-    m_texture = ResourceManager::loadTexture("../../resources/cards_alpha.png", "cards");
+    m_texture = ResourceManager::loadTexture("../../resources/cards.png", "cards");
 
     glActiveTexture(GL_TEXTURE0);
     m_texture->bind();
@@ -50,10 +50,10 @@ void Renderer::renderSprite(glm::vec2 pos, Card* card)
 {
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(pos.x, pos.y, 0));
-    model = glm::scale(model, glm::vec3(56, 80, 1));
+    model = glm::scale(model, glm::vec3(80, 80, 1));
 
     m_shader->setMat4("u_model[" + std::to_string(m_instanceCounter) + "]", model);
-    m_shader->setVec2("u_offset[" + std::to_string(m_instanceCounter) + "]", card->number, card->suit);
+    m_shader->setVec2("u_offset[" + std::to_string(m_instanceCounter) + "]", card->offsetX, card->offsetY);
     m_shader->setVec3("u_tint[" + std::to_string(m_instanceCounter) + "]", card->selectionTint);
 
     m_instanceCounter++;

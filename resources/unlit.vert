@@ -13,6 +13,7 @@ uniform vec2 u_offset[60];
 void main()
 {
     v_instanceID = gl_InstanceID;
-    v_uv = a_uv * vec2(0.07692, 0.2) + vec2(0.0765, 0.198) * u_offset[gl_InstanceID] + vec2(0.0025, 0.005);
+    v_uv = a_uv * vec2(0.125, 0.125) + vec2(0.125, 0.125) * u_offset[gl_InstanceID];
+    //v_uv = a_uv * vec2(0.07692, 0.2) + vec2(0.0765, 0.198) * u_offset[gl_InstanceID] + vec2(0.0025, 0.005);
     gl_Position = u_proj * u_model[gl_InstanceID] * vec4(a_pos, 0.0, 1.0);
 }

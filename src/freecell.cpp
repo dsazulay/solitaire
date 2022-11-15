@@ -56,6 +56,7 @@ void Freecell::fillTable()
 
 void Freecell::createDeck()
 {
+    unsigned int count = 0;
     for (int i = 0; i < 4; i++)
     {
         for (int j = 0; j < 13; j++)
@@ -63,20 +64,23 @@ void Freecell::createDeck()
             Card c;
             c.number = j;
             c.suit = i;
-            c.color = i > 1;
+            c.color = i % 2;
             c.selectionTint = glm::vec3(1,1,1);
+            c.offsetX = count % 8;
+            c.offsetY = (int)count * 0.125;
             m_deck.push_back(c);
+            count++;
         }
     }
 
     // Add open cells and foundation background
     Card c;
-    c.number = 0;
-    c.suit = 4;
+    c.offsetX = 1;
+    c.offsetY = 7;
     c.selectionTint = glm::vec3(1,1,1);
     m_deck.push_back(c);
 
-    c.number = 1;
+    c.offsetX = 2;
     m_deck.push_back(c);
 }
 
@@ -116,6 +120,7 @@ bool Freecell::isLegalMoveTable(std::vector<Card*>* stack, int src, int dst)
 {
     if (m_table[dst].size() == 0)
         return true;
+
 
     bool diffColor = stack[src].back()->color != m_table[dst].back()->color;
     bool nextNumber = stack[src].back()->number == m_table[dst].back()->number - 1;
@@ -377,5 +382,4 @@ void Freecell::processInput(double xpos, double ypos)
             }
         }
     }
-
 }
