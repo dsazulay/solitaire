@@ -13,6 +13,7 @@ public:
     void processInput() const;
     void swapBuffers() const;
     void pollEvents();
+    GLFWwindow* getWindow();
 
     static double xpos;
     static double ypos;

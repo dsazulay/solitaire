@@ -81,3 +81,8 @@ void Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int
         Dispatcher::instance().post(e);
     }
 }
+
+GLFWwindow* Window::getWindow()
+{
+    return m_window;
+}

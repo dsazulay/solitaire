@@ -1,10 +1,11 @@
 #pragma once
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+
+#include <memory>
 #include <string>
 
-#include "freecell.h"
 #include "window.h"
+#include "freecell.h"
+#include "ui_renderer.h"
 #include "renderer.h"
 #include "event.h"
 
@@ -32,6 +33,8 @@ private:
     AppConfig m_appConfig;
     Window* m_window;
     Renderer* m_renderer;
+    std::unique_ptr<UiRenderer> m_uiRenderer;
+
     float m_lastFrame;
     Freecell m_freecell;
 };
