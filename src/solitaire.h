@@ -27,7 +27,6 @@ private:
     void init();
     void mainLoop();
     void terminate();
-    void calculateDeltaTime();
     void onMouseClick(const Event& e);
 
     AppConfig m_appConfig;
@@ -35,7 +34,6 @@ private:
     Renderer* m_renderer;
     std::unique_ptr<UiRenderer> m_uiRenderer;
 
-    float m_lastFrame;
     Freecell m_freecell;
 };
 

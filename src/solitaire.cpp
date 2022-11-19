@@ -8,6 +8,7 @@
 #include "dispatcher.h"
 #include "resource_manager.h"
 #include "shader.h"
+#include "timer.h"
 #include "ui_renderer.h"
 #include "utils/log.h"
 
@@ -66,7 +67,7 @@ void Solitaire::mainLoop()
 {
     while (!m_window->shouldClose())
     {
-        calculateDeltaTime();
+        Timer::update();
 
         m_window->processInput();
 
@@ -89,11 +90,4 @@ void Solitaire::terminate()
 
     delete m_renderer;
     delete m_window;
-}
-
-void Solitaire::calculateDeltaTime()
-{
-    float currentFrame = (float) glfwGetTime();
-    deltaTime = currentFrame - m_lastFrame;
-    m_lastFrame = currentFrame;
 }

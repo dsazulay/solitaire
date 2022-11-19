@@ -3,7 +3,7 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
-#include "solitaire.h"
+#include "timer.h"
 #include "utils/log.h"
 
 UiRenderer::UiRenderer(GLFWwindow* window)
@@ -34,8 +34,8 @@ void UiRenderer::render()
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-    ImGui::Text("Frame time: %.3fms", Solitaire::deltaTime);
-    ImGui::Text("FPS: %d", (int)(1 / Solitaire::deltaTime));
+    ImGui::Text("Frame time: %.3fms", Timer::deltaTime);
+    ImGui::Text("FPS: %d", (int)(1 / Timer::deltaTime));
 
     //ImGui::ShowDemoWindow();
     ImGui::Render();
