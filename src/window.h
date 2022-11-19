@@ -15,13 +15,14 @@ public:
     void pollEvents();
     GLFWwindow* getWindow();
 
-    static double xpos;
-    static double ypos;
+    static double xPos;
+    static double yPos;
 
 private:
     static void frameBufferCallback(GLFWwindow* window, int width, int height);
-    static void cursorPositionCallback(GLFWwindow* window, double xpos, double ypos);
+    static void cursorPositionCallback(GLFWwindow* window, double xPos, double yPos);
     static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 
+    static float lastClickTime;
     GLFWwindow* m_window;
 };

@@ -1,5 +1,6 @@
 #include "freecell.h"
 #include "utils/log.h"
+#include <_types/_uint32_t.h>
 #include <_types/_uint8_t.h>
 #include <vector>
 
@@ -139,13 +140,13 @@ bool Freecell::isLegalMoveTable(std::vector<Card*>* stack, int srcX, int srcY, i
     return diffColor && nextNumber;
 }
 
-bool Freecell::isLegalMoveFoundation(std::vector<Card*>* stack, int src, int dst)
+bool Freecell::isLegalMoveFoundation(Card* card, int dst)
 {
     if (m_foundations[dst].size() == 1)
-        return stack[src].back()->number == 0;
+        return card->number == 0;
 
-    return m_foundations[dst].back()->number == stack[src].back()->number - 1
-        && m_foundations[dst].back()->suit == stack[src].back()->suit;
+    return m_foundations[dst].back()->number == card->number - 1
+        && m_foundations[dst].back()->suit == card->suit;
 }
 
 void Freecell::handleOpenCellsClick(int i)
@@ -207,7 +208,7 @@ void Freecell::handleFoundationsClick(int i)
     {
         if (selectedY == 20)
         {
-            if (!isLegalMoveFoundation(m_openCells, selectedX, i))
+            if (!isLegalMoveFoundation(m_openCells[selectedX].back(), i))
             {
                 LOG_INFO("Invalid foundation move");
                 deselect();
@@ -219,7 +220,7 @@ void Freecell::handleFoundationsClick(int i)
         }
         else if (selectedY == 30)
         {
-            if (!isLegalMoveFoundation(m_foundations, selectedX, i))
+            if (!isLegalMoveFoundation(m_foundations[selectedX].back(), i))
             {
                 LOG_INFO("Invalid foundation move");
                 deselect();
@@ -237,7 +238,7 @@ void Freecell::handleFoundationsClick(int i)
                 return;
             }
 
-            if (!isLegalMoveFoundation(m_table, selectedX, i))
+            if (!isLegalMoveFoundation(m_table[selectedX].back(), i))
             {
                 LOG_INFO("Invalid foundation move");
                 deselect();
@@ -339,18 +340,18 @@ void Freecell::handleTableClick(int i, int j)
     return;
 }
 
-void Freecell::processInput(double xpos, double ypos)
+void Freecell::processInput(double xPos, double yPos)
 {
     int cardSize = 100;
     //int cardHeight = 180;
 
     for (int i = 0; i < 8; i++)
     {
-        if (xpos > m_map[i][0].x - 50 && xpos < m_map[i][0].x - 50 + cardSize)
+        if (xPos > m_map[i][0].x - 50 && xPos < m_map[i][0].x - 50 + cardSize)
         {
-            if (ypos > 121 - 74 && ypos < 121 + 74)
+            if (yPos > 121 - 74 && yPos < 121 + 74)
             {
-                if (xpos < 700)
+                if (xPos < 700)
                 {
                     handleOpenCellsClick(i);
                 }
@@ -362,16 +363,16 @@ void Freecell::processInput(double xpos, double ypos)
             else
             {
                 int stackSize = m_table[i].size();
-                ypos = 720 - ypos;
+                yPos = 720 - yPos;
                 for (int j = 0; j < stackSize - 1; j++)
                 {
-                    if (ypos < m_map[i][j].y + 74 && ypos > m_map[i][j].y + 30)
+                    if (yPos < m_map[i][j].y + 74 && yPos > m_map[i][j].y + 30)
                     {
                         handleTableClick(i, j);
                         return;
                     }
                 }
-                if (stackSize > 0 && ypos < m_map[i][stackSize - 1].y + 74 && ypos > m_map[i][stackSize - 1].y - 74)
+                if (stackSize > 0 && yPos < m_map[i][stackSize - 1].y + 74 && yPos > m_map[i][stackSize - 1].y - 74)
                 {
                     handleTableClick(i, stackSize - 1);
                 }
@@ -382,4 +383,96 @@ void Freecell::processInput(double xpos, double ypos)
             }
         }
     }
+}
+
+void Freecell::processDoubleClick(double xPos, double yPos)
+{
+    int cardSize = 100;
+    //int cardHeight = 180;
+
+    for (int i = 0; i < 8; i++)
+    {
+        if (xPos > m_map[i][0].x - 50 && xPos < m_map[i][0].x - 50 + cardSize)
+        {
+            if (yPos > 121 - 74 && yPos < 121 + 74)
+            {
+                if (xPos < 700)
+                {
+                    if (moveCardToFoundations(m_openCells[i], 1))
+                        m_numberOfOpenCells++;
+                }
+                else
+                {
+                    LOG_INFO("No function for double click on foundations");
+                }
+            }
+            else
+            {
+                int stackSize = m_table[i].size();
+                yPos = 720 - yPos;
+                for (int j = 0; j < stackSize - 1; j++)
+                {
+                    if (yPos < m_map[i][j].y + 74 && yPos > m_map[i][j].y + 30)
+                    {
+                        LOG_INFO("No function for double click on middle table stack");
+                        return;
+                    }
+                }
+                if (stackSize > 0 && yPos < m_map[i][stackSize - 1].y + 74 && yPos > m_map[i][stackSize - 1].y - 74)
+                {
+                    if(!moveCardToFoundations(m_table[i], 0))
+                    {
+                        if(moveCardToOpenCells(m_table[i]))
+                            m_numberOfOpenCells--;
+                    }
+                }
+                else if (stackSize == 0)
+                {
+                    LOG_INFO("No function for double click on empty table stack");
+                }
+            }
+        }
+    }
+}
+
+bool Freecell::moveCardToFoundations(std::vector<Card*>& src,
+                                     uint8_t minSize)
+{
+    if (src.size() == minSize)
+    {
+        LOG_INFO("Cannot double click empty stack");
+        return false;
+    }
+
+    for (uint8_t i  = 0; i < 4; i++)
+    {
+         if (isLegalMoveFoundation(src.back(), i))
+         {
+             m_foundations[i].push_back(src.back());
+             src.pop_back();
+             return true;
+         }
+    }
+
+    LOG_INFO("No valid move for foundations");
+    deselect();
+    return false;
+
+}
+
+bool Freecell::moveCardToOpenCells(std::vector<Card*>& src)
+{
+    for (uint8_t i  = 0; i < 4; i++)
+    {
+        if (m_openCells[i].size() == 1)
+        {
+            m_openCells[i].push_back(src.back());
+            src.pop_back();
+            return true;
+        }
+    }
+
+    LOG_INFO("No valid move for foundations");
+    deselect();
+    return false;
 }

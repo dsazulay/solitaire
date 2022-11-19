@@ -1,10 +1,12 @@
 #include "window.h"
+
 #include "GLFW/glfw3.h"
 #include "dispatcher.h"
 #include "event.h"
 #include "utils/log.h"
 
-double Window::xpos, Window::ypos;
+double Window::xPos, Window::yPos;
+float Window::lastClickTime = 0.0f;
 
 void Window::init()
 {
@@ -63,22 +65,35 @@ void Window::frameBufferCallback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-void Window::cursorPositionCallback(GLFWwindow* window, double xpos, double ypos)
+void Window::cursorPositionCallback(GLFWwindow* window, double xPos, double yPos)
 {
-    Window::xpos = xpos;
-    Window::ypos = ypos;
+    Window::xPos = xPos;
+    Window::yPos = yPos;
 }
 
 void Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
     {
+        // start drag event
     }
 
     else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
     {
-        MouseClickEvent e(xpos, ypos);
+        MouseClickEvent e(xPos, yPos);
         Dispatcher::instance().post(e);
+
+        // release drag event
+
+        float clickTime = (float) glfwGetTime();
+        float timeDiff = clickTime - lastClickTime;
+        lastClickTime = clickTime;
+
+        if (timeDiff > 0.05 && timeDiff < 0.2)
+        {
+            MouseDoubleClickEvent doubleClickEvent(xPos, yPos);
+            Dispatcher::instance().post(doubleClickEvent);
+        }
     }
 }
 

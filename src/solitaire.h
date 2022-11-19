@@ -28,6 +28,7 @@ private:
     void mainLoop();
     void terminate();
     void onMouseClick(const Event& e);
+    void onMouseDoubleClick(const Event& e);
 
     AppConfig m_appConfig;
     Window* m_window;

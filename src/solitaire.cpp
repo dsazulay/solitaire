@@ -6,6 +6,7 @@
 #include <time.h>
 
 #include "dispatcher.h"
+#include "event.h"
 #include "resource_manager.h"
 #include "shader.h"
 #include "timer.h"
@@ -18,10 +19,19 @@ float Solitaire::deltaTime;
 void Solitaire::onMouseClick(const Event& e)
 {
     const auto& event = static_cast<const MouseClickEvent&>(e);
-    double xpos = event.xpos();
-    double ypos = event.ypos();
+    double xPos = event.xPos();
+    double yPos = event.yPos();
 
-    m_freecell.processInput(xpos, ypos);
+    m_freecell.processInput(xPos, yPos);
+}
+
+void Solitaire::onMouseDoubleClick(const Event& e)
+{
+    const auto& event = static_cast<const MouseDoubleClickEvent&>(e);
+    double xPos = event.xPos();
+    double yPos = event.yPos();
+
+    m_freecell.processDoubleClick(xPos, yPos);
 }
 
 Solitaire::Solitaire()
@@ -58,6 +68,8 @@ void Solitaire::init()
 
     Dispatcher::instance().subscribe(MouseClickEvent::descriptor,
         std::bind(&Solitaire::onMouseClick, this, std::placeholders::_1));
+    Dispatcher::instance().subscribe(MouseDoubleClickEvent::descriptor,
+        std::bind(&Solitaire::onMouseDoubleClick, this, std::placeholders::_1));
 
 
     //glfwSwapInterval(1); // Enable vsync

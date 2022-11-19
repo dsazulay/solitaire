@@ -12,7 +12,8 @@ public:
     void init();
     void mainLoop();
     void terminate();
-    void processInput(double xpos, double ypos);
+    void processInput(double xPos, double yPos);
+    void processDoubleClick(double xPos, double yPos);
 
     glm::vec2 m_map[8][12];
     glm::vec2 m_openCellsMap[4];
@@ -35,11 +36,13 @@ private:
     void fillTable();
     bool isLegalMoveTable(std::vector<Card*>* stack, int src, int dst);
     bool isLegalMoveTable(std::vector<Card*>* stack, int srcX, int srcY, int dst);
-    bool isLegalMoveFoundation(std::vector<Card*>* stack, int src, int dst);
+    bool isLegalMoveFoundation(Card* card, int dst);
     void handleOpenCellsClick(int i);
     void handleFoundationsClick(int i);
     void handleTableClick(int i, int j);
     void deselect();
+    bool moveCardToFoundations(std::vector<Card*>& src, uint8_t minSize);
+    bool moveCardToOpenCells(std::vector<Card*>& src);
 
     Card* m_selected;
     std::vector<Card> m_deck;
