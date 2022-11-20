@@ -1,8 +1,6 @@
 #pragma once
 
 #include "renderer.h"
-#include <_types/_uint8_t.h>
-#include <sys/wait.h>
 #include <vector>
 #include <glm/vec2.hpp>
 
@@ -12,7 +10,7 @@ public:
     void init();
     void mainLoop();
     void terminate();
-    void processInput(double xPos, double yPos);
+    void processInput(double xPos, double yPos, bool isDraging, bool isDragStart);
     void processDoubleClick(double xPos, double yPos);
 
     glm::vec2 m_map[8][12];
@@ -37,12 +35,14 @@ private:
     bool isLegalMoveTable(std::vector<Card*>* stack, int src, int dst);
     bool isLegalMoveTable(std::vector<Card*>* stack, int srcX, int srcY, int dst);
     bool isLegalMoveFoundation(Card* card, int dst);
-    void handleOpenCellsClick(int i);
-    void handleFoundationsClick(int i);
-    void handleTableClick(int i, int j);
+    void handleOpenCellsClick(int i, bool isDragStart);
+    void handleFoundationsClick(int i, bool isDragStart);
+    void handleTableClick(int i, int j, bool isDragStart);
     void deselect();
-    bool moveCardToFoundations(std::vector<Card*>& src, uint8_t minSize);
+    bool moveCardToFoundations(std::vector<Card*>& src);
     bool moveCardToOpenCells(std::vector<Card*>& src);
+
+
 
     Card* m_selected;
     std::vector<Card> m_deck;

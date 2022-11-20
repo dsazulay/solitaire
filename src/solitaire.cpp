@@ -1,5 +1,6 @@
 #include "solitaire.h"
 
+#include <functional>
 #include <glm/vec2.hpp>
 
 #include <vector>
@@ -22,7 +23,7 @@ void Solitaire::onMouseClick(const Event& e)
     double xPos = event.xPos();
     double yPos = event.yPos();
 
-    m_freecell.processInput(xPos, yPos);
+    m_freecell.processInput(xPos, yPos, false, false);
 }
 
 void Solitaire::onMouseDoubleClick(const Event& e)
@@ -32,6 +33,26 @@ void Solitaire::onMouseDoubleClick(const Event& e)
     double yPos = event.yPos();
 
     m_freecell.processDoubleClick(xPos, yPos);
+}
+
+
+void Solitaire::onMouseDragStart(const Event& e)
+{
+    const auto& event = static_cast<const MouseDragStartEvent&>(e);
+    double xPos = event.xPos();
+    double yPos = event.yPos();
+
+    m_freecell.processInput(xPos, yPos, true, true);
+}
+
+
+void Solitaire::onMouseDragEnd(const Event& e)
+{
+    const auto& event = static_cast<const MouseDragEndEvent&>(e);
+    double xPos = event.xPos();
+    double yPos = event.yPos();
+
+    m_freecell.processInput(xPos, yPos, true, false);
 }
 
 Solitaire::Solitaire()
@@ -70,6 +91,11 @@ void Solitaire::init()
         std::bind(&Solitaire::onMouseClick, this, std::placeholders::_1));
     Dispatcher::instance().subscribe(MouseDoubleClickEvent::descriptor,
         std::bind(&Solitaire::onMouseDoubleClick, this, std::placeholders::_1));
+    Dispatcher::instance().subscribe(MouseDragStartEvent::descriptor,
+        std::bind(&Solitaire::onMouseDragStart, this, std::placeholders::_1));
+    Dispatcher::instance().subscribe(MouseDragEndEvent::descriptor,
+        std::bind(&Solitaire::onMouseDragEnd, this, std::placeholders::_1));
+
 
 
     //glfwSwapInterval(1); // Enable vsync

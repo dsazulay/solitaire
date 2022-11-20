@@ -24,5 +24,6 @@ private:
     static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 
     static float lastClickTime;
+    static float dragStartTime;
     GLFWwindow* m_window;
 };

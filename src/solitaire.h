@@ -29,6 +29,8 @@ private:
     void terminate();
     void onMouseClick(const Event& e);
     void onMouseDoubleClick(const Event& e);
+    void onMouseDragStart(const Event& e);
+    void onMouseDragEnd(const Event& e);
 
     AppConfig m_appConfig;
     Window* m_window;

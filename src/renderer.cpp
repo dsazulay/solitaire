@@ -4,6 +4,7 @@
 #include "glm/ext/matrix_transform.hpp"
 #include "resource_manager.h"
 #include "utils/log.h"
+#include "window.h"
 #include <vector>
 
 void Renderer::init()
@@ -49,7 +50,10 @@ void Renderer::renderOpenCellsAndFoundation(const glm::vec2 (&map)[4], std::vect
 void Renderer::renderSprite(glm::vec2 pos, Card* card)
 {
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(pos.x, pos.y, 0));
+    if (card->draging)
+        model = glm::translate(model, glm::vec3(Window::xPos, 720 - Window::yPos, 0));
+    else
+        model = glm::translate(model, glm::vec3(pos.x, pos.y, 0));
     model = glm::scale(model, glm::vec3(80, 80, 1));
 
     m_shader->setMat4("u_model[" + std::to_string(m_instanceCounter) + "]", model);

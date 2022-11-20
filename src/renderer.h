@@ -15,6 +15,7 @@ struct Card
     unsigned int offsetY;
     uint8_t color;
     glm::vec3 selectionTint;
+    bool draging;
 };
 
 

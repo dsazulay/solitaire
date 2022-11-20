@@ -1,8 +1,7 @@
 #include "freecell.h"
+
 #include "utils/log.h"
-#include <_types/_uint32_t.h>
 #include <_types/_uint8_t.h>
-#include <vector>
 
 void Freecell::init()
 {
@@ -113,6 +112,7 @@ void Freecell::shuffle()
 void Freecell::deselect()
 {
     m_selected->selectionTint = glm::vec3(1,1,1);
+    m_selected->draging = false;
     selectedX = -1;
     selectedY = -1;
 }
@@ -149,7 +149,7 @@ bool Freecell::isLegalMoveFoundation(Card* card, int dst)
         && m_foundations[dst].back()->suit == card->suit;
 }
 
-void Freecell::handleOpenCellsClick(int i)
+void Freecell::handleOpenCellsClick(int i, bool isDragStart)
 {
     if (selectedX != -1)
     {
@@ -197,12 +197,13 @@ void Freecell::handleOpenCellsClick(int i)
 
     m_selected = m_openCells[i].back();
     m_selected->selectionTint = glm::vec3(0.7, 0.7, 0.9);
+    m_selected->draging = isDragStart;
     selectedX = i;
     selectedY = 20;
     return;
 }
 
-void Freecell::handleFoundationsClick(int i)
+void Freecell::handleFoundationsClick(int i, bool isDragStart)
 {
     if (selectedX != -1)
     {
@@ -259,12 +260,13 @@ void Freecell::handleFoundationsClick(int i)
 
     m_selected = m_foundations[i].back();
     m_selected->selectionTint = glm::vec3(0.7, 0.7, 0.9);
+    m_selected->draging = isDragStart;
     selectedX = i;
     selectedY = 30;
     return;
 }
 
-void Freecell::handleTableClick(int i, int j)
+void Freecell::handleTableClick(int i, int j, bool isDragStart)
 {
     if (selectedX != -1)
     {
@@ -315,7 +317,7 @@ void Freecell::handleTableClick(int i, int j)
             }
             else
             {
-                LOG_INFO("Need mor open cells");
+                LOG_INFO("Need more open cells");
                 deselect();
                 return;
             }
@@ -335,12 +337,13 @@ void Freecell::handleTableClick(int i, int j)
 
     m_selected = m_table[i][j];
     m_selected->selectionTint = glm::vec3(0.7, 0.7, 0.9);
+    m_selected->draging = isDragStart;
     selectedX = i;
     selectedY = j;
     return;
 }
 
-void Freecell::processInput(double xPos, double yPos)
+void Freecell::processInput(double xPos, double yPos, bool isDraging, bool isDragStart)
 {
     int cardSize = 100;
     //int cardHeight = 180;
@@ -353,11 +356,13 @@ void Freecell::processInput(double xPos, double yPos)
             {
                 if (xPos < 700)
                 {
-                    handleOpenCellsClick(i);
+                    handleOpenCellsClick(i, isDragStart);
+                    return;
                 }
                 else
                 {
-                    handleFoundationsClick(i - 4);
+                    handleFoundationsClick(i - 4, isDragStart);
+                    return;
                 }
             }
             else
@@ -368,21 +373,24 @@ void Freecell::processInput(double xPos, double yPos)
                 {
                     if (yPos < m_map[i][j].y + 74 && yPos > m_map[i][j].y + 30)
                     {
-                        handleTableClick(i, j);
+                        handleTableClick(i, j, isDragStart);
                         return;
                     }
                 }
                 if (stackSize > 0 && yPos < m_map[i][stackSize - 1].y + 74 && yPos > m_map[i][stackSize - 1].y - 74)
                 {
-                    handleTableClick(i, stackSize - 1);
+                    handleTableClick(i, stackSize - 1, isDragStart);
+                    return;
                 }
                 else if (stackSize == 0)
                 {
-                    handleTableClick(i, stackSize - 1);
+                    handleTableClick(i, stackSize - 1, isDragStart);
+                    return;
                 }
             }
         }
     }
+    deselect();
 }
 
 void Freecell::processDoubleClick(double xPos, double yPos)
@@ -398,7 +406,12 @@ void Freecell::processDoubleClick(double xPos, double yPos)
             {
                 if (xPos < 700)
                 {
-                    if (moveCardToFoundations(m_openCells[i], 1))
+                    if (m_openCells[i].size() == 1)
+                    {
+                        LOG_INFO("Cannot double click empty stack");
+                        return;
+                    }
+                    if (moveCardToFoundations(m_openCells[i]))
                         m_numberOfOpenCells++;
                 }
                 else
@@ -420,7 +433,7 @@ void Freecell::processDoubleClick(double xPos, double yPos)
                 }
                 if (stackSize > 0 && yPos < m_map[i][stackSize - 1].y + 74 && yPos > m_map[i][stackSize - 1].y - 74)
                 {
-                    if(!moveCardToFoundations(m_table[i], 0))
+                    if(!moveCardToFoundations(m_table[i]))
                     {
                         if(moveCardToOpenCells(m_table[i]))
                             m_numberOfOpenCells--;
@@ -435,15 +448,8 @@ void Freecell::processDoubleClick(double xPos, double yPos)
     }
 }
 
-bool Freecell::moveCardToFoundations(std::vector<Card*>& src,
-                                     uint8_t minSize)
+bool Freecell::moveCardToFoundations(std::vector<Card*>& src)
 {
-    if (src.size() == minSize)
-    {
-        LOG_INFO("Cannot double click empty stack");
-        return false;
-    }
-
     for (uint8_t i  = 0; i < 4; i++)
     {
          if (isLegalMoveFoundation(src.back(), i))
@@ -472,7 +478,7 @@ bool Freecell::moveCardToOpenCells(std::vector<Card*>& src)
         }
     }
 
-    LOG_INFO("No valid move for foundations");
+    LOG_INFO("No valid move for openCells");
     deselect();
     return false;
 }

@@ -7,6 +7,7 @@
 
 double Window::xPos, Window::yPos;
 float Window::lastClickTime = 0.0f;
+float Window::dragStartTime = 0.0f;
 
 void Window::init()
 {
@@ -75,15 +76,15 @@ void Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int
 {
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
     {
-        // start drag event
+        dragStartTime = (float) glfwGetTime();
+        MouseDragStartEvent dragStartEvent(xPos, yPos);
+        Dispatcher::instance().post(dragStartEvent);
     }
 
     else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
     {
-        MouseClickEvent e(xPos, yPos);
-        Dispatcher::instance().post(e);
-
-        // release drag event
+        MouseDragStartEvent dragEndEvent(xPos, yPos);
+        Dispatcher::instance().post(dragEndEvent);
 
         float clickTime = (float) glfwGetTime();
         float timeDiff = clickTime - lastClickTime;
@@ -93,6 +94,13 @@ void Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int
         {
             MouseDoubleClickEvent doubleClickEvent(xPos, yPos);
             Dispatcher::instance().post(doubleClickEvent);
+            return;
+        }
+
+        if (clickTime - dragStartTime < 0.05)
+        {
+            //MouseClickEvent e(xPos, yPos);
+            //Dispatcher::instance().post(e);
         }
     }
 }
