@@ -112,7 +112,7 @@ void Freecell::shuffle()
 void Freecell::deselect()
 {
     m_selected->selectionTint = glm::vec3(1,1,1);
-    m_selected->draging = false;
+    m_selected->dragging = false;
     selectedX = -1;
     selectedY = -1;
 }
@@ -197,7 +197,8 @@ void Freecell::handleOpenCellsClick(int i, bool isDragStart)
 
     m_selected = m_openCells[i].back();
     m_selected->selectionTint = glm::vec3(0.7, 0.7, 0.9);
-    m_selected->draging = isDragStart;
+    m_selected->dragging = isDragStart;
+    m_selected->shouldSetOffset = isDragStart;
     selectedX = i;
     selectedY = 20;
     return;
@@ -260,7 +261,8 @@ void Freecell::handleFoundationsClick(int i, bool isDragStart)
 
     m_selected = m_foundations[i].back();
     m_selected->selectionTint = glm::vec3(0.7, 0.7, 0.9);
-    m_selected->draging = isDragStart;
+    m_selected->dragging = isDragStart;
+    m_selected->shouldSetOffset = isDragStart;
     selectedX = i;
     selectedY = 30;
     return;
@@ -337,7 +339,8 @@ void Freecell::handleTableClick(int i, int j, bool isDragStart)
 
     m_selected = m_table[i][j];
     m_selected->selectionTint = glm::vec3(0.7, 0.7, 0.9);
-    m_selected->draging = isDragStart;
+    m_selected->dragging = isDragStart;
+    m_selected->shouldSetOffset = isDragStart;
     selectedX = i;
     selectedY = j;
     return;

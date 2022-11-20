@@ -10,6 +10,8 @@
 void Renderer::init()
 {
     initMesh();
+    //glEnable(GL_DEPTH_TEST);
+    //glDepthFunc(GL_LEQUAL);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     m_proj = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f, -1.0f, 1.0f);
@@ -50,10 +52,20 @@ void Renderer::renderOpenCellsAndFoundation(const glm::vec2 (&map)[4], std::vect
 void Renderer::renderSprite(glm::vec2 pos, Card* card)
 {
     glm::mat4 model = glm::mat4(1.0f);
-    if (card->draging)
-        model = glm::translate(model, glm::vec3(Window::xPos, 720 - Window::yPos, 0));
+    if (card->dragging)
+    {
+        glm::vec2 mousePos = glm::vec2(Window::xPos, 720 - Window::yPos);
+        if (card->shouldSetOffset)
+        {
+            setDragOffset(pos);
+            card->shouldSetOffset = false;
+        }
+        model = glm::translate(model, glm::vec3(mousePos - dragOffset, 0.0));
+    }
     else
+    {
         model = glm::translate(model, glm::vec3(pos.x, pos.y, 0));
+    }
     model = glm::scale(model, glm::vec3(80, 80, 1));
 
     m_shader->setMat4("u_model[" + std::to_string(m_instanceCounter) + "]", model);
@@ -102,5 +114,11 @@ void Renderer::initMesh()
 void Renderer::clear()
 {
     glClearColor(0.2f, 0.3f, 0.2f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void Renderer::setDragOffset(glm::vec2 pos)
+{
+    glm::vec2 mousePos = glm::vec2(Window::xPos, 720 - Window::yPos);
+    dragOffset = mousePos - pos;
 }

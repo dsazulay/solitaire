@@ -15,7 +15,8 @@ struct Card
     unsigned int offsetY;
     uint8_t color;
     glm::vec3 selectionTint;
-    bool draging;
+    bool dragging;
+    bool shouldSetOffset;
 };
 
 
@@ -28,6 +29,7 @@ public:
     void drawCall();
     void terminate();
     void clear();
+    void setDragOffset(glm::vec2 pos);
 private:
     void initMesh();
     void renderSprite(glm::vec2 pos, Card* card);
@@ -35,6 +37,8 @@ private:
     glm::mat4 m_proj;
     Shader* m_shader;
     Texture* m_texture;
+
+    glm::vec2 dragOffset;
 
     unsigned int m_instanceCounter;
 
