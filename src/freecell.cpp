@@ -393,7 +393,10 @@ void Freecell::processInput(double xPos, double yPos, bool isDraging, bool isDra
             }
         }
     }
-    deselect();
+    if (m_selected != nullptr)
+    {
+        deselect();
+    }
 }
 
 void Freecell::processDoubleClick(double xPos, double yPos)

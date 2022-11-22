@@ -44,7 +44,7 @@ private:
 
 
 
-    Card* m_selected;
+    Card* m_selected{};
     std::vector<Card> m_deck;
     int m_numberOfOpenCells;
 };
