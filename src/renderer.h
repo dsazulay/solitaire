@@ -13,10 +13,9 @@ struct Card
     unsigned int suit;
     unsigned int offsetX;
     unsigned int offsetY;
-    uint8_t color;
     glm::vec3 selectionTint;
-    bool dragging;
-    bool shouldSetOffset;
+    bool dragging{};
+    bool shouldSetOffset{};
 };
 
 

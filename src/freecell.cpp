@@ -64,7 +64,6 @@ void Freecell::createDeck()
             Card c;
             c.number = j;
             c.suit = i;
-            c.color = i % 2;
             c.selectionTint = glm::vec3(1,1,1);
             c.offsetX = count % 8;
             c.offsetY = (int)count * 0.125;
@@ -123,7 +122,7 @@ bool Freecell::isLegalMoveTable(std::vector<Card*>* stack, int src, int dst)
         return true;
 
 
-    bool diffColor = stack[src].back()->color != m_table[dst].back()->color;
+    bool diffColor = stack[src].back()->suit % 2 != m_table[dst].back()->suit % 2;
     bool nextNumber = stack[src].back()->number == m_table[dst].back()->number - 1;
 
     return diffColor && nextNumber;
@@ -134,7 +133,7 @@ bool Freecell::isLegalMoveTable(std::vector<Card*>* stack, int srcX, int srcY, i
     if (m_table[dst].size() == 0)
         return true;
 
-    bool diffColor = stack[srcX][srcY]->color != m_table[dst].back()->color;
+    bool diffColor = stack[srcX][srcY]->suit % 2 != m_table[dst].back()->suit % 2;
     bool nextNumber = stack[srcX][srcY]->number == m_table[dst].back()->number - 1;
 
     return diffColor && nextNumber;
