@@ -354,7 +354,7 @@ void Freecell::processInput(double xPos, double yPos, bool isDraging, bool isDra
     {
         if (xPos > m_map[i][0].x - 50 && xPos < m_map[i][0].x - 50 + cardSize)
         {
-            if (yPos > 121 - 74 && yPos < 121 + 74)
+            if (yPos > 579 - 74 && yPos < 579 + 74)
             {
                 if (xPos < 700)
                 {
@@ -370,7 +370,6 @@ void Freecell::processInput(double xPos, double yPos, bool isDraging, bool isDra
             else
             {
                 int stackSize = m_table[i].size();
-                yPos = 720 - yPos;
                 for (int j = 0; j < stackSize - 1; j++)
                 {
                     if (yPos < m_map[i][j].y + 74 && yPos > m_map[i][j].y + 30)
@@ -407,7 +406,7 @@ void Freecell::processDoubleClick(double xPos, double yPos)
     {
         if (xPos > m_map[i][0].x - 50 && xPos < m_map[i][0].x - 50 + cardSize)
         {
-            if (yPos > 121 - 74 && yPos < 121 + 74)
+            if (yPos > 579 - 74 && yPos < 579 + 74)
             {
                 if (xPos < 700)
                 {
@@ -427,7 +426,6 @@ void Freecell::processDoubleClick(double xPos, double yPos)
             else
             {
                 int stackSize = m_table[i].size();
-                yPos = 720 - yPos;
                 for (int j = 0; j < stackSize - 1; j++)
                 {
                     if (yPos < m_map[i][j].y + 74 && yPos > m_map[i][j].y + 30)

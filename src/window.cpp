@@ -22,8 +22,8 @@ void Window::init()
 
 void Window::createWindow(int width, int height, const char *name)
 {
-    m_window = glfwCreateWindow(width, height, name, NULL, NULL);
-    if (m_window == NULL)
+    m_window = glfwCreateWindow(width, height, name, nullptr, nullptr);
+    if (m_window == nullptr)
     {
         LOG_ERROR("Failed to create GLFW window");
         terminate();
@@ -69,7 +69,8 @@ void Window::frameBufferCallback(GLFWwindow* window, int width, int height)
 void Window::cursorPositionCallback(GLFWwindow* window, double xPos, double yPos)
 {
     Window::xPos = xPos;
-    Window::yPos = yPos;
+    // Invert y position so that 0 is on the bottom
+    Window::yPos = 720 - yPos;
 }
 
 void Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)

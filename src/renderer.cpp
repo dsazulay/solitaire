@@ -54,7 +54,7 @@ void Renderer::renderSprite(glm::vec2 pos, Card* card)
     glm::mat4 model = glm::mat4(1.0f);
     if (card->dragging)
     {
-        glm::vec2 mousePos = glm::vec2(Window::xPos, 720 - Window::yPos);
+        glm::vec2 mousePos = glm::vec2(Window::xPos, Window::yPos);
         if (card->shouldSetOffset)
         {
             setDragOffset(pos);
@@ -119,6 +119,6 @@ void Renderer::clear()
 
 void Renderer::setDragOffset(glm::vec2 pos)
 {
-    glm::vec2 mousePos = glm::vec2(Window::xPos, 720 - Window::yPos);
+    glm::vec2 mousePos = glm::vec2(Window::xPos, Window::yPos);
     dragOffset = mousePos - pos;
 }
