@@ -51,6 +51,12 @@ set(BUILD_STATIC_LIBS ON)
 add_subdirectory(external/glm)
 set_property(TARGET glm_static PROPERTY FOLDER "Dependencies")
 
+# ImGui
+message(STATUS "Installing imgui via submodule")
+add_subdirectory(external/imgui)
+set_property(TARGET ImGui PROPERTY FOLDER "Dependencies")
+
+
 # =============================================================
 
 # Sources
@@ -84,6 +90,7 @@ add_executable(
 target_link_libraries(
     ${PROJECT_NAME}
     Glad
+    ImGui
     glfw
     glm_static
 )
