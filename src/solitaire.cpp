@@ -97,8 +97,7 @@ void Solitaire::init()
         std::bind(&Solitaire::onMouseDragEnd, this, std::placeholders::_1));
 
 
-
-    //glfwSwapInterval(1); // Enable vsync
+    glfwSwapInterval(1); // Enable vsync
 }
 
 void Solitaire::mainLoop()

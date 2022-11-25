@@ -1,7 +1,6 @@
 #include "freecell.h"
 
 #include "utils/log.h"
-#include <_types/_uint8_t.h>
 
 void Freecell::init()
 {
@@ -108,24 +107,29 @@ void Freecell::shuffle()
     }
 }
 
-void Freecell::deselect()
+void Freecell::select(std::vector<Card*>* area, int x, int y, bool isDragStart)
 {
-    m_selected->selectionTint = glm::vec3(1,1,1);
-    m_selected->dragging = false;
-    selectedX = -1;
-    selectedY = -1;
+      m_cardSelected.card = area[x][y];
+      m_cardSelected.card->selectionTint = glm::vec3(0.7, 0.7, 0.9);
+      m_cardSelected.card->dragging = isDragStart;
+      m_cardSelected.card->shouldSetOffset = isDragStart;
+      m_cardSelected.area = area;
+      m_cardSelected.x = x;
+      m_cardSelected.y = y;
 }
 
-bool Freecell::isLegalMoveTable(std::vector<Card*>* stack, int src, int dst)
+void Freecell::deselect()
 {
-    if (m_table[dst].size() == 0)
-        return true;
+    if (m_cardSelected.card == nullptr)
+        return;
 
-
-    bool diffColor = stack[src].back()->suit % 2 != m_table[dst].back()->suit % 2;
-    bool nextNumber = stack[src].back()->number == m_table[dst].back()->number - 1;
-
-    return diffColor && nextNumber;
+    m_cardSelected.card->selectionTint = glm::vec3(1, 1, 1);
+    m_cardSelected.card->dragging = false;
+    m_cardSelected.card->shouldSetOffset = false;
+    m_cardSelected.card = nullptr;
+    m_cardSelected.area = nullptr;
+    m_cardSelected.x = -1;
+    m_cardSelected.y = -1;
 }
 
 bool Freecell::isLegalMoveTable(std::vector<Card*>* stack, int srcX, int srcY, int dst)
@@ -150,310 +154,261 @@ bool Freecell::isLegalMoveFoundation(Card* card, int dst)
 
 void Freecell::handleOpenCellsClick(int i, bool isDragStart)
 {
-    if (selectedX != -1)
+    if (m_cardSelected.card == nullptr)
     {
         if (m_openCells[i].size() > 1)
-        {
-            LOG_INFO("Cannot move two cards on open cells");
-            deselect();
-            return;
-        }
-
-        if (selectedY == 20)
-        {
-            m_openCells[i].push_back(m_openCells[selectedX].back());
-            m_openCells[selectedX].pop_back();
-        }
-        else if (selectedY == 30)
-        {
-            m_openCells[i].push_back(m_foundations[selectedX].back());
-            m_foundations[selectedX].pop_back();
-            m_numberOfOpenCells--;
-        }
+            select(m_openCells, i, m_openCells[i].size() - 1, isDragStart);
         else
-        {
+            LOG_INFO("Cannot select empty stack");
 
-            if (selectedY != m_table[selectedX].size() - 1)
-            {
-                LOG_INFO("Cannot move more than two cards at the same time");
-                deselect();
-                return;
-            }
+        return;
+    }
 
-            m_openCells[i].push_back(m_table[selectedX].back());
-            m_table[selectedX].pop_back();
-            m_numberOfOpenCells--;
-        }
+    if (m_openCells[i].size() > 1)
+    {
+        LOG_INFO("Cannot move two cards on open cells");
         deselect();
         return;
     }
 
-    if (m_openCells[i].size() == 1)
+    int col = m_cardSelected.x;
+    if (m_cardSelected.y != ((int) m_cardSelected.area[col].size()) - 1)
     {
-        LOG_INFO("Cannot select empty stack");
+        LOG_INFO("Cannot move two cards at the same time");
+        deselect();
         return;
     }
 
-    m_selected = m_openCells[i].back();
-    m_selected->selectionTint = glm::vec3(0.7, 0.7, 0.9);
-    m_selected->dragging = isDragStart;
-    m_selected->shouldSetOffset = isDragStart;
-    selectedX = i;
-    selectedY = 20;
-    return;
+    m_openCells[i].push_back(m_cardSelected.area[col].back());
+    m_cardSelected.area[col].pop_back();
+
+    if (m_cardSelected.area != m_openCells)
+        m_numberOfOpenCells--;
+
+    deselect();
 }
 
 void Freecell::handleFoundationsClick(int i, bool isDragStart)
 {
-    if (selectedX != -1)
+    if (m_cardSelected.card == nullptr)
     {
-        if (selectedY == 20)
-        {
-            if (!isLegalMoveFoundation(m_openCells[selectedX].back(), i))
-            {
-                LOG_INFO("Invalid foundation move");
-                deselect();
-                return;
-            }
-            m_foundations[i].push_back(m_openCells[selectedX].back());
-            m_openCells[selectedX].pop_back();
-            m_numberOfOpenCells++;
-        }
-        else if (selectedY == 30)
-        {
-            if (!isLegalMoveFoundation(m_foundations[selectedX].back(), i))
-            {
-                LOG_INFO("Invalid foundation move");
-                deselect();
-                return;
-            }
-            m_foundations[i].push_back(m_foundations[selectedX].back());
-            m_foundations[selectedX].pop_back();
-        }
+        if (m_foundations[i].size() > 1)
+            select(m_foundations, i, m_foundations[i].size() - 1, isDragStart);
         else
-        {
-            if (selectedY != m_table[selectedX].size() - 1)
-            {
-                LOG_INFO("Cannot move more than two cards at the same time");
-                deselect();
-                return;
-            }
+            LOG_INFO("Cannot select empty foundations stack");
 
-            if (!isLegalMoveFoundation(m_table[selectedX].back(), i))
-            {
-                LOG_INFO("Invalid foundation move");
-                deselect();
-                return;
-            }
-            m_foundations[i].push_back(m_table[selectedX].back());
-            m_table[selectedX].pop_back();
-        }
+        return;
+    }
+
+    int col = m_cardSelected.x;
+    if (m_cardSelected.y != ((int) m_cardSelected.area[col].size()) - 1)
+    {
+        LOG_INFO("Cannot move two cards at the same time");
         deselect();
         return;
     }
 
-    if (m_foundations[i].size() == 1)
+    if (!isLegalMoveFoundation(m_cardSelected.area[col].back(), i))
     {
-        LOG_INFO("Cannot select empty stack");
+        LOG_INFO("Invalid foundation move");
+        deselect();
         return;
     }
 
-    m_selected = m_foundations[i].back();
-    m_selected->selectionTint = glm::vec3(0.7, 0.7, 0.9);
-    m_selected->dragging = isDragStart;
-    m_selected->shouldSetOffset = isDragStart;
-    selectedX = i;
-    selectedY = 30;
-    return;
+    m_foundations[i].push_back(m_cardSelected.area[col].back());
+    m_cardSelected.area[col].pop_back();
+
+    if (m_cardSelected.area == m_openCells)
+        m_numberOfOpenCells++;
+
+    deselect();
+
 }
 
 void Freecell::handleTableClick(int i, int j, bool isDragStart)
 {
-    if (selectedX != -1)
+    if (m_cardSelected.card == nullptr)
     {
-        if (selectedY == 20)
-        {
-            if (!isLegalMoveTable(m_openCells, selectedX, i))
-            {
-                LOG_INFO("Invalid move");
-                deselect();
-                return;
-            }
-            m_table[i].push_back(m_openCells[selectedX].back());
-            m_openCells[selectedX].pop_back();
-            m_numberOfOpenCells++;
-        }
-        else if (selectedY == 30)
-        {
-            if (!isLegalMoveTable(m_foundations, selectedX, i))
-            {
-                LOG_INFO("Invalid move");
-                deselect();
-                return;
-            }
-            m_table[i].push_back(m_foundations[selectedX].back());
-            m_foundations[selectedX].pop_back();
-        }
+        if (m_table[i].size() > 0)
+            select(m_table, i, j, isDragStart);
         else
-        {
-            if (!isLegalMoveTable(m_table, selectedX, selectedY, i))
-            {
-                LOG_INFO("Invalid move");
-                deselect();
-                return;
-            }
+            LOG_INFO("Cannot select empty table stack");
 
-            auto diff = m_table[selectedX].size() - selectedY;
-            if (m_numberOfOpenCells >= diff - 1)
-            {
-                for (auto n = selectedY; n < m_table[selectedX].size(); n++)
-                {
-                    m_table[i].push_back(m_table[selectedX][n]);
-                }
+        return;
+    }
 
-                for (auto n = 0; n < diff; n++)
-                {
-                    m_table[selectedX].pop_back();
-                }
-            }
-            else
-            {
-                LOG_INFO("Need more open cells");
-                deselect();
-                return;
-            }
-
-            //m_table[i].push_back(m_table[selectedX].back());
-            //m_table[selectedX].pop_back();
-        }
+    int col = m_cardSelected.x;
+    int row = m_cardSelected.y;
+    if (!isLegalMoveTable(m_cardSelected.area, col, m_cardSelected.y, i))
+    {
+        LOG_INFO("Invalid table move");
         deselect();
         return;
     }
 
-    if (j == -1)
+    // multiple cards move
+    if (row != ((int) m_cardSelected.area[col].size()) - 1)
     {
-        LOG_INFO("Cannot select empty stack");
+        int diff = ((int)m_cardSelected.area[col].size()) - row;
+        if (m_numberOfOpenCells >= diff - 1)
+        {
+            for (int n = row; n < (int) m_cardSelected.area[col].size(); n++)
+            {
+                m_table[i].push_back(m_cardSelected.area[col][n]);
+            }
+
+            for (int n = 0; n < diff; n++)
+            {
+                m_cardSelected.area[col].pop_back();
+            }
+        }
+        else
+            LOG_INFO("Need more open cells");
+
+        deselect();
         return;
     }
 
-    m_selected = m_table[i][j];
-    m_selected->selectionTint = glm::vec3(0.7, 0.7, 0.9);
-    m_selected->dragging = isDragStart;
-    m_selected->shouldSetOffset = isDragStart;
-    selectedX = i;
-    selectedY = j;
-    return;
+
+    m_table[i].push_back(m_cardSelected.area[col].back());
+    m_cardSelected.area[col].pop_back();
+
+    if (m_cardSelected.area == m_openCells)
+        m_numberOfOpenCells++;
+
+    deselect();
+
 }
 
 void Freecell::processInput(double xPos, double yPos, bool isDraging, bool isDragStart)
 {
-    int cardSize = 100;
-    //int cardHeight = 180;
+    int i = getIndexX(8, xPos);
+    if (i == -1)
+    {
+        if (m_cardSelected.card != nullptr)
+            deselect();
+        return;
+    }
 
-    for (int i = 0; i < 8; i++)
+    // top area
+    if (yPos > 579 - 74 && yPos < 579 + 74)
     {
-        if (xPos > m_map[i][0].x - 50 && xPos < m_map[i][0].x - 50 + cardSize)
+        // open cells
+        if (xPos < 640)
+            handleOpenCellsClick(i, isDragStart);
+        else
+            handleFoundationsClick(i - 4, isDragStart);
+    }
+    else
+    {
+        int stackSize = m_table[i].size();
+        int j = getIndexY(stackSize, i, yPos);
+        if (j == -1)
         {
-            if (yPos > 579 - 74 && yPos < 579 + 74)
-            {
-                if (xPos < 700)
-                {
-                    handleOpenCellsClick(i, isDragStart);
-                    return;
-                }
-                else
-                {
-                    handleFoundationsClick(i - 4, isDragStart);
-                    return;
-                }
-            }
-            else
-            {
-                int stackSize = m_table[i].size();
-                for (int j = 0; j < stackSize - 1; j++)
-                {
-                    if (yPos < m_map[i][j].y + 74 && yPos > m_map[i][j].y + 30)
-                    {
-                        handleTableClick(i, j, isDragStart);
-                        return;
-                    }
-                }
-                if (stackSize > 0 && yPos < m_map[i][stackSize - 1].y + 74 && yPos > m_map[i][stackSize - 1].y - 74)
-                {
-                    handleTableClick(i, stackSize - 1, isDragStart);
-                    return;
-                }
-                else if (stackSize == 0)
-                {
-                    handleTableClick(i, stackSize - 1, isDragStart);
-                    return;
-                }
-            }
+            if (m_cardSelected.card != nullptr)
+                deselect();
+            return;
         }
+
+        handleTableClick(i, j, isDragStart);
     }
-    if (m_selected != nullptr)
+}
+
+int Freecell::getIndexX(int n, double xPos)
+{
+    for (int i = 0; i < n; i++)
     {
-        deselect();
+        if (xPos > m_map[i][0].x - 50 && xPos < m_map[i][0].x + 50)
+            return i;
     }
+    return -1;
+}
+
+int Freecell::getIndexY(int n, int col, double yPos)
+{
+    if (n == 0)
+    {
+        if (yPos < m_map[col][0].y + 74 && yPos > m_map[col][0].y - 74)
+            return 0;
+        else
+            return -1;
+    }
+
+    for (int i = 0; i < n - 1; i++)
+    {
+        if (yPos < m_map[col][i].y + 74 && yPos > m_map[col][i].y + 30)
+            return i;
+    }
+
+
+    if (yPos < m_map[col][n - 1].y + 74 && yPos > m_map[col][n - 1].y - 74)
+        return n - 1;
+
+    return -1;
 }
 
 void Freecell::processDoubleClick(double xPos, double yPos)
 {
-    int cardSize = 100;
-    //int cardHeight = 180;
-
-    for (int i = 0; i < 8; i++)
+    // top area
+    if (yPos > 579 - 74 && yPos < 579 + 74)
     {
-        if (xPos > m_map[i][0].x - 50 && xPos < m_map[i][0].x - 50 + cardSize)
+        // open cells
+        if (xPos < 640)
         {
-            if (yPos > 579 - 74 && yPos < 579 + 74)
+            int i = getIndexX(4, xPos);
+            if (i == -1)
+                return;
+
+            if (m_openCells[i].size() == 1)
             {
-                if (xPos < 700)
-                {
-                    if (m_openCells[i].size() == 1)
-                    {
-                        LOG_INFO("Cannot double click empty stack");
-                        return;
-                    }
-                    if (moveCardToFoundations(m_openCells[i]))
-                        m_numberOfOpenCells++;
-                }
-                else
-                {
-                    LOG_INFO("No function for double click on foundations");
-                }
+                LOG_WARN("No action for double click an empty open cells stack");
+                return;
             }
-            else
-            {
-                int stackSize = m_table[i].size();
-                for (int j = 0; j < stackSize - 1; j++)
-                {
-                    if (yPos < m_map[i][j].y + 74 && yPos > m_map[i][j].y + 30)
-                    {
-                        LOG_INFO("No function for double click on middle table stack");
-                        return;
-                    }
-                }
-                if (stackSize > 0 && yPos < m_map[i][stackSize - 1].y + 74 && yPos > m_map[i][stackSize - 1].y - 74)
-                {
-                    if(!moveCardToFoundations(m_table[i]))
-                    {
-                        if(moveCardToOpenCells(m_table[i]))
-                            m_numberOfOpenCells--;
-                    }
-                }
-                else if (stackSize == 0)
-                {
-                    LOG_INFO("No function for double click on empty table stack");
-                }
-            }
+
+            if (moveCardToFoundations(m_openCells[i]))
+                m_numberOfOpenCells++;
+        }
+        // foundations
+        else
+        {
+            LOG_WARN("No action for double click on foundations");
+        }
+    }
+    else
+    {
+        int i = getIndexX(8, xPos);
+        if (i == -1)
+            return;
+
+        int stackSize = m_table[i].size();
+        int j = getIndexY(stackSize, i, yPos);
+        if (j == -1)
+            return;
+
+        if (j < stackSize - 1)
+        {
+            LOG_WARN("No action for double click on a middle card of a table stack");
+            return;
+        }
+
+        if (stackSize == 0)
+        {
+            LOG_WARN("No action for double click on an empty table stack");
+            return;
+        }
+
+
+        if(!moveCardToFoundations(m_table[i]))
+        {
+            if(moveCardToOpenCells(m_table[i]))
+                m_numberOfOpenCells--;
         }
     }
 }
 
 bool Freecell::moveCardToFoundations(std::vector<Card*>& src)
 {
-    for (uint8_t i  = 0; i < 4; i++)
+    for (int i  = 0; i < 4; i++)
     {
          if (isLegalMoveFoundation(src.back(), i))
          {
@@ -471,7 +426,7 @@ bool Freecell::moveCardToFoundations(std::vector<Card*>& src)
 
 bool Freecell::moveCardToOpenCells(std::vector<Card*>& src)
 {
-    for (uint8_t i  = 0; i < 4; i++)
+    for (int i  = 0; i < 4; i++)
     {
         if (m_openCells[i].size() == 1)
         {
@@ -481,7 +436,7 @@ bool Freecell::moveCardToOpenCells(std::vector<Card*>& src)
         }
     }
 
-    LOG_INFO("No valid move for openCells");
+    LOG_INFO("No valid move for open cells");
     deselect();
     return false;
 }
