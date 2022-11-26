@@ -10,6 +10,8 @@
 
 #include "dispatcher.h"
 #include "event.h"
+#include "freecell.h"
+#include "renderer.h"
 #include "resource_manager.h"
 #include "shader.h"
 #include "timer.h"
@@ -108,10 +110,7 @@ void Solitaire::mainLoop()
 
         m_window->processInput();
 
-        m_renderer->render(m_freecell.m_map, m_freecell.m_table);
-        m_renderer->renderOpenCellsAndFoundation(m_freecell.m_openCellsMap, m_freecell.m_openCells);
-        m_renderer->renderOpenCellsAndFoundation(m_freecell.m_foundationMap, m_freecell.m_foundations);
-        m_renderer->drawCall();
+        m_renderer->render(m_freecell.board(), RenderMode::Shaded);
         m_uiRenderer->render();
 
         std::this_thread::sleep_until(target_fps);
@@ -123,7 +122,6 @@ void Solitaire::mainLoop()
 
 void Solitaire::terminate()
 {
-    m_renderer->terminate();
     m_window->terminate();
 
     delete m_renderer;

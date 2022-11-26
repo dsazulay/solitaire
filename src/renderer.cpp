@@ -15,38 +15,84 @@ void Renderer::init()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     m_proj = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f, -1.0f, 1.0f);
-    m_shader = ResourceManager::loadShader("../../resources/unlit.vert", "../../resources/unlit.frag", "Unlit");
+    m_unlitShader = ResourceManager::loadShader("../../resources/unlit.vert",
+                                           "../../resources/unlit.frag", "Unlit");
+    m_wireframeShader = ResourceManager::loadShader("../../resources/unlit.vert",
+                                                    "../../resources/wireframe.frag",
+                                                    "Wireframe");
     m_texture = ResourceManager::loadTexture("../../resources/cards.png", "cards");
 
     glActiveTexture(GL_TEXTURE0);
     m_texture->bind();
 
-    m_shader->use();
-    m_shader->setMat4("u_proj", m_proj);
-    m_shader->setInt("u_main_tex", 0);
+    m_wireframeShader->use();
+    m_wireframeShader->setMat4("u_proj", m_proj);
+
+    m_unlitShader->use();
+    m_unlitShader->setMat4("u_proj", m_proj);
+    m_unlitShader->setInt("u_main_tex", 0);
 }
 
-void Renderer::render(const glm::vec2 (&map)[8][12], std::vector<Card*>* deck)
+void Renderer::render(const Board& board, RenderMode mode)
 {
     clear();
 
-    m_instanceCounter = 0;
-
-    for (int j = 0; j < 8; j ++)
+    if (mode == RenderMode::Shaded || mode == RenderMode::ShadedWireframe)
     {
-        for (int i = 0; i < (int) deck[j].size(); i++)
+        m_shader = m_unlitShader;
+        m_instanceCounter = 0;
+        m_shader->use();
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+        for (int j = 0; j < 8; j ++)
         {
-            renderSprite(map[j][i], deck[j].at(i));
+            for (int i = 0; i < (int) board.table[j].size(); i++)
+            {
+                renderSprite(board.tableMap[j][i], board.table[j].at(i));
+            }
         }
-    }
-}
 
-void Renderer::renderOpenCellsAndFoundation(const glm::vec2 (&map)[4], std::vector<Card*>* pile)
-{
-    for (int i = 0; i < 4; i++)
-    {
-        renderSprite(map[i], pile[i].back());
+        for (int i = 0; i < 4; i++)
+        {
+            renderSprite(board.openCellsMap[i], board.openCells[i].back());
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            renderSprite(board.foundationMap[i], board.foundations[i].back());
+        }
+
+        drawCall();
     }
+
+    if (mode == RenderMode::Wireframe || mode == RenderMode::ShadedWireframe)
+    {
+        m_shader = m_wireframeShader;
+        m_instanceCounter = 0;
+        m_shader->use();
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+        for (int j = 0; j < 8; j ++)
+        {
+            for (int i = 0; i < (int) board.table[j].size(); i++)
+            {
+                renderSprite(board.tableMap[j][i], board.table[j].at(i));
+            }
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            renderSprite(board.openCellsMap[i], board.openCells[i].back());
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            renderSprite(board.foundationMap[i], board.foundations[i].back());
+        }
+
+        drawCall();
+    }
+
 }
 
 void Renderer::renderSprite(glm::vec2 pos, Card* card)
@@ -83,11 +129,6 @@ void Renderer::drawCall()
     glBindVertexArray(0);
 }
 
-
-void Renderer::terminate()
-{
-
-}
 
 void Renderer::initMesh()
 {

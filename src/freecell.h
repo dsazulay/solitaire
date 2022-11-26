@@ -1,8 +1,20 @@
 #pragma once
 
-#include "renderer.h"
 #include <vector>
 #include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+
+struct Card
+{
+    unsigned int number;
+    unsigned int suit;
+    unsigned int offsetX;
+    unsigned int offsetY;
+    glm::vec3 selectionTint;
+    bool dragging{};
+    bool shouldSetOffset{};
+};
+
 
 struct CardSelection
 {
@@ -12,22 +24,24 @@ struct CardSelection
     std::vector<Card*>* area{};
 };
 
+struct Board
+{
+    glm::vec2 tableMap[8][12];
+    glm::vec2 openCellsMap[4];
+    glm::vec2 foundationMap[4];
+
+    std::vector<Card*> table[8];
+    std::vector<Card*> openCells[4];
+    std::vector<Card*> foundations[4];
+};
+
 class Freecell
 {
 public:
     void init();
-    void mainLoop();
-    void terminate();
     void processInput(double xPos, double yPos, bool isDraging, bool isDragStart);
     void processDoubleClick(double xPos, double yPos);
-
-    glm::vec2 m_map[8][12];
-    glm::vec2 m_openCellsMap[4];
-    glm::vec2 m_foundationMap[4];
-
-    std::vector<Card*> m_table[8];
-    std::vector<Card*> m_openCells[4];
-    std::vector<Card*> m_foundations[4];
+    Board& board();
 
 private:
     void setBoardLayout();
@@ -59,4 +73,5 @@ private:
     int m_numberOfOpenCells;
 
     CardSelection m_cardSelected{};
+    Board m_board{};
 };

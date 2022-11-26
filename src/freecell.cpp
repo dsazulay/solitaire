@@ -23,19 +23,19 @@ void Freecell::setBoardLayout()
     {
         for (int j = 0; j < 12; j++)
         {
-            m_map[i][j] = glm::vec2(initPosX + i * offsetX, initPosY - j * offsetY);
+            m_board.tableMap[i][j] = glm::vec2(initPosX + i * offsetX, initPosY - j * offsetY);
         }
     }
 
     for (int i = 0; i < 4; i++)
     {
-        m_openCellsMap[i] = glm::vec2(initPosX + i * offsetX, 600);
+        m_board.openCellsMap[i] = glm::vec2(initPosX + i * offsetX, 600);
     }
 
     initPosX += 4 * offsetX;
     for (int i = 0; i < 4; i++)
     {
-        m_foundationMap[i] = glm::vec2(initPosX + i * offsetX, 600);
+        m_board.foundationMap[i] = glm::vec2(initPosX + i * offsetX, 600);
     }
 }
 
@@ -46,7 +46,7 @@ void Freecell::fillTable()
     {
         for (int j = 0; j < 8; j++)
         {
-            m_table[j].push_back(&m_deck.at(index++));
+            m_board.table[j].push_back(&m_deck.at(index++));
             if (index > 51)
                 return;
         }
@@ -86,8 +86,8 @@ void Freecell::createOpenCellsAndFoundations()
 {
     for (int i = 0; i < 4; i++)
     {
-        m_openCells[i].push_back(&m_deck.at(52));
-        m_foundations[i].push_back(&m_deck.at(53));
+        m_board.openCells[i].push_back(&m_deck.at(52));
+        m_board.foundations[i].push_back(&m_deck.at(53));
     }
 }
 
@@ -105,6 +105,11 @@ void Freecell::shuffle()
         int j = rand() % (i + 1);
         swap(i, j);
     }
+}
+
+Board& Freecell::board()
+{
+    return m_board;
 }
 
 void Freecell::select(std::vector<Card*>* area, int x, int y, bool isDragStart)
@@ -134,37 +139,37 @@ void Freecell::deselect()
 
 bool Freecell::isLegalMoveTable(std::vector<Card*>* stack, int srcX, int srcY, int dst)
 {
-    if (m_table[dst].size() == 0)
+    if (m_board.table[dst].size() == 0)
         return true;
 
-    bool diffColor = stack[srcX][srcY]->suit % 2 != m_table[dst].back()->suit % 2;
-    bool nextNumber = stack[srcX][srcY]->number == m_table[dst].back()->number - 1;
+    bool diffColor = stack[srcX][srcY]->suit % 2 != m_board.table[dst].back()->suit % 2;
+    bool nextNumber = stack[srcX][srcY]->number == m_board.table[dst].back()->number - 1;
 
     return diffColor && nextNumber;
 }
 
 bool Freecell::isLegalMoveFoundation(Card* card, int dst)
 {
-    if (m_foundations[dst].size() == 1)
+    if (m_board.foundations[dst].size() == 1)
         return card->number == 0;
 
-    return m_foundations[dst].back()->number == card->number - 1
-        && m_foundations[dst].back()->suit == card->suit;
+    return m_board.foundations[dst].back()->number == card->number - 1
+        && m_board.foundations[dst].back()->suit == card->suit;
 }
 
 void Freecell::handleOpenCellsClick(int i, bool isDragStart)
 {
     if (m_cardSelected.card == nullptr)
     {
-        if (m_openCells[i].size() > 1)
-            select(m_openCells, i, m_openCells[i].size() - 1, isDragStart);
+        if (m_board.openCells[i].size() > 1)
+            select(m_board.openCells, i, m_board.openCells[i].size() - 1, isDragStart);
         else
             LOG_INFO("Cannot select empty open cells stack");
 
         return;
     }
 
-    if (m_openCells[i].size() > 1)
+    if (m_board.openCells[i].size() > 1)
     {
         LOG_INFO("Open cell occupied");
         deselect();
@@ -179,10 +184,10 @@ void Freecell::handleOpenCellsClick(int i, bool isDragStart)
         return;
     }
 
-    m_openCells[i].push_back(m_cardSelected.area[col].back());
+    m_board.openCells[i].push_back(m_cardSelected.area[col].back());
     m_cardSelected.area[col].pop_back();
 
-    if (m_cardSelected.area != m_openCells)
+    if (m_cardSelected.area != m_board.openCells)
         m_numberOfOpenCells--;
 
     deselect();
@@ -192,8 +197,8 @@ void Freecell::handleFoundationsClick(int i, bool isDragStart)
 {
     if (m_cardSelected.card == nullptr)
     {
-        if (m_foundations[i].size() > 1)
-            select(m_foundations, i, m_foundations[i].size() - 1, isDragStart);
+        if (m_board.foundations[i].size() > 1)
+            select(m_board.foundations, i, m_board.foundations[i].size() - 1, isDragStart);
         else
             LOG_INFO("Cannot select empty foundations stack");
 
@@ -215,10 +220,10 @@ void Freecell::handleFoundationsClick(int i, bool isDragStart)
         return;
     }
 
-    m_foundations[i].push_back(m_cardSelected.area[col].back());
+    m_board.foundations[i].push_back(m_cardSelected.area[col].back());
     m_cardSelected.area[col].pop_back();
 
-    if (m_cardSelected.area == m_openCells)
+    if (m_cardSelected.area == m_board.openCells)
         m_numberOfOpenCells++;
 
     deselect();
@@ -229,8 +234,8 @@ void Freecell::handleTableClick(int i, int j, bool isDragStart)
 {
     if (m_cardSelected.card == nullptr)
     {
-        if (m_table[i].size() > 0)
-            select(m_table, i, j, isDragStart);
+        if (m_board.table[i].size() > 0)
+            select(m_board.table, i, j, isDragStart);
         else
             LOG_INFO("Cannot select empty table stack");
 
@@ -254,7 +259,7 @@ void Freecell::handleTableClick(int i, int j, bool isDragStart)
         {
             for (int n = row; n < (int) m_cardSelected.area[col].size(); n++)
             {
-                m_table[i].push_back(m_cardSelected.area[col][n]);
+                m_board.table[i].push_back(m_cardSelected.area[col][n]);
             }
 
             for (int n = 0; n < diff; n++)
@@ -270,10 +275,10 @@ void Freecell::handleTableClick(int i, int j, bool isDragStart)
     }
 
 
-    m_table[i].push_back(m_cardSelected.area[col].back());
+    m_board.table[i].push_back(m_cardSelected.area[col].back());
     m_cardSelected.area[col].pop_back();
 
-    if (m_cardSelected.area == m_openCells)
+    if (m_cardSelected.area == m_board.openCells)
         m_numberOfOpenCells++;
 
     deselect();
@@ -284,7 +289,7 @@ int Freecell::getIndexX(int n, double xPos)
 {
     for (int i = 0; i < n; i++)
     {
-        if (xPos > m_map[i][0].x - 50 && xPos < m_map[i][0].x + 50)
+        if (xPos > m_board.tableMap[i][0].x - 50 && xPos < m_board.tableMap[i][0].x + 50)
             return i;
     }
     return -1;
@@ -294,7 +299,7 @@ int Freecell::getIndexY(int n, int col, double yPos)
 {
     if (n == 0)
     {
-        if (yPos < m_map[col][0].y + 74 && yPos > m_map[col][0].y - 74)
+        if (yPos < m_board.tableMap[col][0].y + 74 && yPos > m_board.tableMap[col][0].y - 74)
             return 0;
         else
             return -1;
@@ -302,12 +307,12 @@ int Freecell::getIndexY(int n, int col, double yPos)
 
     for (int i = 0; i < n - 1; i++)
     {
-        if (yPos < m_map[col][i].y + 74 && yPos > m_map[col][i].y + 30)
+        if (yPos < m_board.tableMap[col][i].y + 74 && yPos > m_board.tableMap[col][i].y + 30)
             return i;
     }
 
 
-    if (yPos < m_map[col][n - 1].y + 74 && yPos > m_map[col][n - 1].y - 74)
+    if (yPos < m_board.tableMap[col][n - 1].y + 74 && yPos > m_board.tableMap[col][n - 1].y - 74)
         return n - 1;
 
     return -1;
@@ -334,7 +339,7 @@ void Freecell::processInput(double xPos, double yPos, bool isDraging, bool isDra
     }
     else
     {
-        int stackSize = m_table[i].size();
+        int stackSize = m_board.table[i].size();
         int j = getIndexY(stackSize, i, yPos);
         if (j == -1)
         {
@@ -359,13 +364,13 @@ void Freecell::processDoubleClick(double xPos, double yPos)
             if (i == -1)
                 return;
 
-            if (m_openCells[i].size() == 1)
+            if (m_board.openCells[i].size() == 1)
             {
                 LOG_WARN("No action for double click an empty open cells stack");
                 return;
             }
 
-            if (moveCardToFoundations(m_openCells[i]))
+            if (moveCardToFoundations(m_board.openCells[i]))
                 m_numberOfOpenCells++;
         }
         // foundations
@@ -380,7 +385,7 @@ void Freecell::processDoubleClick(double xPos, double yPos)
         if (i == -1)
             return;
 
-        int stackSize = m_table[i].size();
+        int stackSize = m_board.table[i].size();
         int j = getIndexY(stackSize, i, yPos);
         if (j == -1)
             return;
@@ -398,9 +403,9 @@ void Freecell::processDoubleClick(double xPos, double yPos)
         }
 
 
-        if(!moveCardToFoundations(m_table[i]))
+        if(!moveCardToFoundations(m_board.table[i]))
         {
-            if(moveCardToOpenCells(m_table[i]))
+            if(moveCardToOpenCells(m_board.table[i]))
                 m_numberOfOpenCells--;
         }
     }
@@ -412,7 +417,7 @@ bool Freecell::moveCardToFoundations(std::vector<Card*>& src)
     {
          if (isLegalMoveFoundation(src.back(), i))
          {
-             m_foundations[i].push_back(src.back());
+             m_board.foundations[i].push_back(src.back());
              src.pop_back();
              return true;
          }
@@ -428,9 +433,9 @@ bool Freecell::moveCardToOpenCells(std::vector<Card*>& src)
 {
     for (int i  = 0; i < 4; i++)
     {
-        if (m_openCells[i].size() == 1)
+        if (m_board.openCells[i].size() == 1)
         {
-            m_openCells[i].push_back(src.back());
+            m_board.openCells[i].push_back(src.back());
             src.pop_back();
             return true;
         }

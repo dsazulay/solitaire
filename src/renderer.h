@@ -1,5 +1,6 @@
 #pragma once
 
+#include "freecell.h"
 #include "shader.h"
 #include "texture.h"
 
@@ -7,34 +8,30 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
-struct Card
+enum class RenderMode
 {
-    unsigned int number;
-    unsigned int suit;
-    unsigned int offsetX;
-    unsigned int offsetY;
-    glm::vec3 selectionTint;
-    bool dragging{};
-    bool shouldSetOffset{};
+    Shaded,
+    Wireframe,
+    ShadedWireframe
 };
-
 
 class Renderer
 {
 public:
     void init();
-    void render(const glm::vec2 (&map)[8][12], std::vector<Card*>* deck);
-    void renderOpenCellsAndFoundation(const glm::vec2 (&map)[4], std::vector<Card*>* pile);
-    void drawCall();
-    void terminate();
-    void clear();
-    void setDragOffset(glm::vec2 pos);
+    void render(const Board& board, RenderMode mode);
+
 private:
     void initMesh();
     void renderSprite(glm::vec2 pos, Card* card);
+    void drawCall();
+    void clear();
+    void setDragOffset(glm::vec2 pos);
 
     glm::mat4 m_proj;
     Shader* m_shader;
+    Shader* m_unlitShader;
+    Shader* m_wireframeShader;
     Texture* m_texture;
 
     glm::vec2 dragOffset;
