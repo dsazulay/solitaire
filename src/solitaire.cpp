@@ -1,9 +1,11 @@
 #include "solitaire.h"
 
-#include <functional>
 #include <glm/vec2.hpp>
 
+#include <functional>
 #include <vector>
+#include <thread>
+#include <chrono>
 #include <time.h>
 
 #include "dispatcher.h"
@@ -13,9 +15,6 @@
 #include "timer.h"
 #include "ui_renderer.h"
 #include "utils/log.h"
-
-
-float Solitaire::deltaTime;
 
 void Solitaire::onMouseClick(const Event& e)
 {
@@ -96,8 +95,7 @@ void Solitaire::init()
     Dispatcher::instance().subscribe(MouseDragEndEvent::descriptor,
         std::bind(&Solitaire::onMouseDragEnd, this, std::placeholders::_1));
 
-
-    glfwSwapInterval(1); // Enable vsync
+    //glfwSwapInterval(1); // Enable vsync
 }
 
 void Solitaire::mainLoop()
@@ -105,6 +103,8 @@ void Solitaire::mainLoop()
     while (!m_window->shouldClose())
     {
         Timer::update();
+        // TODO: change harcoded value for value selected by user
+        auto target_fps = std::chrono::steady_clock::now() + std::chrono::milliseconds(14);
 
         m_window->processInput();
 
@@ -114,6 +114,7 @@ void Solitaire::mainLoop()
         m_renderer->drawCall();
         m_uiRenderer->render();
 
+        std::this_thread::sleep_until(target_fps);
 
         m_window->swapBuffers();
         m_window->pollEvents();

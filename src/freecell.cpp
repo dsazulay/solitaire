@@ -159,14 +159,14 @@ void Freecell::handleOpenCellsClick(int i, bool isDragStart)
         if (m_openCells[i].size() > 1)
             select(m_openCells, i, m_openCells[i].size() - 1, isDragStart);
         else
-            LOG_INFO("Cannot select empty stack");
+            LOG_INFO("Cannot select empty open cells stack");
 
         return;
     }
 
     if (m_openCells[i].size() > 1)
     {
-        LOG_INFO("Cannot move two cards on open cells");
+        LOG_INFO("Open cell occupied");
         deselect();
         return;
     }
@@ -280,6 +280,39 @@ void Freecell::handleTableClick(int i, int j, bool isDragStart)
 
 }
 
+int Freecell::getIndexX(int n, double xPos)
+{
+    for (int i = 0; i < n; i++)
+    {
+        if (xPos > m_map[i][0].x - 50 && xPos < m_map[i][0].x + 50)
+            return i;
+    }
+    return -1;
+}
+
+int Freecell::getIndexY(int n, int col, double yPos)
+{
+    if (n == 0)
+    {
+        if (yPos < m_map[col][0].y + 74 && yPos > m_map[col][0].y - 74)
+            return 0;
+        else
+            return -1;
+    }
+
+    for (int i = 0; i < n - 1; i++)
+    {
+        if (yPos < m_map[col][i].y + 74 && yPos > m_map[col][i].y + 30)
+            return i;
+    }
+
+
+    if (yPos < m_map[col][n - 1].y + 74 && yPos > m_map[col][n - 1].y - 74)
+        return n - 1;
+
+    return -1;
+}
+
 void Freecell::processInput(double xPos, double yPos, bool isDraging, bool isDragStart)
 {
     int i = getIndexX(8, xPos);
@@ -312,39 +345,6 @@ void Freecell::processInput(double xPos, double yPos, bool isDraging, bool isDra
 
         handleTableClick(i, j, isDragStart);
     }
-}
-
-int Freecell::getIndexX(int n, double xPos)
-{
-    for (int i = 0; i < n; i++)
-    {
-        if (xPos > m_map[i][0].x - 50 && xPos < m_map[i][0].x + 50)
-            return i;
-    }
-    return -1;
-}
-
-int Freecell::getIndexY(int n, int col, double yPos)
-{
-    if (n == 0)
-    {
-        if (yPos < m_map[col][0].y + 74 && yPos > m_map[col][0].y - 74)
-            return 0;
-        else
-            return -1;
-    }
-
-    for (int i = 0; i < n - 1; i++)
-    {
-        if (yPos < m_map[col][i].y + 74 && yPos > m_map[col][i].y + 30)
-            return i;
-    }
-
-
-    if (yPos < m_map[col][n - 1].y + 74 && yPos > m_map[col][n - 1].y - 74)
-        return n - 1;
-
-    return -1;
 }
 
 void Freecell::processDoubleClick(double xPos, double yPos)

@@ -22,7 +22,6 @@ public:
     Solitaire();
     void run();
 
-    static float deltaTime;
 private:
     void init();
     void mainLoop();
