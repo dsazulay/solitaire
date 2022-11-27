@@ -11,8 +11,8 @@
 
 void Renderer::init()
 {
-    //glEnable(GL_DEPTH_TEST);
-    //glDepthFunc(GL_LEQUAL);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     m_proj = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f, -1.0f, 1.0f);
     m_unlitShader = ResourceManager::loadShader("../../resources/unlit.vert",
@@ -167,7 +167,7 @@ void Renderer::renderSprite(glm::vec2 pos, Card* card)
             setDragOffset(pos);
             card->shouldSetOffset = false;
         }
-        model = glm::translate(model, glm::vec3(mousePos - dragOffset, 0.0));
+        model = glm::translate(model, glm::vec3(mousePos - dragOffset, 0.0001));
     }
     else
     {
