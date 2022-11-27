@@ -231,6 +231,9 @@ void Freecell::handleFoundationsClick(int i, bool isDragStart)
 
     deselect();
 
+    if (checkWin())
+        LOG_INFO("You Won!");
+
 }
 
 bool Freecell::checkSequence(int i, int j)
@@ -244,6 +247,17 @@ bool Freecell::checkSequence(int i, int j)
         bool nextNumber = stack[n]->number == stack[n - 1]->number - 1;
 
         if (!(diffColor && nextNumber))
+            return false;
+    }
+
+    return true;
+}
+
+bool Freecell::checkWin()
+{
+    for (int i = 0; i < 8; i++)
+    {
+        if (!checkSequence(i, 0))
             return false;
     }
 
@@ -405,6 +419,9 @@ void Freecell::processDoubleClick(double xPos, double yPos)
 
             if (moveCardToFoundations(m_board.openCells[i]))
                 m_numberOfOpenCells++;
+
+            if (checkWin())
+                LOG_INFO("You Won!");
         }
         // foundations
         else
@@ -440,6 +457,11 @@ void Freecell::processDoubleClick(double xPos, double yPos)
         {
             if(moveCardToOpenCells(m_board.table[i]))
                 m_numberOfOpenCells--;
+        }
+        else
+        {
+            if (checkWin())
+                LOG_INFO("You Won!");
         }
     }
 }
