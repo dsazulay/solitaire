@@ -3,6 +3,7 @@
 #include "freecell.h"
 #include "shader.h"
 #include "texture.h"
+#include "model.h"
 
 #include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
@@ -33,6 +34,7 @@ private:
     Shader* m_unlitShader;
     Shader* m_wireframeShader;
     Texture* m_texture;
+    Model* m_model;
 
     glm::vec2 dragOffset;
 

@@ -1,27 +1,31 @@
 #include "renderer.h"
 #include "glad/glad.h"
 #include "glm/ext/matrix_clip_space.hpp"
-#include "glm/ext/matrix_transform.hpp"
+#include <glm/gtc/matrix_transform.hpp>
+#include "model.h"
 #include "resource_manager.h"
 #include "utils/log.h"
 #include "window.h"
+#include <cstddef>
 #include <vector>
 
 void Renderer::init()
 {
-    initMesh();
     //glEnable(GL_DEPTH_TEST);
     //glDepthFunc(GL_LEQUAL);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     m_proj = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f, -1.0f, 1.0f);
     m_unlitShader = ResourceManager::loadShader("../../resources/unlit.vert",
-                                           "../../resources/unlit.frag", "Unlit");
+                                           "../../resources/unlit.frag", "UnlitShader");
     m_wireframeShader = ResourceManager::loadShader("../../resources/unlit.vert",
                                                     "../../resources/wireframe.frag",
-                                                    "Wireframe");
-    m_texture = ResourceManager::loadTexture("../../resources/cards.png", "cards");
+                                                    "WireframeShader");
+    m_texture = ResourceManager::loadTexture("../../resources/cards.png", "CardTex");
 
+    m_model = ResourceManager::loadModel("../../resources/card.obj", "CardModel");
+
+    initMesh();
     glActiveTexture(GL_TEXTURE0);
     m_texture->bind();
 
@@ -30,7 +34,7 @@ void Renderer::init()
 
     m_unlitShader->use();
     m_unlitShader->setMat4("u_proj", m_proj);
-    m_unlitShader->setInt("u_main_tex", 0);
+    m_unlitShader->setInt("umain_tex", 0);
 }
 
 void Renderer::render(const Board& board, RenderMode mode)
@@ -112,7 +116,7 @@ void Renderer::renderSprite(glm::vec2 pos, Card* card)
     {
         model = glm::translate(model, glm::vec3(pos.x, pos.y, 0));
     }
-    model = glm::scale(model, glm::vec3(80, 80, 1));
+    model = glm::scale(model, glm::vec3(76, 76, 1));
 
     m_shader->setMat4("u_model[" + std::to_string(m_instanceCounter) + "]", model);
     m_shader->setVec2("u_offset[" + std::to_string(m_instanceCounter) + "]", card->offsetX, card->offsetY);
@@ -125,7 +129,7 @@ void Renderer::renderSprite(glm::vec2 pos, Card* card)
 void Renderer::drawCall()
 {
     glBindVertexArray(VAO);
-    glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, m_instanceCounter);
+    glDrawElementsInstanced(GL_TRIANGLES, m_model->indices.size(), GL_UNSIGNED_INT, nullptr, m_instanceCounter);
     glBindVertexArray(0);
 }
 
@@ -139,16 +143,16 @@ void Renderer::initMesh()
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(m_vertices), m_vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, m_model->vertices.size() * sizeof(Vertex), &m_model->vertices[0], GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(m_indices), m_indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_model->indices.size() * sizeof(int), &m_model->indices[0], GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
 
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
 
 }
 
