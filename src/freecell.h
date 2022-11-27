@@ -51,6 +51,8 @@ private:
     void shuffle();
     void fillTable();
 
+    bool checkSequence(int i, int j);
+
     bool isLegalMoveTable(std::vector<Card*>* stack, int srcX, int srcY, int dst);
     bool isLegalMoveFoundation(Card* card, int dst);
 

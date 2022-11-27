@@ -84,7 +84,7 @@ void Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int
 
     else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
     {
-        MouseDragStartEvent dragEndEvent(xPos, yPos);
+        MouseDragEndEvent dragEndEvent(xPos, yPos);
         Dispatcher::instance().post(dragEndEvent);
 
         float clickTime = (float) glfwGetTime();

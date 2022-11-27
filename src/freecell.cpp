@@ -161,6 +161,9 @@ void Freecell::handleOpenCellsClick(int i, bool isDragStart)
 {
     if (m_cardSelected.card == nullptr)
     {
+        if (!isDragStart)
+            return;
+
         if (m_board.openCells[i].size() > 1)
             select(m_board.openCells, i, m_board.openCells[i].size() - 1, isDragStart);
         else
@@ -197,6 +200,9 @@ void Freecell::handleFoundationsClick(int i, bool isDragStart)
 {
     if (m_cardSelected.card == nullptr)
     {
+        if (!isDragStart)
+            return;
+
         if (m_board.foundations[i].size() > 1)
             select(m_board.foundations, i, m_board.foundations[i].size() - 1, isDragStart);
         else
@@ -230,15 +236,45 @@ void Freecell::handleFoundationsClick(int i, bool isDragStart)
 
 }
 
+bool Freecell::checkSequence(int i, int j)
+{
+    std::vector<Card*> stack = m_board.table[i];
+    int currentCard = ((int)stack.size()) - 1;
+
+    for (int n = currentCard; n > j; n--)
+    {
+        bool diffColor = stack[n]->suit % 2 != stack[n - 1]->suit % 2;
+        bool nextNumber = stack[n]->number == stack[n - 1]->number - 1;
+
+        if (!(diffColor && nextNumber))
+            return false;
+    }
+
+    return true;
+}
+
 void Freecell::handleTableClick(int i, int j, bool isDragStart)
 {
     if (m_cardSelected.card == nullptr)
     {
-        if (m_board.table[i].size() > 0)
-            select(m_board.table, i, j, isDragStart);
-        else
-            LOG_INFO("Cannot select empty table stack");
+        if (!isDragStart)
+            return;
 
+        if (m_board.table[i].size() == 0)
+        {
+            LOG_INFO("Cannot select empty table stack");
+            return;
+        }
+
+        if (((int)m_board.table[i].size()) - 1 != j)
+        {
+            if (!checkSequence(i, j))
+            {
+                LOG_INFO("Cannot selected unsorted middle card");
+                return;
+            }
+        }
+        select(m_board.table, i, j, isDragStart);
         return;
     }
 
