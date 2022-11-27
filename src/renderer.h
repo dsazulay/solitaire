@@ -24,6 +24,7 @@ public:
 
 private:
     void initMesh();
+    void renderBackground(const Board& board, RenderMode mode);
     void renderSprite(glm::vec2 pos, Card* card);
     void drawCall();
     void clear();

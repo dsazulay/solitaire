@@ -13,7 +13,6 @@ void Renderer::init()
 {
     //glEnable(GL_DEPTH_TEST);
     //glDepthFunc(GL_LEQUAL);
-    glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     m_proj = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f, -1.0f, 1.0f);
     m_unlitShader = ResourceManager::loadShader("../../resources/unlit.vert",
@@ -41,6 +40,10 @@ void Renderer::render(const Board& board, RenderMode mode)
 {
     clear();
 
+    renderBackground(board, mode);
+
+    glDisable(GL_BLEND);
+
     if (mode == RenderMode::Shaded || mode == RenderMode::ShadedWireframe)
     {
         m_shader = m_unlitShader;
@@ -58,11 +61,15 @@ void Renderer::render(const Board& board, RenderMode mode)
 
         for (int i = 0; i < 4; i++)
         {
+            if (board.openCells[i].size() == 0)
+                continue;
             renderSprite(board.openCellsMap[i], board.openCells[i].back());
         }
 
         for (int i = 0; i < 4; i++)
         {
+            if (board.foundations[i].size() == 0)
+                continue;
             renderSprite(board.foundationMap[i], board.foundations[i].back());
         }
 
@@ -86,17 +93,67 @@ void Renderer::render(const Board& board, RenderMode mode)
 
         for (int i = 0; i < 4; i++)
         {
+            if (board.openCells[i].size() == 0)
+                continue;
             renderSprite(board.openCellsMap[i], board.openCells[i].back());
         }
 
         for (int i = 0; i < 4; i++)
         {
+            if (board.foundations[i].size() == 0)
+                continue;
             renderSprite(board.foundationMap[i], board.foundations[i].back());
         }
 
         drawCall();
     }
 
+}
+
+void Renderer::renderBackground(const Board& board, RenderMode mode)
+{
+
+    glEnable(GL_BLEND);
+
+    if (mode == RenderMode::Shaded || mode == RenderMode::ShadedWireframe)
+    {
+        m_shader = m_unlitShader;
+        m_instanceCounter = 0;
+        m_shader->use();
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+        for (int i = 0; i < 4; i++)
+        {
+            renderSprite(board.openCellsMap[i], board.openCellsBg);
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            renderSprite(board.foundationMap[i], board.foundationsBg);
+        }
+
+        drawCall();
+    }
+
+    if (mode == RenderMode::Wireframe || mode == RenderMode::ShadedWireframe)
+    {
+        m_shader = m_wireframeShader;
+        m_instanceCounter = 0;
+        m_shader->use();
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+        for (int i = 0; i < 4; i++)
+        {
+            renderSprite(board.openCellsMap[i], board.openCellsBg);
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            renderSprite(board.foundationMap[i], board.foundationsBg);
+        }
+
+        drawCall();
+    }
 }
 
 void Renderer::renderSprite(glm::vec2 pos, Card* card)

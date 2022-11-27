@@ -84,11 +84,8 @@ void Freecell::createDeck()
 
 void Freecell::createOpenCellsAndFoundations()
 {
-    for (int i = 0; i < 4; i++)
-    {
-        m_board.openCells[i].push_back(&m_deck.at(52));
-        m_board.foundations[i].push_back(&m_deck.at(53));
-    }
+    m_board.openCellsBg = &m_deck.at(52);
+    m_board.foundationsBg = &m_deck.at(53);
 }
 
 void Freecell::swap(int i, int j)
@@ -150,7 +147,7 @@ bool Freecell::isLegalMoveTable(std::vector<Card*>* stack, int srcX, int srcY, i
 
 bool Freecell::isLegalMoveFoundation(Card* card, int dst)
 {
-    if (m_board.foundations[dst].size() == 1)
+    if (m_board.foundations[dst].size() == 0)
         return card->number == 0;
 
     return m_board.foundations[dst].back()->number == card->number - 1
@@ -164,7 +161,7 @@ void Freecell::handleOpenCellsClick(int i, bool isDragStart)
         if (!isDragStart)
             return;
 
-        if (m_board.openCells[i].size() > 1)
+        if (m_board.openCells[i].size() > 0)
             select(m_board.openCells, i, m_board.openCells[i].size() - 1, isDragStart);
         else
             LOG_INFO("Cannot select empty open cells stack");
@@ -172,7 +169,7 @@ void Freecell::handleOpenCellsClick(int i, bool isDragStart)
         return;
     }
 
-    if (m_board.openCells[i].size() > 1)
+    if (m_board.openCells[i].size() > 0)
     {
         LOG_INFO("Open cell occupied");
         deselect();
@@ -203,7 +200,7 @@ void Freecell::handleFoundationsClick(int i, bool isDragStart)
         if (!isDragStart)
             return;
 
-        if (m_board.foundations[i].size() > 1)
+        if (m_board.foundations[i].size() > 0)
             select(m_board.foundations, i, m_board.foundations[i].size() - 1, isDragStart);
         else
             LOG_INFO("Cannot select empty foundations stack");
@@ -400,7 +397,7 @@ void Freecell::processDoubleClick(double xPos, double yPos)
             if (i == -1)
                 return;
 
-            if (m_board.openCells[i].size() == 1)
+            if (m_board.openCells[i].size() == 0)
             {
                 LOG_WARN("No action for double click an empty open cells stack");
                 return;
@@ -469,7 +466,7 @@ bool Freecell::moveCardToOpenCells(std::vector<Card*>& src)
 {
     for (int i  = 0; i < 4; i++)
     {
-        if (m_board.openCells[i].size() == 1)
+        if (m_board.openCells[i].size() == 0)
         {
             m_board.openCells[i].push_back(src.back());
             src.pop_back();

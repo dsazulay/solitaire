@@ -33,6 +33,9 @@ struct Board
     std::vector<Card*> table[8];
     std::vector<Card*> openCells[4];
     std::vector<Card*> foundations[4];
+
+    Card* openCellsBg;
+    Card* foundationsBg;
 };
 
 class Freecell
