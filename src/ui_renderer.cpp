@@ -37,7 +37,14 @@ void UiRenderer::render()
     ImGui::Text("Frame time: %.3fms", Timer::deltaTime);
     ImGui::Text("FPS: %d", (int)(1 / Timer::deltaTime));
 
+    ImGui::Combo("Render mode", &m_renderMode, "Shaded\0Wireframe\0Shaded Wireframe\0\0");
+
     //ImGui::ShowDemoWindow();
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+int UiRenderer::renderMode()
+{
+    return m_renderMode;
 }

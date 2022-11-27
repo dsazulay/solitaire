@@ -110,7 +110,7 @@ void Solitaire::mainLoop()
 
         m_window->processInput();
 
-        m_renderer->render(m_freecell.board(), RenderMode::Shaded);
+        m_renderer->render(m_freecell.board(), (RenderMode) m_uiRenderer->renderMode());
         m_uiRenderer->render();
 
         std::this_thread::sleep_until(target_fps);

@@ -9,4 +9,8 @@ public:
     UiRenderer(GLFWwindow* window);
     ~UiRenderer();
     void render();
+    int renderMode();
+
+private:
+    int m_renderMode{};
 };
