@@ -354,7 +354,7 @@ int Freecell::getIndexY(int n, int col, double yPos)
 
     for (int i = 0; i < n - 1; i++)
     {
-        if (yPos < m_board.tableMap[col][i].y + 74 && yPos > m_board.tableMap[col][i].y + 30)
+        if (yPos < m_board.tableMap[col][i].y + 74 && yPos > m_board.tableMap[col][i].y + 42)
             return i;
     }
 
