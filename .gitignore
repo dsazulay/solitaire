@@ -4,5 +4,10 @@
 # clangd
 .cache
 
-# c++
+# c++ build locations
 build/
+cmake-build-debug/
+
+# editors and IDEs
+.idea
+.vscode
