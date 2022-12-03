@@ -1,6 +1,5 @@
 #include "window.h"
 
-#include "GLFW/glfw3.h"
 #include "dispatcher.h"
 #include "event.h"
 #include "utils/log.h"
@@ -9,9 +8,9 @@ double Window::xPos, Window::yPos;
 float Window::lastClickTime = 0.0f;
 float Window::dragStartTime = 0.0f;
 
-void Window::init()
+Window::Window()
 {
-  glfwInit();
+    glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -20,24 +19,25 @@ void Window::init()
 #endif
 }
 
+Window::~Window()
+{
+    glfwTerminate();
+}
+
 void Window::createWindow(int width, int height, const char *name)
 {
     m_window = glfwCreateWindow(width, height, name, nullptr, nullptr);
     if (m_window == nullptr)
     {
         LOG_ERROR("Failed to create GLFW window");
-        terminate();
         return;
     }
     glfwMakeContextCurrent(m_window);
     glfwSetFramebufferSizeCallback(m_window, frameBufferCallback);
     glfwSetCursorPosCallback(m_window, cursorPositionCallback);
     glfwSetMouseButtonCallback(m_window, mouseButtonCallback);
-}
 
-void Window::terminate()
-{
-    glfwTerminate();
+    ASSERT(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress), "Failed to initialize GLAD");
 }
 
 bool Window::shouldClose() const

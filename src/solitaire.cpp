@@ -1,22 +1,12 @@
 #include "solitaire.h"
 
-#include <glm/vec2.hpp>
-
 #include <functional>
-#include <vector>
 #include <thread>
 #include <chrono>
 #include <time.h>
 
 #include "dispatcher.h"
-#include "event.h"
-#include "freecell.h"
-#include "renderer.h"
-#include "resource_manager.h"
-#include "shader.h"
 #include "timer.h"
-#include "ui_renderer.h"
-#include "utils/log.h"
 
 void Solitaire::onMouseClick(const Event& e)
 {
@@ -67,20 +57,14 @@ void Solitaire::run()
 {
     init();
     mainLoop();
-    terminate();
 }
 
 void Solitaire::init()
 {
-    m_window = new Window();
-    m_window->init();
+    m_window = std::make_unique<Window>();
     m_window->createWindow(m_appConfig.windowWidth, m_appConfig.windowHeight, m_appConfig.windowName.c_str());
 
-    ASSERT(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress), "Failed to initialize GLAD");
-
-    m_renderer = new Renderer();
-    m_renderer->init();
-
+    m_renderer = std::make_unique<Renderer>();
 
     m_uiRenderer = std::make_unique<UiRenderer>(m_window->getWindow());
 
@@ -118,12 +102,4 @@ void Solitaire::mainLoop()
         m_window->swapBuffers();
         m_window->pollEvents();
     }
-}
-
-void Solitaire::terminate()
-{
-    m_window->terminate();
-
-    delete m_renderer;
-    delete m_window;
 }

@@ -1,6 +1,8 @@
 #include "resource_manager.h"
 
-#include "utils/log.h"
+#include <fstream>
+#include <sstream>
+#include <unordered_map>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -8,9 +10,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
-#include <fstream>
-#include <sstream>
-#include <unordered_map>
+#include "utils/log.h"
 
 std::map<std::string, Shader> ResourceManager::shaders;
 std::map<std::string, Texture> ResourceManager::textures;

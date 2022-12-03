@@ -1,15 +1,16 @@
 #include "renderer.h"
-#include "glad/glad.h"
-#include "glm/ext/matrix_clip_space.hpp"
-#include <glm/gtc/matrix_transform.hpp>
-#include "model.h"
-#include "resource_manager.h"
-#include "utils/log.h"
-#include "window.h"
-#include <cstddef>
-#include <vector>
 
-void Renderer::init()
+#include <glad/glad.h>
+
+#include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/ext/matrix_clip_space.hpp>
+
+#include "resource_manager.h"
+#include "window.h"
+
+Renderer::Renderer()
 {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);

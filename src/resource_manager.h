@@ -1,11 +1,11 @@
 #pragma once
 
+#include <map>
+#include <string>
+
 #include "shader.h"
 #include "texture.h"
 #include "model.h"
-
-#include <map>
-#include <string>
 
 class ResourceManager
 {

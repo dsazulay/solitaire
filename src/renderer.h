@@ -1,13 +1,11 @@
 #pragma once
 
+#include <glm/vec2.hpp>
+
 #include "freecell.h"
 #include "shader.h"
 #include "texture.h"
 #include "model.h"
-
-#include <glm/mat4x4.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
 
 enum class RenderMode
 {
@@ -19,7 +17,7 @@ enum class RenderMode
 class Renderer
 {
 public:
-    void init();
+    Renderer();
     void render(const Board& board, RenderMode mode);
 
 private:

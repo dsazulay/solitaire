@@ -6,9 +6,9 @@
 class Window
 {
 public:
-    void init();
+    Window();
+    ~Window();
     void createWindow(int width, int height, const char* name);
-    void terminate();
     bool shouldClose() const;
     void processInput() const;
     void swapBuffers() const;
