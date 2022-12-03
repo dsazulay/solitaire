@@ -10,7 +10,6 @@ public:
     ~Window();
     void createWindow(int width, int height, const char* name);
     bool shouldClose() const;
-    void processInput() const;
     void swapBuffers() const;
     void pollEvents();
     GLFWwindow* getWindow();
@@ -22,6 +21,7 @@ private:
     static void frameBufferCallback(GLFWwindow* window, int width, int height);
     static void cursorPositionCallback(GLFWwindow* window, double xPos, double yPos);
     static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+    static void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
     static float lastClickTime;
     static float dragStartTime;

@@ -62,3 +62,15 @@ private:
     double m_xPos;
     double m_yPos;
 };
+
+class KeyboardPressEvent : public Event
+{
+public:
+    KeyboardPressEvent(int key) : m_key(key) {}
+    const char* type() const override { return descriptor; }
+    int key() const { return m_key; }
+
+    static constexpr char* descriptor = (char*) "KeyboardPressEvent";
+private:
+    int m_key;
+};

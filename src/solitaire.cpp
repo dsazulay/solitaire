@@ -46,6 +46,17 @@ void Solitaire::onMouseDragEnd(const Event& e)
     m_freecell.processInput(xPos, yPos, true, false);
 }
 
+void Solitaire::onKeyboardPress(const Event& e)
+{
+    const auto& event = static_cast<const KeyboardPressEvent&>(e);
+    int key = event.key();
+
+    if (key == 0)
+        m_freecell.undoMove();
+    else if (key == 1)
+        m_freecell.redoMove();
+}
+
 Solitaire::Solitaire()
 {
     m_appConfig.windowName = "Solitaire";
@@ -80,6 +91,8 @@ void Solitaire::init()
         std::bind(&Solitaire::onMouseDragStart, this, std::placeholders::_1));
     Dispatcher::instance().subscribe(MouseDragEndEvent::descriptor,
         std::bind(&Solitaire::onMouseDragEnd, this, std::placeholders::_1));
+    Dispatcher::instance().subscribe(KeyboardPressEvent::descriptor,
+        std::bind(&Solitaire::onKeyboardPress, this, std::placeholders::_1));
 
     //glfwSwapInterval(1); // Enable vsync
 }
@@ -91,8 +104,6 @@ void Solitaire::mainLoop()
         Timer::update();
         // TODO: change harcoded value for value selected by user
         auto target_fps = std::chrono::steady_clock::now() + std::chrono::milliseconds(14);
-
-        m_window->processInput();
 
         m_renderer->render(m_freecell.board(), (RenderMode) m_uiRenderer->renderMode());
         m_uiRenderer->render();

@@ -36,6 +36,7 @@ void Window::createWindow(int width, int height, const char *name)
     glfwSetFramebufferSizeCallback(m_window, frameBufferCallback);
     glfwSetCursorPosCallback(m_window, cursorPositionCallback);
     glfwSetMouseButtonCallback(m_window, mouseButtonCallback);
+    glfwSetKeyCallback(m_window, keyboardCallback);
 
     ASSERT(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress), "Failed to initialize GLAD");
 }
@@ -43,12 +44,6 @@ void Window::createWindow(int width, int height, const char *name)
 bool Window::shouldClose() const
 {
     return glfwWindowShouldClose(m_window);
-}
-
-void Window::processInput() const
-{
-    if(glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(m_window, true);
 }
 
 void Window::swapBuffers() const
@@ -105,6 +100,27 @@ void Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int
         }
     }
 }
+
+void Window::keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    {
+        glfwSetWindowShouldClose(window, true);
+    }
+    
+    else if (key == GLFW_KEY_U && action == GLFW_PRESS)
+    {
+        KeyboardPressEvent e(0);
+        Dispatcher::instance().post(e);
+    }
+
+    else if (key == GLFW_KEY_R && action == GLFW_PRESS)
+    {
+        KeyboardPressEvent e(1);
+        Dispatcher::instance().post(e);
+    }
+}
+
 
 GLFWwindow* Window::getWindow()
 {

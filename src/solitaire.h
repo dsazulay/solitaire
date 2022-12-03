@@ -30,6 +30,7 @@ private:
     void onMouseDoubleClick(const Event& e);
     void onMouseDragStart(const Event& e);
     void onMouseDragEnd(const Event& e);
+    void onKeyboardPress(const Event& e);
 
     AppConfig m_appConfig;
     std::unique_ptr<Window> m_window;

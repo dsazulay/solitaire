@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <stack>
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -39,6 +40,13 @@ struct Board
     Card* foundationsBg;
 };
 
+struct Move
+{
+    std::vector<Card*>* srcStack;
+    std::vector<Card*>* dstStack;
+    int cardQuantity;
+};
+
 class Freecell
 {
 public:
@@ -46,6 +54,8 @@ public:
     void processInput(double xPos, double yPos, bool isDraging, bool isDragStart);
     void processDoubleClick(double xPos, double yPos);
     Board& board();
+    void undoMove();
+    void redoMove();
 
 private:
     void setBoardLayout();
@@ -57,6 +67,7 @@ private:
 
     bool checkWin();
     bool checkSequence(int i, int j);
+    int getMaxCardsToMove(bool movingToEmptySpace);
 
     bool isLegalMoveTable(std::vector<Card*>* stack, int srcX, int srcY, int dst);
     bool isLegalMoveFoundation(Card* card, int dst);
@@ -74,10 +85,10 @@ private:
     int getIndexX(int n, double xPos);
     int getIndexY(int n, int col, double yPos);
 
-
-
     std::vector<Card> m_deck;
-    int m_numberOfOpenCells;
+
+    std::stack<Move> m_undoStack;
+    std::stack<Move> m_redoStack;
 
     CardSelection m_cardSelected{};
     Board m_board{};
