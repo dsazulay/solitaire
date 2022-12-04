@@ -446,7 +446,7 @@ void Freecell::processInput(double xPos, double yPos, bool isDraging, bool isDra
     }
 
     // top area
-    if (yPos > 579 - 74 && yPos < 579 + 74)
+    if (yPos > 600 - 74 && yPos < 600 + 74)
     {
         // open cells
         if (xPos < 640)
@@ -475,7 +475,7 @@ void Freecell::processInput(double xPos, double yPos, bool isDraging, bool isDra
 void Freecell::processDoubleClick(double xPos, double yPos)
 {
     // top area
-    if (yPos > 579 - 74 && yPos < 579 + 74)
+    if (yPos > 600 - 74 && yPos < 600 + 74)
     {
         // open cells
         if (xPos < 640)
