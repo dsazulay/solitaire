@@ -16,8 +16,9 @@ Renderer::Renderer()
     glDepthFunc(GL_LEQUAL);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     m_proj = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f, -1.0f, 1.0f);
-    m_unlitShader = ResourceManager::loadShader("../../resources/unlit.vert",
-                                           "../../resources/unlit.frag", "UnlitShader");
+    m_unlitShader = ResourceManager::loadShader("../../resources/unlit.vert", 
+                                                "../../resources/unlit.frag",
+                                                "UnlitShader");
     m_wireframeShader = ResourceManager::loadShader("../../resources/unlit.vert",
                                                     "../../resources/wireframe.frag",
                                                     "WireframeShader");
@@ -165,10 +166,10 @@ void Renderer::renderSprite(glm::vec2 pos, Card* card)
         glm::vec2 mousePos = glm::vec2(Window::xPos, Window::yPos);
         if (card->shouldSetOffset)
         {
-            setDragOffset(pos);
+            card->dragOffset = mousePos - pos;
             card->shouldSetOffset = false;
         }
-        model = glm::translate(model, glm::vec3(mousePos - dragOffset, 0.0001));
+        model = glm::translate(model, glm::vec3(mousePos - card->dragOffset, 0.0001));
     }
     else
     {
@@ -218,10 +219,4 @@ void Renderer::clear()
 {
     glClearColor(0.2f, 0.3f, 0.2f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-
-void Renderer::setDragOffset(glm::vec2 pos)
-{
-    glm::vec2 mousePos = glm::vec2(Window::xPos, Window::yPos);
-    dragOffset = mousePos - pos;
 }

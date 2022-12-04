@@ -116,6 +116,12 @@ void Freecell::select(std::vector<Card*>* area, int x, int y, bool isDragStart)
       m_cardSelected.area = area;
       m_cardSelected.x = x;
       m_cardSelected.y = y;
+
+      for (int i = y + 1; i < (int) area[x].size(); i++)
+      {
+        area[x][i]->dragging = isDragStart;
+        area[x][i]->shouldSetOffset = isDragStart;
+      }
 }
 
 void Freecell::deselect()
@@ -130,6 +136,19 @@ void Freecell::deselect()
     m_cardSelected.area = nullptr;
     m_cardSelected.x = -1;
     m_cardSelected.y = -1;
+}
+
+void Freecell::deselectTrailingCards()
+{
+    if (m_cardSelected.card == nullptr)
+        return;
+    
+    std::vector<Card*> cardStack = m_cardSelected.area[m_cardSelected.x];
+    for (int i = m_cardSelected.y + 1; i < (int) cardStack.size(); i++)
+      {
+        cardStack[i]->dragging = false;
+        cardStack[i]->shouldSetOffset = false;
+      }
 }
 
 bool Freecell::isLegalMoveTable(std::vector<Card*>* stack, int srcX, int srcY, int dst)
@@ -170,6 +189,7 @@ void Freecell::handleOpenCellsClick(int i, bool isDragStart)
     if (m_board.openCells[i].size() > 0)
     {
         LOG_INFO("Open cell occupied");
+        deselectTrailingCards();
         deselect();
         return;
     }
@@ -178,6 +198,7 @@ void Freecell::handleOpenCellsClick(int i, bool isDragStart)
     if (m_cardSelected.y != ((int) m_cardSelected.area[col].size()) - 1)
     {
         LOG_INFO("Cannot move two cards at the same time");
+        deselectTrailingCards();
         deselect();
         return;
     }
@@ -213,6 +234,7 @@ void Freecell::handleFoundationsClick(int i, bool isDragStart)
     if (m_cardSelected.y != ((int) m_cardSelected.area[col].size()) - 1)
     {
         LOG_INFO("Cannot move two cards at the same time");
+        deselectTrailingCards();
         deselect();
         return;
     }
@@ -318,6 +340,7 @@ void Freecell::handleTableClick(int i, int j, bool isDragStart)
     if (!isLegalMoveTable(m_cardSelected.area, col, m_cardSelected.y, i))
     {
         LOG_INFO("Invalid table move");
+        deselectTrailingCards();
         deselect();
         return;
     }
@@ -328,6 +351,10 @@ void Freecell::handleTableClick(int i, int j, bool isDragStart)
         int diff = ((int)m_cardSelected.area[col].size()) - row;
         if (getMaxCardsToMove(m_board.table[i].empty()) >= diff)
         {
+            // need to deselect first because the trailing selection 
+            // is based on current position
+            deselectTrailingCards();
+            
             for (int n = row; n < (int) m_cardSelected.area[col].size(); n++)
             {
                 m_board.table[i].push_back(m_cardSelected.area[col][n]);
@@ -347,7 +374,10 @@ void Freecell::handleTableClick(int i, int j, bool isDragStart)
             m_redoStack = std::stack<Move>();
         }
         else
-            LOG_INFO("Need more open cells");
+        {
+            deselectTrailingCards();
+            LOG_INFO("Need more open cells"); 
+        }       
 
         deselect();
         return;
@@ -408,7 +438,10 @@ void Freecell::processInput(double xPos, double yPos, bool isDraging, bool isDra
     if (i == -1)
     {
         if (m_cardSelected.card != nullptr)
+        {
+            deselectTrailingCards();
             deselect();
+        }
         return;
     }
 
@@ -428,7 +461,10 @@ void Freecell::processInput(double xPos, double yPos, bool isDraging, bool isDra
         if (j == -1)
         {
             if (m_cardSelected.card != nullptr)
+            {
+                deselectTrailingCards();
                 deselect();
+            }
             return;
         }
 

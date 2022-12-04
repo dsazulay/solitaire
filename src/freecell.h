@@ -15,6 +15,7 @@ struct Card
     glm::vec3 selectionTint;
     bool dragging{};
     bool shouldSetOffset{};
+    glm::vec2 dragOffset;
 };
 
 
@@ -78,6 +79,7 @@ private:
 
     void select(std::vector<Card*>* area, int x, int y, bool isDragStart);
     void deselect();
+    void deselectTrailingCards();
 
     bool moveCardToFoundations(std::vector<Card*>& src);
     bool moveCardToOpenCells(std::vector<Card*>& src);

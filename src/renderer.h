@@ -26,7 +26,6 @@ private:
     void renderSprite(glm::vec2 pos, Card* card);
     void drawCall();
     void clear();
-    void setDragOffset(glm::vec2 pos);
 
     glm::mat4 m_proj;
     Shader* m_shader;
@@ -34,8 +33,6 @@ private:
     Shader* m_wireframeShader;
     Texture* m_texture;
     Model* m_model;
-
-    glm::vec2 dragOffset;
 
     unsigned int m_instanceCounter;
 
