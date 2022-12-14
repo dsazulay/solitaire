@@ -105,6 +105,7 @@ void Solitaire::mainLoop()
         // TODO: change harcoded value for value selected by user
         auto target_fps = std::chrono::steady_clock::now() + std::chrono::milliseconds(14);
 
+        m_freecell.update();
         m_renderer->render(m_freecell.board(), (RenderMode) m_uiRenderer->renderMode());
         m_uiRenderer->render();
 

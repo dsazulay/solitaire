@@ -109,19 +109,37 @@ Board& Freecell::board()
 
 void Freecell::select(std::vector<Card*>* area, int x, int y, bool isDragStart)
 {
-      m_cardSelected.card = area[x][y];
-      m_cardSelected.card->selectionTint = glm::vec3(0.7, 0.7, 0.9);
-      m_cardSelected.card->dragging = isDragStart;
-      m_cardSelected.card->shouldSetOffset = isDragStart;
-      m_cardSelected.area = area;
-      m_cardSelected.x = x;
-      m_cardSelected.y = y;
+    if (!isDragStart)
+        return;
+    
+    if ((int) area[x].size() == 0)
+    {
+        LOG_INFO("Cannot select empty stack");
+        return;
+    }
 
-      for (int i = y + 1; i < (int) area[x].size(); i++)
-      {
+    if (((int) area[x].size()) - 1 != y)
+    {
+        if (!checkSequence(x, y))
+        {
+            LOG_INFO("Cannot selected unsorted middle card");
+            return;
+        }
+    }
+
+    m_cardSelected.card = area[x][y];
+    m_cardSelected.card->selectionTint = glm::vec3(0.7, 0.7, 0.9);
+    m_cardSelected.card->dragging = isDragStart;
+    m_cardSelected.card->shouldSetOffset = isDragStart;
+    m_cardSelected.area = area;
+    m_cardSelected.x = x;
+    m_cardSelected.y = y;
+
+    for (int i = y + 1; i < (int) area[x].size(); i++)
+    {
         area[x][i]->dragging = isDragStart;
         area[x][i]->shouldSetOffset = isDragStart;
-      }
+    }
 }
 
 void Freecell::deselect()
@@ -151,67 +169,25 @@ void Freecell::deselectTrailingCards()
       }
 }
 
-bool Freecell::isLegalMoveTable(std::vector<Card*>* stack, int srcX, int srcY, int dst)
-{
-    if (m_board.table[dst].size() == 0)
-        return true;
-
-    bool diffColor = stack[srcX][srcY]->suit % 2 != m_board.table[dst].back()->suit % 2;
-    bool nextNumber = stack[srcX][srcY]->number == m_board.table[dst].back()->number - 1;
-
-    return diffColor && nextNumber;
-}
-
-bool Freecell::isLegalMoveFoundation(Card* card, int dst)
-{
-    if (m_board.foundations[dst].size() == 0)
-        return card->number == 0;
-
-    return m_board.foundations[dst].back()->number == card->number - 1
-        && m_board.foundations[dst].back()->suit == card->suit;
-}
-
 void Freecell::handleOpenCellsClick(int i, bool isDragStart)
 {
     if (m_cardSelected.card == nullptr)
     {
-        if (!isDragStart)
-            return;
-
-        if (m_board.openCells[i].size() > 0)
-            select(m_board.openCells, i, m_board.openCells[i].size() - 1, isDragStart);
-        else
-            LOG_INFO("Cannot select empty open cells stack");
-
+        select(m_board.openCells, i, m_board.openCells[i].size() - 1, isDragStart);
         return;
     }
 
-    if (m_board.openCells[i].size() > 0)
+    if (!openCellsIsLegalMove(m_cardSelected.card, i))
     {
-        LOG_INFO("Open cell occupied");
+        LOG_INFO("(Open cells) Invalid move");
         deselectTrailingCards();
         deselect();
         return;
     }
 
     int col = m_cardSelected.x;
-    if (m_cardSelected.y != ((int) m_cardSelected.area[col].size()) - 1)
-    {
-        LOG_INFO("Cannot move two cards at the same time");
-        deselectTrailingCards();
-        deselect();
-        return;
-    }
-
-    m_board.openCells[i].push_back(m_cardSelected.area[col].back());
-    m_cardSelected.area[col].pop_back();
-    
-    Move move;
-    move.srcStack = &m_cardSelected.area[col];
-    move.dstStack = &m_board.openCells[i];
-    move.cardQuantity = 1;
-    m_undoStack.push(move);
-
+    moveCard(m_cardSelected.area[col], m_board.openCells[i], 1);
+    m_history.recordMove(&m_cardSelected.area[col], &m_board.openCells[i], 1);
     deselect();
 }
 
@@ -219,49 +195,52 @@ void Freecell::handleFoundationsClick(int i, bool isDragStart)
 {
     if (m_cardSelected.card == nullptr)
     {
-        if (!isDragStart)
-            return;
-
-        if (m_board.foundations[i].size() > 0)
-            select(m_board.foundations, i, m_board.foundations[i].size() - 1, isDragStart);
-        else
-            LOG_INFO("Cannot select empty foundations stack");
-
+        select(m_board.foundations, i, m_board.foundations[i].size() - 1, isDragStart);
         return;
     }
 
-    int col = m_cardSelected.x;
-    if (m_cardSelected.y != ((int) m_cardSelected.area[col].size()) - 1)
+    if (!foundationsIsLegalMove(m_cardSelected.card, i))
     {
-        LOG_INFO("Cannot move two cards at the same time");
+        LOG_INFO("(Foundations) Invalid move");
         deselectTrailingCards();
         deselect();
         return;
     }
 
-    if (!isLegalMoveFoundation(m_cardSelected.area[col].back(), i))
-    {
-        LOG_INFO("Invalid foundation move");
-        deselect();
-        return;
-    }
-
-    m_board.foundations[i].push_back(m_cardSelected.area[col].back());
-    m_cardSelected.area[col].pop_back();
-
-    Move move;
-    move.srcStack = &m_cardSelected.area[col];
-    move.dstStack = &m_board.foundations[i];
-    move.cardQuantity = 1;
-
-    m_undoStack.push(move);
-    m_redoStack = std::stack<Move>();
-
+    int col = m_cardSelected.x;
+    moveCard(m_cardSelected.area[col], m_board.foundations[i], 1);
+    m_history.recordMove(&m_cardSelected.area[col], &m_board.foundations[i], 1);
     deselect();
 
     if (checkWin())
         LOG_INFO("You Won!");
 
+}
+
+void Freecell::handleTableClick(int i, int j, bool isDragStart)
+{
+    if (m_cardSelected.card == nullptr)
+    {
+        select(m_board.table, i, j, isDragStart);
+        return;
+    }
+
+    if (!tableIsLegalMove(m_cardSelected.card, i))
+    {
+        LOG_INFO("(Table) Invalid move");
+        deselectTrailingCards();
+        deselect();
+        return;
+    }
+
+    int col = m_cardSelected.x;
+    int row = m_cardSelected.y;
+    int diff = ((int)m_cardSelected.area[col].size()) - row;
+    // TODO: fix the need to deselect trailing cards before moving multiple cards
+    deselectTrailingCards();
+    moveCard(m_cardSelected.area[col], m_board.table[i], diff);
+    m_history.recordMove(&m_cardSelected.area[col], &m_board.table[i], diff);
+    deselect();
 }
 
 bool Freecell::checkSequence(int i, int j)
@@ -310,94 +289,7 @@ int Freecell::getMaxCardsToMove(bool movingToEmptySpace)
     return emptyTableColumns * emptyOpenCells + emptyOpenCells;
 }
 
-void Freecell::handleTableClick(int i, int j, bool isDragStart)
-{
-    if (m_cardSelected.card == nullptr)
-    {
-        if (!isDragStart)
-            return;
 
-        if (m_board.table[i].size() == 0)
-        {
-            LOG_INFO("Cannot select empty table stack");
-            return;
-        }
-
-        if (((int)m_board.table[i].size()) - 1 != j)
-        {
-            if (!checkSequence(i, j))
-            {
-                LOG_INFO("Cannot selected unsorted middle card");
-                return;
-            }
-        }
-        select(m_board.table, i, j, isDragStart);
-        return;
-    }
-
-    int col = m_cardSelected.x;
-    int row = m_cardSelected.y;
-    if (!isLegalMoveTable(m_cardSelected.area, col, m_cardSelected.y, i))
-    {
-        LOG_INFO("Invalid table move");
-        deselectTrailingCards();
-        deselect();
-        return;
-    }
-
-    // multiple cards move
-    if (row != ((int) m_cardSelected.area[col].size()) - 1)
-    {
-        int diff = ((int)m_cardSelected.area[col].size()) - row;
-        if (getMaxCardsToMove(m_board.table[i].empty()) >= diff)
-        {
-            // need to deselect first because the trailing selection 
-            // is based on current position
-            deselectTrailingCards();
-            
-            for (int n = row; n < (int) m_cardSelected.area[col].size(); n++)
-            {
-                m_board.table[i].push_back(m_cardSelected.area[col][n]);
-            }
-
-            for (int n = 0; n < diff; n++)
-            {
-                m_cardSelected.area[col].pop_back();
-            }
-
-            Move move;
-            move.srcStack = &m_cardSelected.area[col];
-            move.dstStack = &m_board.table[i];
-            move.cardQuantity = diff;
-
-            m_undoStack.push(move);
-            m_redoStack = std::stack<Move>();
-        }
-        else
-        {
-            deselectTrailingCards();
-            LOG_INFO("Need more open cells"); 
-        }       
-
-        deselect();
-        return;
-    }
-
-
-    m_board.table[i].push_back(m_cardSelected.area[col].back());
-    m_cardSelected.area[col].pop_back();
-    
-    Move move;
-    move.srcStack = &m_cardSelected.area[col];
-    move.dstStack = &m_board.table[i];
-    move.cardQuantity = 1;
-
-    m_undoStack.push(move);
-    m_redoStack = std::stack<Move>();
-
-    deselect();
-
-}
 
 int Freecell::getIndexX(int n, double xPos)
 {
@@ -490,7 +382,7 @@ void Freecell::processDoubleClick(double xPos, double yPos)
                 return;
             }
 
-            moveCardToFoundations(m_board.openCells[i]);
+            moveCardToFoundations(m_board.openCells[i], i);
 
             if (checkWin())
                 LOG_INFO("You Won!");
@@ -525,9 +417,9 @@ void Freecell::processDoubleClick(double xPos, double yPos)
         }
 
 
-        if(!moveCardToFoundations(m_board.table[i]))
+        if(!moveCardToFoundations(m_board.table[i], i))
         {
-            moveCardToOpenCells(m_board.table[i]);
+            moveCardToOpenCells(m_board.table[i], i);
         }
         else
         {
@@ -538,6 +430,155 @@ void Freecell::processDoubleClick(double xPos, double yPos)
 }
 
 void Freecell::undoMove()
+{
+    m_history.undo();
+}
+
+void Freecell::redoMove()
+{
+    m_history.redo();
+}
+
+bool Freecell::moveCardToFoundations(std::vector<Card*>& src, int col)
+{
+    for (int i  = 0; i < 4; i++)
+    {
+        if (foundationsIsLegalMove(src.back(), i))
+        {
+            moveCard(src, m_board.foundations[i], 1);
+
+            MovingAnimation m(m_board.foundations[i].back(), m_board.tableMap[col][src.size()], m_board.foundationMap[i]);
+            m_board.movingAnimation.push_back(m);
+
+            m_history.recordMove(&src, &m_board.foundations[i], 1);
+
+            return true;
+        }
+    }
+
+    LOG_INFO("No valid move for foundations");
+    deselect();
+    return false;
+
+}
+
+bool Freecell::moveCardToOpenCells(std::vector<Card*>& src, int col)
+{
+    for (int i  = 0; i < 4; i++)
+    {
+        if (openCellsIsLegalMove(src.back(), i))
+        {
+            moveCard(src, m_board.openCells[i], 1);
+
+            MovingAnimation m(m_board.openCells[i].back(), m_board.tableMap[col][src.size()], m_board.openCellsMap[i]);
+            m_board.movingAnimation.push_back(m);
+
+            m_history.recordMove(&src, &m_board.openCells[i], 1);
+
+            return true;
+        }
+    }
+
+    LOG_INFO("No valid move for open cells");
+    deselect();
+    return false;
+}
+
+void Freecell::update()
+{
+    for (std::vector<MovingAnimation>::iterator it = m_board.movingAnimation.begin(); it != m_board.movingAnimation.end();)
+    {
+        it->update();
+        if (it->isDone)
+            m_board.movingAnimation.erase(it);
+        else
+            ++it;
+    }
+}
+
+bool Freecell::openCellsIsLegalMove(Card* card, int col)
+{
+    if (m_cardSelected.card != nullptr)
+    {
+        int cardSelectedCol = m_cardSelected.x;
+        if (m_cardSelected.y != ((int) m_cardSelected.area[cardSelectedCol].size()) - 1)
+            return false;
+    }
+
+    return m_board.openCells[col].size() == 0;
+}
+
+bool Freecell::foundationsIsLegalMove(Card* card, int col)
+{
+    if (m_cardSelected.card != nullptr)
+    {
+        int cardSelectedCol = m_cardSelected.x;
+        if (m_cardSelected.y != ((int) m_cardSelected.area[cardSelectedCol].size()) - 1)
+            return false;
+    }
+
+    if (m_board.foundations[col].size() == 0)
+        return card->number == 0;
+
+    return m_board.foundations[col].back()->number == card->number - 1
+        && m_board.foundations[col].back()->suit == card->suit;
+}
+
+bool Freecell::tableIsLegalMove(Card* card, int col)
+{
+    int cardSelectedCol = m_cardSelected.x;
+    int cardSelectedRow = m_cardSelected.y;
+    int diff = ((int)m_cardSelected.area[cardSelectedCol].size()) - cardSelectedRow;
+    if (getMaxCardsToMove(m_board.table[col].empty()) < diff)
+        return false;
+
+    if (m_board.table[col].size() == 0)
+        return true;
+
+    bool diffColor =  m_board.table[col].back()->suit % 2 != card->suit % 2;
+    bool nextNumber = m_board.table[col].back()->number - 1 == card->number;
+
+    return diffColor && nextNumber;   
+}
+
+// bool tryMoveFromTo(CardArea* src, CardArea* dst, int col)
+// {
+//     for (int i = 0; i < 4; i++)
+//     {
+//         if (dst->isLegalMove(src->getStacks()[col].back(), i))
+//         {
+//             return true;
+//         }
+//     }
+//     return false;
+// }
+
+void Freecell::moveCard(std::vector<Card*>& src, std::vector<Card*>& dst, int n)
+{
+    for (int i = src.size() - n; i < (int) src.size(); i++)
+    {
+        dst.push_back(src[i]);
+    }
+
+    for (int i = 0; i < n; i++)
+    {
+        src.pop_back();
+    }
+}
+
+void History::recordMove(std::vector<Card*>* src, std::vector<Card*>* dst, int n)
+{
+    Move move;
+    move.srcStack = src;
+    move.dstStack = dst;
+    move.cardQuantity = n;
+
+    m_undoStack.push(move);
+    if (m_redoStack.size() > 0)
+        m_redoStack = std::stack<Move>();
+}
+
+void History::undo()
 {
     if (m_undoStack.empty())
     {
@@ -567,7 +608,7 @@ void Freecell::undoMove()
     m_redoStack.push(redoMove);
 }
 
-void Freecell::redoMove()
+void History::redo()
 {
     if (m_redoStack.empty())
     {
@@ -595,57 +636,4 @@ void Freecell::redoMove()
 
     m_redoStack.pop();
     m_undoStack.push(undoMove);
-}
-
-bool Freecell::moveCardToFoundations(std::vector<Card*>& src)
-{
-    for (int i  = 0; i < 4; i++)
-    {
-        if (isLegalMoveFoundation(src.back(), i))
-        {
-            m_board.foundations[i].push_back(src.back());
-            src.pop_back();
-
-            Move move;
-            move.srcStack = &src;
-            move.dstStack = &m_board.foundations[i];
-            move.cardQuantity = 1;
-
-            m_undoStack.push(move);
-            m_redoStack = std::stack<Move>();
-
-            return true;
-        }
-    }
-
-    LOG_INFO("No valid move for foundations");
-    deselect();
-    return false;
-
-}
-
-bool Freecell::moveCardToOpenCells(std::vector<Card*>& src)
-{
-    for (int i  = 0; i < 4; i++)
-    {
-        if (m_board.openCells[i].size() == 0)
-        {
-            m_board.openCells[i].push_back(src.back());
-            src.pop_back();
-
-            Move move;
-            move.srcStack = &src;
-            move.dstStack = &m_board.openCells[i];
-            move.cardQuantity = 1;
-
-            m_undoStack.push(move);
-            m_redoStack = std::stack<Move>();
-
-            return true;
-        }
-    }
-
-    LOG_INFO("No valid move for open cells");
-    deselect();
-    return false;
 }

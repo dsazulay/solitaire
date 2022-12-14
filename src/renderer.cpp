@@ -161,6 +161,7 @@ void Renderer::renderBackground(const Board& board, RenderMode mode)
 void Renderer::renderSprite(glm::vec2 pos, Card* card)
 {
     glm::mat4 model = glm::mat4(1.0f);
+    glm::vec3 newPos;
     if (card->dragging)
     {
         glm::vec2 mousePos = glm::vec2(Window::xPos, Window::yPos);
@@ -169,12 +170,14 @@ void Renderer::renderSprite(glm::vec2 pos, Card* card)
             card->dragOffset = mousePos - pos;
             card->shouldSetOffset = false;
         }
-        model = glm::translate(model, glm::vec3(mousePos - card->dragOffset, 0.0001));
+        newPos = glm::vec3(mousePos - card->dragOffset, 0.0001);
     }
+    else if (card->isMoving)
+        newPos =  glm::vec3(card->pos, 0.0001);
     else
-    {
-        model = glm::translate(model, glm::vec3(pos.x, pos.y, 0));
-    }
+        newPos = glm::vec3(pos.x, pos.y, 0);
+    
+    model = glm::translate(model, newPos);
     model = glm::scale(model, glm::vec3(76, 76, 1));
 
     m_shader->setMat4("u_model[" + std::to_string(m_instanceCounter) + "]", model);
@@ -184,14 +187,12 @@ void Renderer::renderSprite(glm::vec2 pos, Card* card)
     m_instanceCounter++;
 }
 
-
 void Renderer::drawCall()
 {
     glBindVertexArray(VAO);
     glDrawElementsInstanced(GL_TRIANGLES, m_model->indices.size(), GL_UNSIGNED_INT, nullptr, m_instanceCounter);
     glBindVertexArray(0);
 }
-
 
 void Renderer::initMesh()
 {
