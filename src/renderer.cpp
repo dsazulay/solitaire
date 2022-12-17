@@ -126,11 +126,13 @@ void Renderer::renderBackground(const Board& board, RenderMode mode)
 
         for (int i = 0; i < 4; i++)
         {
+            board.openCellsBg->pos = glm::vec3(board.openCellsMap[i], 0.0);
             renderSprite(board.openCellsMap[i], board.openCellsBg);
         }
 
         for (int i = 0; i < 4; i++)
         {
+            board.foundationsBg->pos = glm::vec3(board.foundationMap[i], 0.0);
             renderSprite(board.foundationMap[i], board.foundationsBg);
         }
 
@@ -161,23 +163,7 @@ void Renderer::renderBackground(const Board& board, RenderMode mode)
 void Renderer::renderSprite(glm::vec2 pos, Card* card)
 {
     glm::mat4 model = glm::mat4(1.0f);
-    glm::vec3 newPos;
-    if (card->dragging)
-    {
-        glm::vec2 mousePos = glm::vec2(Window::xPos, Window::yPos);
-        if (card->shouldSetOffset)
-        {
-            card->dragOffset = mousePos - pos;
-            card->shouldSetOffset = false;
-        }
-        newPos = glm::vec3(mousePos - card->dragOffset, 0.0001);
-    }
-    else if (card->isMoving)
-        newPos =  glm::vec3(card->pos, 0.0001);
-    else
-        newPos = glm::vec3(pos.x, pos.y, 0);
-    
-    model = glm::translate(model, newPos);
+    model = glm::translate(model, card->pos);
     model = glm::scale(model, glm::vec3(76, 76, 1));
 
     m_shader->setMat4("u_model[" + std::to_string(m_instanceCounter) + "]", model);

@@ -10,6 +10,7 @@
 #include <glm/gtx/compatibility.hpp>
 
 #include "timer.h"
+#include "window.h"
 
 struct Card
 {
@@ -18,25 +19,9 @@ struct Card
     unsigned int offsetX;
     unsigned int offsetY;
     glm::vec3 selectionTint;
-    bool dragging{};
-    bool shouldSetOffset{};
     glm::vec2 dragOffset;
-    bool isMoving{};
-    glm::vec2 pos;
+    glm::vec3 pos;
 
-};
-
-struct Transform
-{
-    glm::vec2 pos;
-    glm::vec2 scale;
-};
-
-struct CardActor
-{
-    Card card;
-    Transform transform;
-    glm::vec2 dragOffset;
 };
 
 struct CardSelection
@@ -45,33 +30,42 @@ struct CardSelection
     int y{};
     Card* card{};
     std::vector<Card*>* area{};
+    glm::vec2 pos{};
 };
 
 class MovingAnimation
 {
 public:
-    MovingAnimation(Card* card, glm::vec2 startPos, glm::vec2 dstPos) : m_startPos(startPos), m_dstPos(dstPos), m_card(card)
+    MovingAnimation(std::span<Card*> cards, glm::vec2 startPos, glm::vec2 dstPos) : m_startPos(startPos), m_dstPos(dstPos), m_cards(cards)
     {
         m_startTime = Timer::time;
         m_len = glm::length(m_dstPos - m_startPos);
-        m_card->isMoving = true;
     }
 
     void update()
     {
         float distCovered = (Timer::time - m_startTime) * m_speed;
         float delta = distCovered / m_len;
-        glm::vec2 pos;
+        glm::vec3 pos;
         if (delta >= 1.0f)
         {
-            pos = m_dstPos;
-            isDone = true;
-            m_card->isMoving = false;
+            for (int i = 0; i < (int) m_cards.size(); i++)
+            {
+                pos = glm::vec3(m_dstPos, 0.0);
+                pos.y -= i * 32;
+                m_cards[i]->pos = pos;
+                isDone = true;
+            }
         }
         else
-            pos = glm::lerp(m_startPos, m_dstPos, delta);
-        
-        m_card->pos = pos;
+        {
+            for (int i = 0; i < (int) m_cards.size(); i++)
+            {
+                pos = glm::vec3(glm::lerp(m_startPos, m_dstPos, delta), 0.0001);
+                pos.y -= i * 32;
+                m_cards[i]->pos = pos;
+            }
+        }        
     }
 
     bool isDone{};
@@ -82,7 +76,41 @@ private:
     float m_len;
     glm::vec2 m_startPos;
     glm::vec2 m_dstPos;
-    Card* m_card;
+    std::span<Card*> m_cards;
+};
+
+class DraggingAnimation
+{
+public:
+    void start(std::span<Card*> cards)
+    {
+        m_cards = cards;
+        glm::vec2 mousePos = glm::vec2(Window::xPos, Window::yPos);
+        for (Card* c : cards)
+        {
+            c->dragOffset = mousePos - glm::vec2(c->pos);
+        }
+        isDone = false;
+    }
+
+    void update()
+    {
+        glm::vec2 mousePos = glm::vec2(Window::xPos, Window::yPos);
+        for (Card* c : m_cards)
+        {
+            c->pos = glm::vec3(mousePos - c->dragOffset, 0.0001);
+        }
+    }
+
+    void stop()
+    {
+        isDone = true;
+    }
+
+    bool isDone{true};
+
+private:
+    std::span<Card*> m_cards;
 };
 
 struct Board
@@ -99,6 +127,7 @@ struct Board
     Card* foundationsBg;
 
     std::vector<MovingAnimation> movingAnimation;
+    DraggingAnimation draggingAnimation;
 };
 
 struct Move
@@ -116,6 +145,8 @@ public:
     void redo();
 
 private:
+    Move executeMove(const Move& move);
+
     std::stack<Move> m_undoStack;
     std::stack<Move> m_redoStack;
 };
@@ -153,14 +184,11 @@ private:
 
     void select(std::vector<Card*>* area, int x, int y, bool isDragStart);
     void deselect();
-    void deselectTrailingCards();
-
-    bool moveCardToFoundations(std::vector<Card*>& src, int col);
-    bool moveCardToOpenCells(std::vector<Card*>& src, int col);
 
     int getIndexX(int n, double xPos);
     int getIndexY(int n, int col, double yPos);
 
+    bool tryMoveFromTo(std::vector<Card*>& src, std::span<std::vector<Card*>> dst, int col, std::span<glm::vec2> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, int c));
     void moveCard(std::vector<Card*>& src, std::vector<Card*>& dst, int n);
 
     std::vector<Card> m_deck;
