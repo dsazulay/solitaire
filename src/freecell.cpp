@@ -158,7 +158,7 @@ void Freecell::handleOpenCellsClick(int i, bool isDragStart)
 {
     if (m_cardSelected.card == nullptr)
     {
-        select(m_board.openCells, i, m_board.openCells[i].size() - 1, isDragStart);
+        select(m_board.openCells.data(), i, m_board.openCells[i].size() - 1, isDragStart);
         return;
     }
 
@@ -181,7 +181,7 @@ void Freecell::handleOpenCellsClick(int i, bool isDragStart)
     m_board.movingAnimation.push_back(m);
 
     moveCard(m_cardSelected.area[col], m_board.openCells[i], 1);
-    m_history.recordMove(&m_cardSelected.area[col], &m_board.openCells[i], 1);
+    m_history.recordMove(&m_cardSelected.area[col], &m_board.openCells[i], 1, m_cardSelected.pos, m_board.openCellsMap[i]);
 
     deselect();
 }
@@ -213,7 +213,7 @@ void Freecell::handleFoundationsClick(int i, bool isDragStart)
     m_board.movingAnimation.push_back(m);
 
     moveCard(m_cardSelected.area[col], m_board.foundations[i], 1);
-    m_history.recordMove(&m_cardSelected.area[col], &m_board.foundations[i], 1);
+    m_history.recordMove(&m_cardSelected.area[col], &m_board.foundations[i], 1, m_cardSelected.pos, m_board.foundationMap[i]);
 
     deselect();
 
@@ -251,7 +251,7 @@ void Freecell::handleTableClick(int i, int j, bool isDragStart)
     m_board.movingAnimation.push_back(m);
 
     moveCard(m_cardSelected.area[col], m_board.table[i], diff);
-    m_history.recordMove(&m_cardSelected.area[col], &m_board.table[i], diff);
+    m_history.recordMove(&m_cardSelected.area[col], &m_board.table[i], diff, m_cardSelected.pos, m_board.tableMap[i][m_board.table[i].size() - diff]);
 
     deselect();
 }
@@ -449,11 +449,37 @@ void Freecell::processDoubleClick(double xPos, double yPos)
 
 void Freecell::undoMove()
 {
+    if (m_history.isUndoStackEmpty())
+    {
+        LOG_WARN("No moves to undo");
+        return;
+    }
+    Move move = m_history.getTopUndoMove();
+    
+    int index = move.dstStack->size() - move.cardQuantity;
+    std::span<Card*> cards(move.dstStack->data() + index, move.cardQuantity);
+    MovingAnimation m(cards, move.dstPos, move.srcPos);
+    m_board.movingAnimation.push_back(m);
+
+    moveCard(*move.dstStack, *move.srcStack, move.cardQuantity);
     m_history.undo();
 }
 
 void Freecell::redoMove()
 {
+    if (m_history.isRedoStackEmpty())
+    {
+        LOG_WARN("No moves to redo");
+        return;
+    }
+    Move move = m_history.getTopRedoMove();
+
+    int index = move.dstStack->size() - move.cardQuantity;
+    std::span<Card*> cards(move.dstStack->data() + index, move.cardQuantity);
+    MovingAnimation m(cards, move.dstPos, move.srcPos);
+    m_board.movingAnimation.push_back(m);
+
+    moveCard(*move.dstStack, *move.srcStack, move.cardQuantity);
     m_history.redo();
 }
 
@@ -464,13 +490,22 @@ bool Freecell::tryMoveFromTo(std::vector<Card*>& src, std::span<std::vector<Card
         if ((this->*isLegalMove)(src.back(), i))
         {
             std::span<Card*> cards(src.data() + src.size() - 1, 1);
-            MovingAnimation m(cards, m_board.tableMap[col][src.size()], dstAreaPos[i]);
+            MovingAnimation m(cards, cards.back()->pos, dstAreaPos[i]);
             m_board.movingAnimation.push_back(m);
 
             moveCard(src, dst[i], 1);
+            m_history.recordMove(&src, &dst[i], 1, cards.back()->pos, dstAreaPos[i]);
 
-            m_history.recordMove(&src, &dst[i], 1);
-
+            // TODO: check if it's necessary to use on complete for animations
+            // glm::vec3 srcCardPos = cards.back()->pos;
+            // glm::vec2 dstPos = dstAreaPos[i];
+            // MovingAnimation m(cards, cards.back()->pos, dstAreaPos[i], [&, dst, i, srcCardPos, dstPos]()
+            // {
+            //     moveCard(src, dst[i], 1);
+            //     m_history.recordMove(&src, &dst[i], 1, srcCardPos, dstPos);
+            // });
+            // m_board.movingAnimation.push_back(m);
+            
             return true;
         }
     }
@@ -552,12 +587,14 @@ void Freecell::moveCard(std::vector<Card*>& src, std::vector<Card*>& dst, int n)
     }
 }
 
-void History::recordMove(std::vector<Card*>* src, std::vector<Card*>* dst, int n)
+void History::recordMove(std::vector<Card*>* src, std::vector<Card*>* dst, int n, glm::vec2 srcPos, glm::vec2 dstPos)
 {
     Move move;
     move.srcStack = src;
     move.dstStack = dst;
     move.cardQuantity = n;
+    move.srcPos = srcPos;
+    move.dstPos = dstPos;
 
     m_undoStack.push(move);
     if (m_redoStack.size() > 0)
@@ -573,8 +610,14 @@ void History::undo()
     }
 
     Move move = m_undoStack.top();
-    Move redoMove = executeMove(move);
 
+    Move redoMove;
+    redoMove.srcStack = move.dstStack;
+    redoMove.dstStack = move.srcStack;
+    redoMove.cardQuantity = move.cardQuantity;
+    redoMove.srcPos = move.dstPos;
+    redoMove.dstPos = move.srcPos;
+    
     m_undoStack.pop();
     m_redoStack.push(redoMove);
 }
@@ -588,30 +631,34 @@ void History::redo()
     }
 
     Move move = m_redoStack.top();
-    Move undoMove = executeMove(move);
+
+    Move undoMove;
+    undoMove.srcStack = move.dstStack;
+    undoMove.dstStack = move.srcStack;
+    undoMove.cardQuantity = move.cardQuantity;
+    undoMove.srcPos = move.dstPos;
+    undoMove.dstPos = move.srcPos;
 
     m_redoStack.pop();
     m_undoStack.push(undoMove);
 }
 
-Move History::executeMove(const Move& move)
+bool History::isUndoStackEmpty() const
 {
-    int index = move.dstStack->size() - move.cardQuantity;
+    return m_undoStack.empty();
+}
 
-    for (int i = index; i < (int) move.dstStack->size(); i++)
-    {
-        move.srcStack->push_back((*move.dstStack)[i]);
-    }
+bool History::isRedoStackEmpty() const
+{
+    return m_redoStack.empty();
+}
 
-    for (int i = 0; i < move.cardQuantity; i++)
-    {
-        move.dstStack->pop_back();
-    }
+Move History::getTopUndoMove() const
+{
+    return m_undoStack.top();
+}
 
-    Move newMove;
-    newMove.srcStack = move.dstStack;
-    newMove.dstStack = move.srcStack;
-    newMove.cardQuantity = move.cardQuantity;
-
-    return newMove;
+Move History::getTopRedoMove() const
+{
+    return m_redoStack.top();
 }

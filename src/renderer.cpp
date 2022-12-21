@@ -72,6 +72,8 @@ void Renderer::render(const Board& board, RenderMode mode)
         {
             if (board.foundations[i].size() == 0)
                 continue;
+            else if(board.foundations[i].size() > 1)
+                renderSprite(board.foundationMap[i], board.foundations[i][board.foundations[i].size() - 2]);
             renderSprite(board.foundationMap[i], board.foundations[i].back());
         }
 
@@ -104,6 +106,8 @@ void Renderer::render(const Board& board, RenderMode mode)
         {
             if (board.foundations[i].size() == 0)
                 continue;
+            else if(board.foundations[i].size() > 1)
+                renderSprite(board.foundationMap[i], board.foundations[i][board.foundations[i].size() - 2]);
             renderSprite(board.foundationMap[i], board.foundations[i].back());
         }
 

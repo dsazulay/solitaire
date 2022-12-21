@@ -4,6 +4,7 @@
 #include <stack>
 #include <array>
 #include <span>
+#include <functional>
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -36,7 +37,8 @@ struct CardSelection
 class MovingAnimation
 {
 public:
-    MovingAnimation(std::span<Card*> cards, glm::vec2 startPos, glm::vec2 dstPos) : m_startPos(startPos), m_dstPos(dstPos), m_cards(cards)
+    MovingAnimation(std::span<Card*> cards, glm::vec2 startPos, glm::vec2 dstPos, std::function<void()> onComplete = nullptr)
+        : m_startPos(startPos), m_dstPos(dstPos), m_cards(cards), m_onCompleteCallback(onComplete)
     {
         m_startTime = Timer::time;
         m_len = glm::length(m_dstPos - m_startPos);
@@ -56,6 +58,8 @@ public:
                 m_cards[i]->pos = pos;
                 isDone = true;
             }
+            if (m_onCompleteCallback != nullptr)
+                m_onCompleteCallback();
         }
         else
         {
@@ -77,6 +81,7 @@ private:
     glm::vec2 m_startPos;
     glm::vec2 m_dstPos;
     std::span<Card*> m_cards;
+    std::function<void()> m_onCompleteCallback;
 };
 
 class DraggingAnimation
@@ -120,7 +125,7 @@ struct Board
     glm::vec2 foundationMap[4];
 
     std::vector<Card*> table[8];
-    std::vector<Card*> openCells[4];
+    std::array<std::vector<Card*>, 4> openCells;
     std::vector<Card*> foundations[4];
 
     Card* openCellsBg;
@@ -135,18 +140,22 @@ struct Move
     std::vector<Card*>* srcStack;
     std::vector<Card*>* dstStack;
     int cardQuantity;
+    glm::vec2 srcPos;
+    glm::vec2 dstPos;
 };
 
 class History
 {
 public:
-    void recordMove(std::vector<Card*>* src, std::vector<Card*>* dst, int n);
+    void recordMove(std::vector<Card*>* src, std::vector<Card*>* dst, int n, glm::vec2 srcPos = glm::vec2{0}, glm::vec2 dstPos = glm::vec2{0});
     void undo();
     void redo();
+    bool isUndoStackEmpty() const;
+    bool isRedoStackEmpty() const;
+    Move getTopUndoMove() const;
+    Move getTopRedoMove() const;
 
 private:
-    Move executeMove(const Move& move);
-
     std::stack<Move> m_undoStack;
     std::stack<Move> m_redoStack;
 };
