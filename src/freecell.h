@@ -25,12 +25,13 @@ struct Card
 
 };
 
+typedef std::vector<Card*> CardStack;
+
 struct CardSelection
 {
-    int x{};
     int y{};
     Card* card{};
-    std::vector<Card*>* area{};
+    CardStack* stack{};
     glm::vec2 pos{};
 };
 
@@ -120,13 +121,13 @@ private:
 
 struct Board
 {
-    glm::vec2 tableMap[8][12];
-    glm::vec2 openCellsMap[4];
-    glm::vec2 foundationMap[4];
+    std::array<std::array<glm::vec2, 12>, 8> tableMap;
+    std::array<glm::vec2, 4> openCellsMap;
+    std::array<glm::vec2, 4> foundationsMap;
 
-    std::vector<Card*> table[8];
-    std::array<std::vector<Card*>, 4> openCells;
-    std::vector<Card*> foundations[4];
+    std::array<CardStack, 8> table;
+    std::array<CardStack, 4> openCells;
+    std::array<CardStack, 4> foundations;
 
     Card* openCellsBg;
     Card* foundationsBg;
@@ -137,8 +138,8 @@ struct Board
 
 struct Move
 {
-    std::vector<Card*>* srcStack;
-    std::vector<Card*>* dstStack;
+    CardStack* srcStack;
+    CardStack* dstStack;
     int cardQuantity;
     glm::vec2 srcPos;
     glm::vec2 dstPos;
@@ -147,7 +148,7 @@ struct Move
 class History
 {
 public:
-    void recordMove(std::vector<Card*>* src, std::vector<Card*>* dst, int n, glm::vec2 srcPos = glm::vec2{0}, glm::vec2 dstPos = glm::vec2{0});
+    void recordMove(CardStack* src, CardStack* dst, int n, glm::vec2 srcPos = glm::vec2{0}, glm::vec2 dstPos = glm::vec2{0});
     void undo();
     void redo();
     bool isUndoStackEmpty() const;
@@ -180,30 +181,26 @@ private:
     void fillTable();
 
     bool checkWin();
-    bool checkSequence(int i, int j);
+    bool checkSequence(CardStack& stack, int j);
     int getMaxCardsToMove(bool movingToEmptySpace);
 
     bool openCellsIsLegalMove(Card* card, int col);
     bool foundationsIsLegalMove(Card* card, int col);
     bool tableIsLegalMove(Card* card, int col);
 
-    void handleOpenCellsClick(int i, bool isDragStart);
-    void handleFoundationsClick(int i, bool isDragStart);
-    void handleTableClick(int i, int j, bool isDragStart);
+    void handleClick(CardStack& stack, std::span<glm::vec2> dstAreaPos, int col, int index, bool(Freecell::*isLegalMove)(Card* card, int c), bool isDragStart);
 
-    void select(std::vector<Card*>* area, int x, int y, bool isDragStart);
+    void select(CardStack* stack, int index, bool isDragStart);
     void deselect();
 
     int getIndexX(int n, double xPos);
     int getIndexY(int n, int col, double yPos);
 
-    bool tryMoveFromTo(std::vector<Card*>& src, std::span<std::vector<Card*>> dst, int col, std::span<glm::vec2> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, int c));
-    void moveCard(std::vector<Card*>& src, std::vector<Card*>& dst, int n);
+    bool tryMoveFromTo(CardStack& src, std::span<CardStack> dst, int col, std::span<glm::vec2> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, int c));
+    void moveCard(CardStack& src, CardStack& dst, int n);
 
     std::vector<Card> m_deck;
-
     History m_history;
-
     CardSelection m_cardSelected{};
     Board m_board{};
 };

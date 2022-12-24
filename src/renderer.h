@@ -23,7 +23,7 @@ public:
 private:
     void initMesh();
     void renderBackground(const Board& board, RenderMode mode);
-    void renderSprite(glm::vec2 pos, Card* card);
+    void renderSprite(Card* card);
     void renderMovingSprite(glm::vec2 srcPos, glm::vec2 dstPos, float len, float startTime, Card* card);
     void drawCall();
     void clear();

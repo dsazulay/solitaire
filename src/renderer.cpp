@@ -57,7 +57,7 @@ void Renderer::render(const Board& board, RenderMode mode)
         {
             for (int i = 0; i < (int) board.table[j].size(); i++)
             {
-                renderSprite(board.tableMap[j][i], board.table[j].at(i));
+                renderSprite(board.table[j].at(i));
             }
         }
 
@@ -65,7 +65,7 @@ void Renderer::render(const Board& board, RenderMode mode)
         {
             if (board.openCells[i].size() == 0)
                 continue;
-            renderSprite(board.openCellsMap[i], board.openCells[i].back());
+            renderSprite(board.openCells[i].back());
         }
 
         for (int i = 0; i < 4; i++)
@@ -73,8 +73,8 @@ void Renderer::render(const Board& board, RenderMode mode)
             if (board.foundations[i].size() == 0)
                 continue;
             else if(board.foundations[i].size() > 1)
-                renderSprite(board.foundationMap[i], board.foundations[i][board.foundations[i].size() - 2]);
-            renderSprite(board.foundationMap[i], board.foundations[i].back());
+                renderSprite(board.foundations[i][board.foundations[i].size() - 2]);
+            renderSprite(board.foundations[i].back());
         }
 
         drawCall();
@@ -91,7 +91,7 @@ void Renderer::render(const Board& board, RenderMode mode)
         {
             for (int i = 0; i < (int) board.table[j].size(); i++)
             {
-                renderSprite(board.tableMap[j][i], board.table[j].at(i));
+                renderSprite(board.table[j].at(i));
             }
         }
 
@@ -99,7 +99,7 @@ void Renderer::render(const Board& board, RenderMode mode)
         {
             if (board.openCells[i].size() == 0)
                 continue;
-            renderSprite(board.openCellsMap[i], board.openCells[i].back());
+            renderSprite(board.openCells[i].back());
         }
 
         for (int i = 0; i < 4; i++)
@@ -107,8 +107,8 @@ void Renderer::render(const Board& board, RenderMode mode)
             if (board.foundations[i].size() == 0)
                 continue;
             else if(board.foundations[i].size() > 1)
-                renderSprite(board.foundationMap[i], board.foundations[i][board.foundations[i].size() - 2]);
-            renderSprite(board.foundationMap[i], board.foundations[i].back());
+                renderSprite(board.foundations[i][board.foundations[i].size() - 2]);
+            renderSprite(board.foundations[i].back());
         }
 
         drawCall();
@@ -131,13 +131,13 @@ void Renderer::renderBackground(const Board& board, RenderMode mode)
         for (int i = 0; i < 4; i++)
         {
             board.openCellsBg->pos = glm::vec3(board.openCellsMap[i], 0.0);
-            renderSprite(board.openCellsMap[i], board.openCellsBg);
+            renderSprite(board.openCellsBg);
         }
 
         for (int i = 0; i < 4; i++)
         {
-            board.foundationsBg->pos = glm::vec3(board.foundationMap[i], 0.0);
-            renderSprite(board.foundationMap[i], board.foundationsBg);
+            board.foundationsBg->pos = glm::vec3(board.foundationsMap[i], 0.0);
+            renderSprite(board.foundationsBg);
         }
 
         drawCall();
@@ -152,19 +152,21 @@ void Renderer::renderBackground(const Board& board, RenderMode mode)
 
         for (int i = 0; i < 4; i++)
         {
-            renderSprite(board.openCellsMap[i], board.openCellsBg);
+            board.openCellsBg->pos = glm::vec3(board.openCellsMap[i], 0.0);
+            renderSprite(board.openCellsBg);
         }
 
         for (int i = 0; i < 4; i++)
         {
-            renderSprite(board.foundationMap[i], board.foundationsBg);
+            board.foundationsBg->pos = glm::vec3(board.foundationsMap[i], 0.0);
+            renderSprite(board.foundationsBg);
         }
 
         drawCall();
     }
 }
 
-void Renderer::renderSprite(glm::vec2 pos, Card* card)
+void Renderer::renderSprite(Card* card)
 {
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, card->pos);
