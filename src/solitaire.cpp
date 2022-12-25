@@ -14,7 +14,7 @@ void Solitaire::onMouseClick(const Event& e)
     double xPos = event.xPos();
     double yPos = event.yPos();
 
-    m_freecell.processInput(xPos, yPos, false, false);
+    m_freecell.handleInputClick(xPos, yPos, false, false);
 }
 
 void Solitaire::onMouseDoubleClick(const Event& e)
@@ -23,7 +23,7 @@ void Solitaire::onMouseDoubleClick(const Event& e)
     double xPos = event.xPos();
     double yPos = event.yPos();
 
-    m_freecell.processDoubleClick(xPos, yPos);
+    m_freecell.handleInputDoubleClick(xPos, yPos);
 }
 
 
@@ -33,7 +33,7 @@ void Solitaire::onMouseDragStart(const Event& e)
     double xPos = event.xPos();
     double yPos = event.yPos();
 
-    m_freecell.processInput(xPos, yPos, true, true);
+    m_freecell.handleInputClick(xPos, yPos, true, true);
 }
 
 
@@ -43,7 +43,7 @@ void Solitaire::onMouseDragEnd(const Event& e)
     double xPos = event.xPos();
     double yPos = event.yPos();
 
-    m_freecell.processInput(xPos, yPos, true, false);
+    m_freecell.handleInputClick(xPos, yPos, true, false);
 }
 
 void Solitaire::onKeyboardPress(const Event& e)
@@ -52,9 +52,13 @@ void Solitaire::onKeyboardPress(const Event& e)
     int key = event.key();
 
     if (key == 0)
-        m_freecell.undoMove();
+        m_freecell.handleInputUndo();
     else if (key == 1)
-        m_freecell.redoMove();
+        m_freecell.handleInputRedo();
+    else if (key == 2)
+        m_freecell.handleInputRestart();
+    else if (key == 3)
+        m_freecell.handleInputNewGame();
 }
 
 Solitaire::Solitaire()

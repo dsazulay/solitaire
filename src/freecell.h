@@ -15,14 +15,13 @@
 
 struct Card
 {
-    unsigned int number;
-    unsigned int suit;
-    unsigned int offsetX;
-    unsigned int offsetY;
+    int number;
+    int suit;
+    int offsetX;
+    int offsetY;
     glm::vec3 selectionTint;
     glm::vec2 dragOffset;
     glm::vec3 pos;
-
 };
 
 typedef std::vector<Card*> CardStack;
@@ -165,12 +164,16 @@ class Freecell
 {
 public:
     void init();
-    void processInput(double xPos, double yPos, bool isDraging, bool isDragStart);
-    void processDoubleClick(double xPos, double yPos);
-    Board& board();
-    void undoMove();
-    void redoMove();
     void update();
+
+    void handleInputClick(double xPos, double yPos, bool isDraging, bool isDragStart);
+    void handleInputDoubleClick(double xPos, double yPos);
+    void handleInputUndo();
+    void handleInputRedo();
+    void handleInputRestart();
+    void handleInputNewGame();
+
+    Board& board();
 
 private:
     void setBoardLayout();
@@ -179,6 +182,7 @@ private:
     void swap(int i, int j);
     void shuffle();
     void fillTable();
+    void emptyTable();
 
     bool checkWin();
     bool checkSequence(CardStack& stack, int j);
