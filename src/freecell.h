@@ -40,12 +40,18 @@ public:
     MovingAnimation(std::span<Card*> cards, glm::vec2 startPos, glm::vec2 dstPos, std::function<void()> onComplete = nullptr)
         : m_startPos(startPos), m_dstPos(dstPos), m_cards(cards), m_onCompleteCallback(onComplete)
     {
-        m_startTime = Timer::time;
-        m_len = glm::length(m_dstPos - m_startPos);
+        m_len = glm::max(glm::length(m_dstPos - m_startPos), 0.00001f);
     }
 
     void update()
     {
+        // TODO: check if can find better way to initialize the start time
+        if (!m_hasStarted)
+        {
+            m_startTime = Timer::time;
+            m_hasStarted = true;
+        }
+
         float distCovered = (Timer::time - m_startTime) * m_speed;
         float delta = distCovered / m_len;
         glm::vec3 pos;
@@ -82,6 +88,7 @@ private:
     glm::vec2 m_dstPos;
     std::span<Card*> m_cards;
     std::function<void()> m_onCompleteCallback;
+    bool m_hasStarted{};
 };
 
 class DraggingAnimation
@@ -186,6 +193,8 @@ private:
 
     bool checkWin();
     bool checkSequence(CardStack& stack, int j);
+    bool isComplete();
+    void playWinAnimation();
     int getMaxCardsToMove(bool movingToEmptySpace);
 
     bool openCellsIsLegalMove(Card* card, int col);
@@ -200,6 +209,7 @@ private:
     int getIndexX(int n, double xPos);
     int getIndexY(int n, int col, double yPos);
 
+    void winMoves(CardStack& src, std::span<CardStack> dst, int col, std::span<glm::vec2> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, int c));
     bool tryMoveFromTo(CardStack& src, std::span<CardStack> dst, int col, std::span<glm::vec2> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, int c));
     void moveCard(CardStack& src, CardStack& dst, int n);
 
@@ -207,4 +217,5 @@ private:
     History m_history;
     CardSelection m_cardSelected{};
     Board m_board{};
+    bool winState{};
 };
