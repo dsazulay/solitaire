@@ -174,7 +174,6 @@ void Renderer::renderSprite(Card* card)
 
     m_shader->setMat4("u_model[" + std::to_string(m_instanceCounter) + "]", model);
     m_shader->setVec2("u_offset[" + std::to_string(m_instanceCounter) + "]", card->offsetX, card->offsetY);
-    m_shader->setVec3("u_tint[" + std::to_string(m_instanceCounter) + "]", card->selectionTint);
 
     m_instanceCounter++;
 }

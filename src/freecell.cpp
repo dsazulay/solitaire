@@ -257,15 +257,15 @@ void Freecell::createDeck()
     {
         for (int j = 0; j < 13; j++)
         {
-            Card c{.number = j, .suit = i, .selectionTint = glm::vec3(1,1,1), 
-                .offsetX = count % 8, .offsetY = static_cast<int>(count * 0.125)};
+            Card c{.number = j, .suit = i, .offsetX = count % 8, 
+                .offsetY = static_cast<int>(count * 0.125)};
             m_deck.push_back(c);
             count++;
         }
     }
 
     // Add open cells and foundation background
-    Card c{.offsetX = 1, .offsetY = 7, .selectionTint = glm::vec3(1,1,1)};
+    Card c{.offsetX = 1, .offsetY = 7};
     m_deck.push_back(c);
 
     c.offsetX = 2;
@@ -315,7 +315,6 @@ void Freecell::select(CardStack* stack, int index, bool isDragStart)
     }
 
     m_cardSelected.card = (*stack)[index];
-    m_cardSelected.card->selectionTint = glm::vec3(0.7, 0.7, 0.9);
     m_cardSelected.stack = stack;
     m_cardSelected.y = index;
     m_cardSelected.pos = m_cardSelected.card->pos;
@@ -329,7 +328,6 @@ void Freecell::deselect()
     if (m_cardSelected.card == nullptr)
         return;
 
-    m_cardSelected.card->selectionTint = glm::vec3(1, 1, 1);
     m_cardSelected.card = nullptr;
     m_cardSelected.stack = nullptr;
     m_cardSelected.y = -1;

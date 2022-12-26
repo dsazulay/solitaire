@@ -19,7 +19,6 @@ struct Card
     int suit;
     int offsetX;
     int offsetY;
-    glm::vec3 selectionTint;
     glm::vec2 dragOffset;
     glm::vec3 pos;
 };
