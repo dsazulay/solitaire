@@ -32,6 +32,12 @@ void Freecell::update()
 
 void Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool isDragStart)
 {
+    if (m_board.movingAnimation.size() > 0)
+    {
+        LOG_WARN("Can't input while card is moving!");
+        return;
+    }
+    
     int i = getIndexX(8, xPos);
     if (i == -1)
     {
@@ -85,6 +91,11 @@ void Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool i
 
 void Freecell::handleInputDoubleClick(double xPos, double yPos)
 {
+    if (m_board.movingAnimation.size() > 0)
+    {
+        LOG_WARN("Can't input while card is moving!");
+        return;
+    }
     // top area
     if (yPos > 600 - 74 && yPos < 600 + 74)
     {
@@ -141,6 +152,12 @@ void Freecell::handleInputDoubleClick(double xPos, double yPos)
 
 void Freecell::handleInputUndo()
 {
+    if (m_board.movingAnimation.size() > 0)
+    {
+        LOG_WARN("Can't input while card is moving!");
+        return;
+    }
+
     if (m_history.isUndoStackEmpty())
     {
         LOG_WARN("No moves to undo");
@@ -160,6 +177,12 @@ void Freecell::handleInputUndo()
 
 void Freecell::handleInputRedo()
 {
+    if (m_board.movingAnimation.size() > 0)
+    {
+        LOG_WARN("Can't input while card is moving!");
+        return;
+    }
+
     if (m_history.isRedoStackEmpty())
     {
         LOG_WARN("No moves to redo");
@@ -179,12 +202,24 @@ void Freecell::handleInputRedo()
 
 void Freecell::handleInputRestart()
 {
+    if (m_board.movingAnimation.size() > 0)
+    {
+        LOG_WARN("Can't input while card is moving!");
+        return;
+    }
+
     emptyTable();
     fillTable();
 }
 
 void Freecell::handleInputNewGame()
 {
+    if (m_board.movingAnimation.size() > 0)
+    {
+        LOG_WARN("Can't input while card is moving!");
+        return;
+    }
+    
     emptyTable();
     shuffle();
     fillTable();
@@ -347,6 +382,12 @@ void Freecell::handleClick(CardStack& stack, std::span<glm::vec2> dstAreaPos, in
     if (!(this->*isLegalMove)(m_cardSelected.card, col))
     {
         LOG_INFO("Invalid move");
+
+        if (glm::vec2(m_cardSelected.card->pos) == m_cardSelected.pos)
+        {
+            deselect();
+            return;
+        }
 
         std::span<Card*> cards(m_cardSelected.stack->data() + m_cardSelected.y, m_cardSelected.stack->size() - m_cardSelected.y);
         MovingAnimation m(cards, m_cardSelected.card->pos, m_cardSelected.pos);
