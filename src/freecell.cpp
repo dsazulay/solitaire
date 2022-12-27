@@ -441,11 +441,26 @@ bool Freecell::checkSequence(CardStack& stack, int j)
     return true;
 }
 
+bool Freecell::checkWinSequence(CardStack& stack)
+{
+    int currentCard = ((int)stack.size()) - 1;
+
+    for (int n = currentCard; n > 0; n--)
+    {
+        bool nextNumber = stack[n]->number <= stack[n - 1]->number;
+
+        if (!nextNumber)
+            return false;
+    }
+
+    return true;
+}
+
 bool Freecell::checkWin()
 {
     for (int i = 0; i < 8; i++)
     {
-        if (!checkSequence(m_board.table[i], 0))
+        if (!checkWinSequence(m_board.table[i]))
             return false;
     }
 

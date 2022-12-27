@@ -192,6 +192,7 @@ private:
 
     bool checkWin();
     bool checkSequence(CardStack& stack, int j);
+    bool checkWinSequence(CardStack& stack);
     bool isComplete();
     void playWinAnimation();
     int getMaxCardsToMove(bool movingToEmptySpace);
