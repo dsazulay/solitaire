@@ -74,3 +74,21 @@ public:
 private:
     int m_key;
 };
+
+class GameWinEvent : public Event
+{
+public:
+    GameWinEvent() {}
+    const char* type() const override { return descriptor; }
+
+    static constexpr char* descriptor = (char*) "GameWinEvent";
+};
+
+class UiNewGameEvent : public Event
+{
+public:
+    UiNewGameEvent() {}
+    const char* type() const override { return descriptor; }
+
+    static constexpr char* descriptor = (char*) "UiNewGameEvent";
+};

@@ -61,6 +61,16 @@ void Solitaire::onKeyboardPress(const Event& e)
         m_freecell.handleInputNewGame();
 }
 
+void Solitaire::onGameWin(const Event& e)
+{
+    m_uiRenderer->showWonWindow();
+}
+
+void Solitaire::onUiNewGameEvent(const Event& e)
+{
+    m_freecell.handleInputNewGame();
+}
+
 Solitaire::Solitaire()
 {
     m_appConfig.windowName = "Solitaire";
@@ -97,6 +107,10 @@ void Solitaire::init()
         std::bind(&Solitaire::onMouseDragEnd, this, std::placeholders::_1));
     Dispatcher::instance().subscribe(KeyboardPressEvent::descriptor,
         std::bind(&Solitaire::onKeyboardPress, this, std::placeholders::_1));
+    Dispatcher::instance().subscribe(GameWinEvent::descriptor,
+        std::bind(&Solitaire::onGameWin, this, std::placeholders::_1));
+    Dispatcher::instance().subscribe(UiNewGameEvent::descriptor,
+        std::bind(&Solitaire::onUiNewGameEvent, this, std::placeholders::_1));
 
     //glfwSwapInterval(1); // Enable vsync
 }

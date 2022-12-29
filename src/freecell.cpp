@@ -1,5 +1,7 @@
 #include "freecell.h"
 
+#include "event.h"
+#include "dispatcher.h"
 #include "utils/log.h"
 
 void Freecell::init()
@@ -27,6 +29,12 @@ void Freecell::update()
     {
         if (!isComplete() && m_board.movingAnimation.size() == 0)
             playWinAnimation();
+        else if(isComplete())
+        {
+            GameWinEvent e;
+            Dispatcher::instance().post(e);
+            winState = false;
+        }
     }
 }
 
