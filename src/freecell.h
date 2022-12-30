@@ -33,6 +33,13 @@ struct CardSelection
     glm::vec2 pos{};
 };
 
+enum class GameState
+{
+    Playing,
+    WinAnimation,
+    Won
+};
+
 class MovingAnimation
 {
 public:
@@ -217,5 +224,5 @@ private:
     History m_history;
     CardSelection m_cardSelected{};
     Board m_board{};
-    bool winState{};
+    GameState m_currentState;
 };

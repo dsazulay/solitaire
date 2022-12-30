@@ -11,6 +11,8 @@ void Freecell::init()
     createOpenCellsAndFoundations();
     shuffle();
     fillTable();
+
+    m_currentState = GameState::Playing;
 }
 
 void Freecell::update()
@@ -25,16 +27,19 @@ void Freecell::update()
     if (!m_board.draggingAnimation.isDone)
         m_board.draggingAnimation.update(); 
     
-    if (winState)
+    if (m_currentState == GameState::WinAnimation)
     {
         if (!isComplete() && m_board.movingAnimation.size() == 0)
             playWinAnimation();
         else if(isComplete())
         {
-            GameWinEvent e;
-            Dispatcher::instance().post(e);
-            winState = false;
+            m_currentState = GameState::Won;
         }
+    }
+    else if (m_currentState == GameState::Won)
+    {
+        GameWinEvent e;
+        Dispatcher::instance().post(e);
     }
 }
 
@@ -218,6 +223,7 @@ void Freecell::handleInputRestart()
 
     emptyTable();
     fillTable();
+    m_currentState = GameState::Playing;
 }
 
 void Freecell::handleInputNewGame()
@@ -231,6 +237,7 @@ void Freecell::handleInputNewGame()
     emptyTable();
     shuffle();
     fillTable();
+    m_currentState = GameState::Playing;
 }
 
 Board& Freecell::board()
@@ -425,7 +432,7 @@ void Freecell::handleClick(CardStack& stack, std::span<glm::vec2> dstAreaPos, in
         if (checkWin())
         {
             LOG_INFO("You Won!");
-            winState = true;
+            m_currentState = GameState::WinAnimation;
         }
     });
     m_board.movingAnimation.push_back(m);
@@ -601,7 +608,7 @@ bool Freecell::tryMoveFromTo(CardStack& src, std::span<CardStack> dst, int col, 
                 if (checkWin())
                 {
                     LOG_INFO("You Won!");
-                    winState = true;
+                    m_currentState = GameState::WinAnimation;
                 }
             });
             m_board.movingAnimation.push_back(m);

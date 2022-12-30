@@ -8,6 +8,7 @@
 #include "ui_renderer.h"
 #include "freecell.h"
 #include "event.h"
+#include "dispatcher.h"
 
 struct AppConfig
 {
@@ -34,10 +35,20 @@ private:
     void onGameWin(const Event& e);
     void onUiNewGameEvent(const Event& e);
 
+    template <class Fp>
+    void bindCallback(const char* descriptor, Fp funcPointer);
+
     AppConfig m_appConfig;
     std::unique_ptr<Window> m_window;
     std::unique_ptr<Renderer> m_renderer;
     std::unique_ptr<UiRenderer> m_uiRenderer;
     Freecell m_freecell;
 };
+
+template <class Fp>
+void Solitaire::bindCallback(const char* descriptor, Fp funcPointer)
+{
+    Dispatcher::instance().subscribe(descriptor, 
+        std::bind(funcPointer, this, std::placeholders::_1));
+}
 

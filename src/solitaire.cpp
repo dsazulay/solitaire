@@ -5,7 +5,6 @@
 #include <chrono>
 #include <time.h>
 
-#include "dispatcher.h"
 #include "timer.h"
 
 void Solitaire::onMouseClick(const Event& e)
@@ -97,20 +96,13 @@ void Solitaire::init()
     srand(time(NULL));
     m_freecell.init();
 
-    Dispatcher::instance().subscribe(MouseClickEvent::descriptor,
-        std::bind(&Solitaire::onMouseClick, this, std::placeholders::_1));
-    Dispatcher::instance().subscribe(MouseDoubleClickEvent::descriptor,
-        std::bind(&Solitaire::onMouseDoubleClick, this, std::placeholders::_1));
-    Dispatcher::instance().subscribe(MouseDragStartEvent::descriptor,
-        std::bind(&Solitaire::onMouseDragStart, this, std::placeholders::_1));
-    Dispatcher::instance().subscribe(MouseDragEndEvent::descriptor,
-        std::bind(&Solitaire::onMouseDragEnd, this, std::placeholders::_1));
-    Dispatcher::instance().subscribe(KeyboardPressEvent::descriptor,
-        std::bind(&Solitaire::onKeyboardPress, this, std::placeholders::_1));
-    Dispatcher::instance().subscribe(GameWinEvent::descriptor,
-        std::bind(&Solitaire::onGameWin, this, std::placeholders::_1));
-    Dispatcher::instance().subscribe(UiNewGameEvent::descriptor,
-        std::bind(&Solitaire::onUiNewGameEvent, this, std::placeholders::_1));
+    bindCallback(MouseClickEvent::descriptor, &Solitaire::onMouseClick);
+    bindCallback(MouseDoubleClickEvent::descriptor, &Solitaire::onMouseDoubleClick);
+    bindCallback(MouseDragStartEvent::descriptor, &Solitaire::onMouseDragStart);
+    bindCallback(MouseDragEndEvent::descriptor, &Solitaire::onMouseDragEnd);
+    bindCallback(KeyboardPressEvent::descriptor, &Solitaire::onKeyboardPress);
+    bindCallback(GameWinEvent::descriptor, &Solitaire::onGameWin);
+    bindCallback(UiNewGameEvent::descriptor, &Solitaire::onUiNewGameEvent);
 
     //glfwSwapInterval(1); // Enable vsync
 }
