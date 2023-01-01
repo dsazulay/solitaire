@@ -223,6 +223,7 @@ void Freecell::handleInputRestart()
 
     emptyTable();
     fillTable();
+    m_history.clearStacks();
     m_currentState = GameState::Playing;
 }
 
@@ -237,6 +238,7 @@ void Freecell::handleInputNewGame()
     emptyTable();
     shuffle();
     fillTable();
+    m_history.clearStacks();
     m_currentState = GameState::Playing;
 }
 
@@ -427,7 +429,8 @@ void Freecell::handleClick(CardStack& stack, std::span<glm::vec2> dstAreaPos, in
     MovingAnimation m(cards, m_cardSelected.card->pos, dstPos, [&, diff, srcStack, srcPos, dstPos]()
     {
         moveCard(*srcStack, stack, diff);
-        m_history.recordMove(srcStack, &stack, diff, srcPos, dstPos);
+        Move m{srcStack, &stack, diff, srcPos, dstPos};
+        m_history.recordMove(m);
 
         if (checkWin())
         {
@@ -576,7 +579,8 @@ void Freecell::winMoves(CardStack& src, std::span<CardStack> dst, int col, std::
             {
                 moveCard(src, dst[i], 1);
                 // TODO: check if want to record movements
-                m_history.recordMove(&src, &dst[i], 1, srcCardPos, dstPos);
+                Move m{&src, &dst[i], 1, srcCardPos, dstPos};
+                m_history.recordMove(m);
             });
             m_board.movingAnimation.push_back(m);            
         }
@@ -603,7 +607,8 @@ bool Freecell::tryMoveFromTo(CardStack& src, std::span<CardStack> dst, int col, 
             MovingAnimation m(cards, cards.back()->pos, dstAreaPos[i], [&, dst, i, srcCardPos, dstPos]()
             {
                 moveCard(src, dst[i], 1);
-                m_history.recordMove(&src, &dst[i], 1, srcCardPos, dstPos);
+                Move m{&src, &dst[i], 1, srcCardPos, dstPos};
+                m_history.recordMove(m);
 
                 if (checkWin())
                 {
@@ -675,69 +680,4 @@ void Freecell::moveCard(CardStack& src, CardStack& dst, int n)
     {
         src.pop_back();
     }
-}
-
-void History::recordMove(CardStack* src, CardStack* dst, int n, glm::vec2 srcPos, glm::vec2 dstPos)
-{
-    Move move {.srcStack = src, .dstStack = dst, 
-        .cardQuantity = n, .srcPos = srcPos, .dstPos = dstPos};
-
-
-    m_undoStack.push(move);
-    if (m_redoStack.size() > 0)
-        m_redoStack = std::stack<Move>();
-}
-
-void History::undo()
-{
-    if (m_undoStack.empty())
-    {
-        LOG_WARN("No moves to undo");
-        return;
-    }
-
-    Move move = m_undoStack.top();
-
-    Move redoMove{.srcStack = move.dstStack, .dstStack = move.srcStack, 
-        .cardQuantity = move.cardQuantity, .srcPos = move.dstPos, .dstPos = move.srcPos};
-    
-    m_undoStack.pop();
-    m_redoStack.push(redoMove);
-}
-
-void History::redo()
-{
-    if (m_redoStack.empty())
-    {
-        LOG_WARN("No moves to redo");
-        return;
-    }
-
-    Move move = m_redoStack.top();
-
-    Move undoMove{.srcStack = move.dstStack, .dstStack = move.srcStack, 
-        .cardQuantity = move.cardQuantity, .srcPos = move.dstPos, .dstPos = move.srcPos};
-
-    m_redoStack.pop();
-    m_undoStack.push(undoMove);
-}
-
-bool History::isUndoStackEmpty() const
-{
-    return m_undoStack.empty();
-}
-
-bool History::isRedoStackEmpty() const
-{
-    return m_redoStack.empty();
-}
-
-Move History::getTopUndoMove() const
-{
-    return m_undoStack.top();
-}
-
-Move History::getTopRedoMove() const
-{
-    return m_redoStack.top();
 }

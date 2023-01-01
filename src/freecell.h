@@ -12,6 +12,7 @@
 
 #include "timer.h"
 #include "window.h"
+#include "history.h"
 
 struct Card
 {
@@ -155,22 +156,12 @@ struct Move
     int cardQuantity;
     glm::vec2 srcPos;
     glm::vec2 dstPos;
-};
 
-class History
-{
-public:
-    void recordMove(CardStack* src, CardStack* dst, int n, glm::vec2 srcPos = glm::vec2{0}, glm::vec2 dstPos = glm::vec2{0});
-    void undo();
-    void redo();
-    bool isUndoStackEmpty() const;
-    bool isRedoStackEmpty() const;
-    Move getTopUndoMove() const;
-    Move getTopRedoMove() const;
-
-private:
-    std::stack<Move> m_undoStack;
-    std::stack<Move> m_redoStack;
+    Move swap()
+    {
+        Move newMove{dstStack, srcStack, cardQuantity, dstPos, srcPos};
+        return newMove;
+    }
 };
 
 class Freecell
@@ -221,7 +212,7 @@ private:
     void moveCard(CardStack& src, CardStack& dst, int n);
 
     std::vector<Card> m_deck;
-    History m_history;
+    History<Move> m_history;
     CardSelection m_cardSelected{};
     Board m_board{};
     GameState m_currentState;
