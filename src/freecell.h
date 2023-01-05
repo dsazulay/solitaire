@@ -13,6 +13,7 @@
 #include "timer.h"
 #include "window.h"
 #include "history.h"
+#include "gamedata.h"
 
 struct Card
 {
@@ -178,8 +179,13 @@ public:
     void handleInputNewGame();
 
     Board& board();
+    PlayerData* playerData();
+    MatchData* matchData();
 
 private:
+    void loadPlayerData();
+    void updatePlayerData(bool didWon, float time);
+
     void setBoardLayout();
     void createDeck();
     void createOpenCellsAndFoundations();
@@ -216,4 +222,6 @@ private:
     CardSelection m_cardSelected{};
     Board m_board{};
     GameState m_currentState;
+    PlayerData m_playerData;
+    MatchData m_matchData;
 };

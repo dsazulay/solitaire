@@ -39,11 +39,13 @@ void UiRenderer::render()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    if (m_shouldRenderDebugWindow)
-        renderDebugWindow();
+    renderTimeWindow();
 
     if (m_shouldRenderWonWindow)
         renderWonWindow();
+
+    if (m_shouldRenderDebugWindow)
+        renderDebugWindow();
 
     // ImGui::ShowDemoWindow();
     ImGui::Render();
@@ -75,6 +77,12 @@ void UiRenderer::hideWonWindow()
     m_shouldRenderWonWindow = false;
 }
 
+void UiRenderer::setPlayerAndMatchData(PlayerData* playerData, MatchData* matchData)
+{
+    m_playerData = playerData;
+    m_matchData = matchData;
+}
+
 void UiRenderer::renderWonWindow()
 {
     const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
@@ -83,6 +91,10 @@ void UiRenderer::renderWonWindow()
     
     ImGui::Begin("Won window");
     ImGui::Text("You won!");
+    ImGui::Text("Time: %d:%d", (int)m_matchData->currentTime / 60, (int)m_matchData->currentTime % 60);
+    ImGui::Text("Games Played %d", m_playerData->gamesPlayed);
+    ImGui::Text("Games Won %d", m_playerData->gamesWon);
+    ImGui::Text("Best Time %d:%d", (int)m_playerData->bestTime / 60, (int)m_playerData->bestTime % 60);
     if (ImGui::Button("Play again"))
     {
         hideWonWindow();
@@ -92,12 +104,28 @@ void UiRenderer::renderWonWindow()
     ImGui::End();
 }
 
+void UiRenderer::renderStatsWindow()
+{
+    ImGui::Begin("Stats window");
+    ImGui::Text("Stats");
+    ImGui::Text("Games Played %d", m_playerData->gamesPlayed);
+    ImGui::Text("Games Won %d", m_playerData->gamesWon);
+    ImGui::Text("Percentage Won %d%%", (int)((float)m_playerData->gamesWon / m_playerData->gamesPlayed * 100));
+    ImGui::Text("Best Time %d:%d", (int)m_playerData->bestTime / 60, (int)m_playerData->bestTime % 60);
+}
+
+void UiRenderer::renderTimeWindow()
+{
+    ImGui::Begin("Time");
+    ImGui::Text("TIME: %d:%d", (int)m_matchData->currentTime / 60, (int)m_matchData->currentTime % 60);
+    ImGui::End();
+}
+
 void UiRenderer::renderDebugWindow()
 {
     ImGui::Begin("Debug");
     ImGui::Text("Frame time: %.3fms", Timer::deltaTime);
     ImGui::Text("FPS: %d", (int)(1 / Timer::deltaTime));
-
     ImGui::Combo("Render mode", &m_renderMode, "Shaded\0Wireframe\0Shaded Wireframe\0\0");
     ImGui::End();
 }

@@ -1,11 +1,15 @@
 #include "freecell.h"
 
+#include <filesystem>
+
 #include "event.h"
 #include "dispatcher.h"
 #include "utils/log.h"
+#include "serializer.h"
 
 void Freecell::init()
 {
+    loadPlayerData();
     setBoardLayout();
     createDeck();
     createOpenCellsAndFoundations();
@@ -13,6 +17,7 @@ void Freecell::init()
     fillTable();
 
     m_currentState = GameState::Playing;
+    m_matchData.startTime = Timer::time;
 }
 
 void Freecell::update()
@@ -27,19 +32,25 @@ void Freecell::update()
     if (!m_board.draggingAnimation.isDone)
         m_board.draggingAnimation.update(); 
     
-    if (m_currentState == GameState::WinAnimation)
+    if (m_currentState == GameState::Playing)
+    {
+        m_matchData.currentTime = Timer::time - m_matchData.startTime;
+    }
+    else if (m_currentState == GameState::WinAnimation)
     {
         if (!isComplete() && m_board.movingAnimation.size() == 0)
             playWinAnimation();
         else if(isComplete())
         {
             m_currentState = GameState::Won;
+            updatePlayerData(true, m_matchData.currentTime);
+            GameWinEvent e;
+            Dispatcher::instance().post(e);
         }
     }
     else if (m_currentState == GameState::Won)
     {
-        GameWinEvent e;
-        Dispatcher::instance().post(e);
+        // do nothing
     }
 }
 
@@ -224,7 +235,9 @@ void Freecell::handleInputRestart()
     emptyTable();
     fillTable();
     m_history.clearStacks();
+    updatePlayerData(false, 10000.0f);
     m_currentState = GameState::Playing;
+    m_matchData.startTime = Timer::time;
 }
 
 void Freecell::handleInputNewGame()
@@ -239,12 +252,61 @@ void Freecell::handleInputNewGame()
     shuffle();
     fillTable();
     m_history.clearStacks();
-    m_currentState = GameState::Playing;
+    if (m_currentState == GameState::Playing)
+        updatePlayerData(false, 10000.0f);
+    else
+        m_currentState = GameState::Playing;
+    m_matchData.startTime = Timer::time;
 }
 
 Board& Freecell::board()
 {
     return m_board;
+}
+
+PlayerData* Freecell::playerData()
+{
+    return &m_playerData;
+}
+
+MatchData* Freecell::matchData()
+{
+    return &m_matchData;
+}
+
+void Freecell::loadPlayerData()
+{
+    std::filesystem::path file{ "../../resources/gamedata.dat" };
+    if (std::filesystem::exists(file))
+    {
+        Serializer serializer(m_playerData, "../../resources/gamedata.dat");
+        serializer.load();
+        serializer.deserialize();
+        return;
+    }
+
+    // first time openning application
+    m_playerData.gamesPlayed = 0;
+    m_playerData.gamesWon = 0;
+    m_playerData.bestTime = 10000.0f;
+    
+    Serializer serializer(m_playerData, "../../resources/gamedata.dat");
+    serializer.serialize();
+    serializer.save();
+}
+
+void Freecell::updatePlayerData(bool didWon, float time)
+{
+    m_playerData.gamesPlayed++;
+    if (didWon)
+        m_playerData.gamesWon++;
+
+    if (time < m_playerData.bestTime)
+        m_playerData.bestTime = time;
+    
+    Serializer serializer(m_playerData, "../../resources/gamedata.dat");
+    serializer.serialize();
+    serializer.save();
 }
 
 void Freecell::setBoardLayout()

@@ -95,6 +95,7 @@ void Solitaire::init()
     // Game init
     srand(time(NULL));
     m_freecell.init();
+    m_uiRenderer->setPlayerAndMatchData(m_freecell.playerData(), m_freecell.matchData());
 
     bindCallback(MouseClickEvent::descriptor, &Solitaire::onMouseClick);
     bindCallback(MouseDoubleClickEvent::descriptor, &Solitaire::onMouseDoubleClick);
