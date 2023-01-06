@@ -46,6 +46,9 @@ void UiRenderer::render()
 
     if (m_shouldRenderDebugWindow)
         renderDebugWindow();
+    
+    if (m_shouldRenderStatsWindow)
+        renderStatsWindow();
 
     // ImGui::ShowDemoWindow();
     ImGui::Render();
@@ -55,6 +58,31 @@ void UiRenderer::render()
 int UiRenderer::renderMode()
 {
     return m_renderMode;
+}
+
+void UiRenderer::showWonWindow()
+{
+    m_shouldRenderWonWindow = true;
+}
+
+void UiRenderer::hideWonWindow()
+{
+    m_shouldRenderWonWindow = false;
+}
+
+void UiRenderer::showStatsWindow()
+{
+    m_shouldRenderStatsWindow = true;
+}
+
+void UiRenderer::hideStatsWindow()
+{
+    m_shouldRenderStatsWindow = false;
+}
+
+void UiRenderer::toggleStatsWindow()
+{
+    m_shouldRenderStatsWindow = !m_shouldRenderStatsWindow;
 }
 
 void UiRenderer::showDebugWindow()
@@ -67,14 +95,9 @@ void UiRenderer::hideDebugWindow()
     m_shouldRenderDebugWindow = false;
 }
 
-void UiRenderer::showWonWindow()
+void::UiRenderer::toggleDebugWindow()
 {
-    m_shouldRenderWonWindow = true;
-}
-
-void UiRenderer::hideWonWindow()
-{
-    m_shouldRenderWonWindow = false;
+    m_shouldRenderDebugWindow = !m_shouldRenderDebugWindow;
 }
 
 void UiRenderer::setPlayerAndMatchData(PlayerData* playerData, MatchData* matchData)
@@ -106,12 +129,17 @@ void UiRenderer::renderWonWindow()
 
 void UiRenderer::renderStatsWindow()
 {
+    const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 400, main_viewport->WorkPos.y + 180));
+    ImGui::SetNextWindowSize(ImVec2(480, 360));
+
     ImGui::Begin("Stats window");
     ImGui::Text("Stats");
     ImGui::Text("Games Played %d", m_playerData->gamesPlayed);
     ImGui::Text("Games Won %d", m_playerData->gamesWon);
     ImGui::Text("Percentage Won %d%%", (int)((float)m_playerData->gamesWon / m_playerData->gamesPlayed * 100));
     ImGui::Text("Best Time %d:%d", (int)m_playerData->bestTime / 60, (int)m_playerData->bestTime % 60);
+    ImGui::End();
 }
 
 void UiRenderer::renderTimeWindow()

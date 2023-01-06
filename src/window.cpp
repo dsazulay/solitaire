@@ -132,6 +132,12 @@ void Window::keyboardCallback(GLFWwindow* window, int key, int scancode, int act
         KeyboardPressEvent e(3);
         Dispatcher::instance().post(e);
     }
+
+    else if (key == GLFW_KEY_S && action == GLFW_PRESS)
+    {
+        KeyboardPressEvent e(4);
+        Dispatcher::instance().post(e);
+    }
 }
 
 

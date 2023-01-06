@@ -12,10 +12,14 @@ public:
     ~UiRenderer();
     void render();
     int renderMode();
-    void showDebugWindow();
-    void hideDebugWindow();
     void showWonWindow();
     void hideWonWindow();
+    void showStatsWindow();
+    void hideStatsWindow();
+    void toggleStatsWindow();
+    void showDebugWindow();
+    void hideDebugWindow();
+    void toggleDebugWindow();
     void setPlayerAndMatchData(PlayerData* playerData, MatchData* matchInfo);
 
 private:
@@ -27,6 +31,7 @@ private:
     int m_renderMode{};
     bool m_shouldRenderWonWindow{};
     bool m_shouldRenderDebugWindow{};
+    bool m_shouldRenderStatsWindow{};
     PlayerData* m_playerData;
     MatchData* m_matchData;
 };
