@@ -60,6 +60,8 @@ void Solitaire::onKeyboardPress(const Event& e)
         m_freecell.handleInputNewGame();
     else if (key == 4)
         m_uiRenderer->toggleStatsWindow();
+    else if (key == 5)
+        m_uiRenderer->toggleDebugWindow();
 }
 
 void Solitaire::onGameWin(const Event& e)
