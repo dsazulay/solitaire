@@ -211,6 +211,7 @@ private:
     void deselect();
 
     int getIndexX(int n, double xPos);
+    int getTopAreaIndexX(std::span<glm::vec2> area, double xPos);
     int getIndexY(int n, int col, double yPos);
 
     void winMoves(CardStack& src, std::span<CardStack> dst, int col, std::span<glm::vec2> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, int c));

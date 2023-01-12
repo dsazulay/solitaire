@@ -61,20 +61,6 @@ void Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool i
         LOG_WARN("Can't input while card is moving!");
         return;
     }
-    
-    int i = getIndexX(8, xPos);
-    if (i == -1)
-    {
-        if (m_cardSelected.card != nullptr)
-        {
-            std::span<Card*> cards(m_cardSelected.stack->data() + m_cardSelected.y, m_cardSelected.stack->size() - m_cardSelected.y);
-            MovingAnimation m(cards, m_cardSelected.card->pos, m_cardSelected.pos);
-            m_board.movingAnimation.push_back(m);
-
-            deselect();
-        }
-        return;
-    }
 
     // top area
     if (yPos > 600 - 74 && yPos < 600 + 74)
@@ -82,17 +68,56 @@ void Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool i
         // open cells
         if (xPos < 640)
         {
+            int i = getTopAreaIndexX(m_board.openCellsMap, xPos);
+            if (i == -1)
+            {
+                if (m_cardSelected.card != nullptr)
+                {
+                    std::span<Card*> cards(m_cardSelected.stack->data() + m_cardSelected.y, m_cardSelected.stack->size() - m_cardSelected.y);
+                    MovingAnimation m(cards, m_cardSelected.card->pos, m_cardSelected.pos);
+                    m_board.movingAnimation.push_back(m);
+
+                    deselect();
+                }
+                return;
+            }
             std::span<glm::vec2> dtsAreaPos(&m_board.openCellsMap[i], 1);
             handleClick(m_board.openCells[i], dtsAreaPos, i, m_board.openCells[i].size() - 1, &Freecell::openCellsIsLegalMove, isDragStart);
         }
         else
         {
-            std::span<glm::vec2> dtsAreaPos(&m_board.foundationsMap[i - 4], 1);
-            handleClick(m_board.foundations[i - 4], dtsAreaPos, i - 4, m_board.foundations[i - 4].size() - 1, &Freecell::foundationsIsLegalMove, isDragStart);
+            int i = getTopAreaIndexX(m_board.foundationsMap, xPos);
+            if (i == -1)
+            {
+                if (m_cardSelected.card != nullptr)
+                {
+                    std::span<Card*> cards(m_cardSelected.stack->data() + m_cardSelected.y, m_cardSelected.stack->size() - m_cardSelected.y);
+                    MovingAnimation m(cards, m_cardSelected.card->pos, m_cardSelected.pos);
+                    m_board.movingAnimation.push_back(m);
+
+                    deselect();
+                }
+                return;
+            }
+            std::span<glm::vec2> dtsAreaPos(&m_board.foundationsMap[i], 1);
+            handleClick(m_board.foundations[i], dtsAreaPos, i, m_board.foundations[i].size() - 1, &Freecell::foundationsIsLegalMove, isDragStart);
         }
     }
     else
     {
+        int i = getIndexX(8, xPos);
+        if (i == -1)
+        {
+            if (m_cardSelected.card != nullptr)
+            {
+                std::span<Card*> cards(m_cardSelected.stack->data() + m_cardSelected.y, m_cardSelected.stack->size() - m_cardSelected.y);
+                MovingAnimation m(cards, m_cardSelected.card->pos, m_cardSelected.pos);
+                m_board.movingAnimation.push_back(m);
+
+                deselect();
+            }
+            return;
+        }
         int stackSize = m_board.table[i].size();
         int j = getIndexY(stackSize, i, yPos);
         if (j == -1)
@@ -126,7 +151,7 @@ void Freecell::handleInputDoubleClick(double xPos, double yPos)
         // open cells
         if (xPos < 640)
         {
-            int i = getIndexX(4, xPos);
+            int i = getTopAreaIndexX(m_board.openCellsMap, xPos);
             if (i == -1)
                 return;
 
@@ -311,8 +336,8 @@ void Freecell::updatePlayerData(bool didWon, float time)
 
 void Freecell::setBoardLayout()
 {
-    float initPosX = 80;
-    float offsetX = 160;
+    float initPosX = 220;
+    float offsetX = 120;
     float initPosY = 400;
     float offsetY = 32;
     for (int i = 0; i < 8; i++)
@@ -323,12 +348,14 @@ void Freecell::setBoardLayout()
         }
     }
 
+    initPosX = 140;
+    offsetX = 130;
     for (int i = 0; i < 4; i++)
     {
         m_board.openCellsMap[i] = glm::vec2(initPosX + i * offsetX, 600);
     }
 
-    initPosX += 4 * offsetX;
+    initPosX += 4 * offsetX + 90;
     for (int i = 0; i < 4; i++)
     {
         m_board.foundationsMap[i] = glm::vec2(initPosX + i * offsetX, 600);
@@ -603,6 +630,15 @@ int Freecell::getIndexX(int n, double xPos)
             return i;
     }
     return -1;
+}
+
+int Freecell::getTopAreaIndexX(std::span<glm::vec2> area, double xPos)
+{
+    for (int i = 0; i < 4; i++)
+    {
+        if (xPos > area[i].x - 50 && xPos < area[i].x + 50)
+            return i;
+    }
 }
 
 int Freecell::getIndexY(int n, int col, double yPos)
