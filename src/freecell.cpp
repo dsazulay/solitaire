@@ -7,6 +7,16 @@
 #include "utils/log.h"
 #include "serializer.h"
 
+struct LayoutSize
+{
+    const float halfScreenWidth = 640.0f;
+    const float halfCardWidth = 50.0f;
+    const float halfCardHeight = 74.0f;
+    const float topAreaPosY = 600.0f;
+};
+
+const LayoutSize LAYOUT_SIZE;
+
 void Freecell::init()
 {
     loadPlayerData();
@@ -63,10 +73,10 @@ void Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool i
     }
 
     // top area
-    if (yPos > 600 - 74 && yPos < 600 + 74)
+    if (yPos > LAYOUT_SIZE.topAreaPosY - LAYOUT_SIZE.halfCardHeight && yPos < LAYOUT_SIZE.topAreaPosY + LAYOUT_SIZE.halfCardHeight)
     {
         // open cells
-        if (xPos < 640)
+        if (xPos < LAYOUT_SIZE.halfScreenWidth)
         {
             int i = getTopAreaIndexX(m_board.openCellsMap, xPos);
             if (i == -1)
@@ -146,10 +156,10 @@ void Freecell::handleInputDoubleClick(double xPos, double yPos)
         return;
     }
     // top area
-    if (yPos > 600 - 74 && yPos < 600 + 74)
+    if (yPos > LAYOUT_SIZE.topAreaPosY - LAYOUT_SIZE.halfCardHeight && yPos < LAYOUT_SIZE.topAreaPosY + LAYOUT_SIZE.halfCardHeight)
     {
         // open cells
-        if (xPos < 640)
+        if (xPos < LAYOUT_SIZE.halfScreenWidth)
         {
             int i = getTopAreaIndexX(m_board.openCellsMap, xPos);
             if (i == -1)
@@ -161,7 +171,7 @@ void Freecell::handleInputDoubleClick(double xPos, double yPos)
                 return;
             }
 
-            tryMoveFromTo(m_board.openCells[i], m_board.foundations, i, m_board.foundationsMap, &Freecell::foundationsIsLegalMove);
+            tryMoveFromTo(m_board.openCells[i], m_board.foundations, m_board.foundationsMap, &Freecell::foundationsIsLegalMove);
         }
         // foundations
         else
@@ -192,9 +202,9 @@ void Freecell::handleInputDoubleClick(double xPos, double yPos)
             return;
         }
 
-        if (!tryMoveFromTo(m_board.table[i], m_board.foundations, i, m_board.foundationsMap, &Freecell::foundationsIsLegalMove))
+        if (!tryMoveFromTo(m_board.table[i], m_board.foundations, m_board.foundationsMap, &Freecell::foundationsIsLegalMove))
         {
-            tryMoveFromTo(m_board.table[i], m_board.openCells, i, m_board.openCellsMap, &Freecell::openCellsIsLegalMove);
+            tryMoveFromTo(m_board.table[i], m_board.openCells, m_board.openCellsMap, &Freecell::openCellsIsLegalMove);
         }
     }
 }
@@ -393,24 +403,21 @@ void Freecell::emptyTable()
 
 void Freecell::createDeck()
 {
+    m_deck.reserve(54);
     int count = 0;
     for (int i = 0; i < 4; i++)
     {
         for (int j = 0; j < 13; j++)
         {
-            Card c{.number = j, .suit = i, .offsetX = count % 8, 
-                .offsetY = static_cast<int>(count * 0.125)};
-            m_deck.push_back(c);
+            m_deck.emplace_back(j, i, (count % 8) * 0.125f, static_cast<int>(count * 0.125f) * 0.125f);
             count++;
         }
     }
 
     // Add open cells and foundation background
-    Card c{.offsetX = 1, .offsetY = 7};
-    m_deck.push_back(c);
+    m_deck.emplace_back(-1, -1, 0.125f, 0.875f);
 
-    c.offsetX = 2;
-    m_deck.push_back(c);
+    m_deck.emplace_back(-1, -1, 0.250f, 0.875f);
 }
 
 void Freecell::createOpenCellsAndFoundations()
@@ -591,14 +598,14 @@ void Freecell::playWinAnimation()
     {
         if (stack.empty())
             continue;
-        winMoves(stack, m_board.foundations, 0, m_board.foundationsMap, &Freecell::foundationsIsLegalMove);
+        winMoves(stack, m_board.foundations, m_board.foundationsMap, &Freecell::foundationsIsLegalMove);
     }
 
     for (CardStack& stack : m_board.table)
     {
         if (stack.empty())
             continue;
-        winMoves(stack, m_board.foundations, 0, m_board.foundationsMap, &Freecell::foundationsIsLegalMove);
+        winMoves(stack, m_board.foundations, m_board.foundationsMap, &Freecell::foundationsIsLegalMove);
     }
 }
 
@@ -639,6 +646,8 @@ int Freecell::getTopAreaIndexX(std::span<glm::vec2> area, double xPos)
         if (xPos > area[i].x - 50 && xPos < area[i].x + 50)
             return i;
     }
+
+    return -1;
 }
 
 int Freecell::getIndexY(int n, int col, double yPos)
@@ -664,7 +673,7 @@ int Freecell::getIndexY(int n, int col, double yPos)
     return -1;
 }
 
-void Freecell::winMoves(CardStack& src, std::span<CardStack> dst, int col, std::span<glm::vec2> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, int c))
+void Freecell::winMoves(CardStack& src, std::span<CardStack> dst, std::span<glm::vec2> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, int c))
 {
     for (int i = 0; i < 4; i++)
     {
@@ -685,7 +694,7 @@ void Freecell::winMoves(CardStack& src, std::span<CardStack> dst, int col, std::
     }
 }
 
-bool Freecell::tryMoveFromTo(CardStack& src, std::span<CardStack> dst, int col, std::span<glm::vec2> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, int c))
+bool Freecell::tryMoveFromTo(CardStack& src, std::span<CardStack> dst, std::span<glm::vec2> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, int c))
 {
     for (int i = 0; i < 4; i++)
     {

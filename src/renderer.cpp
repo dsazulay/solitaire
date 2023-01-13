@@ -173,7 +173,7 @@ void Renderer::renderSprite(Card* card)
     model = glm::scale(model, glm::vec3(76, 76, 1));
 
     m_shader->setMat4("u_model[" + std::to_string(m_instanceCounter) + "]", model);
-    m_shader->setVec2("u_offset[" + std::to_string(m_instanceCounter) + "]", card->offsetX, card->offsetY);
+    m_shader->setVec2("u_offset[" + std::to_string(m_instanceCounter) + "]", card->uvOffset.x, card->uvOffset.y);
 
     m_instanceCounter++;
 }

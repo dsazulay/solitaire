@@ -19,10 +19,20 @@ struct Card
 {
     int number;
     int suit;
-    int offsetX;
-    int offsetY;
+    glm::vec2 uvOffset;
     glm::vec2 dragOffset;
     glm::vec3 pos;
+
+    Card(int number_, int suit_, float uvOffsetX, float uvOffsetY) : number(number_), suit(suit_), uvOffset(uvOffsetX, uvOffsetY)
+    {
+    }
+
+    Card(const Card& c) : number(c.number), suit(c.suit), uvOffset(c.uvOffset), 
+        dragOffset(c.dragOffset), pos(c.pos)
+    {
+    }
+
+    Card& operator=(const Card& c) = default;
 };
 
 typedef std::vector<Card*> CardStack;
@@ -214,8 +224,8 @@ private:
     int getTopAreaIndexX(std::span<glm::vec2> area, double xPos);
     int getIndexY(int n, int col, double yPos);
 
-    void winMoves(CardStack& src, std::span<CardStack> dst, int col, std::span<glm::vec2> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, int c));
-    bool tryMoveFromTo(CardStack& src, std::span<CardStack> dst, int col, std::span<glm::vec2> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, int c));
+    void winMoves(CardStack& src, std::span<CardStack> dst, std::span<glm::vec2> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, int c));
+    bool tryMoveFromTo(CardStack& src, std::span<CardStack> dst, std::span<glm::vec2> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, int c));
     void moveCard(CardStack& src, CardStack& dst, int n);
 
     std::vector<Card> m_deck;
