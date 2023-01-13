@@ -1,5 +1,7 @@
 #pragma once
 
+#include "keycodes.h"
+
 class Event
 {
 public:
@@ -66,13 +68,13 @@ private:
 class KeyboardPressEvent : public Event
 {
 public:
-    KeyboardPressEvent(int key) : m_key(key) {}
+    KeyboardPressEvent(KeyCode key) : m_key(key) {}
     const char* type() const override { return descriptor; }
-    int key() const { return m_key; }
+    KeyCode key() const { return m_key; }
 
     static constexpr char* descriptor = (char*) "KeyboardPressEvent";
 private:
-    int m_key;
+    KeyCode m_key;
 };
 
 class GameWinEvent : public Event

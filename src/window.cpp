@@ -3,6 +3,7 @@
 #include "dispatcher.h"
 #include "event.h"
 #include "utils/log.h"
+#include "keycodes.h"
 
 double Window::xPos, Window::yPos;
 float Window::lastClickTime = 0.0f;
@@ -111,37 +112,37 @@ void Window::keyboardCallback(GLFWwindow* window, int key, int scancode, int act
     
     else if (key == GLFW_KEY_U && action == GLFW_PRESS)
     {
-        KeyboardPressEvent e(0);
+        KeyboardPressEvent e(KeyCode::U);
         Dispatcher::instance().post(e);
     }
 
     else if (key == GLFW_KEY_R && action == GLFW_PRESS)
     {
-        KeyboardPressEvent e(1);
+        KeyboardPressEvent e(KeyCode::R);
         Dispatcher::instance().post(e);
     }
 
     else if (key == GLFW_KEY_E && action == GLFW_PRESS)
     {
-        KeyboardPressEvent e(2);
+        KeyboardPressEvent e(KeyCode::E);
         Dispatcher::instance().post(e);
     }
 
     else if (key == GLFW_KEY_N && action == GLFW_PRESS)
     {
-        KeyboardPressEvent e(3);
+        KeyboardPressEvent e(KeyCode::N);
         Dispatcher::instance().post(e);
     }
 
     else if (key == GLFW_KEY_S && action == GLFW_PRESS)
     {
-        KeyboardPressEvent e(4);
+        KeyboardPressEvent e(KeyCode::S);
         Dispatcher::instance().post(e);
     }
 
     else if (key == GLFW_KEY_D && action == GLFW_PRESS)
     {
-        KeyboardPressEvent e(5);
+        KeyboardPressEvent e(KeyCode::D);
         Dispatcher::instance().post(e);
     }
 }

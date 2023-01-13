@@ -6,6 +6,7 @@
 #include <time.h>
 
 #include "timer.h"
+#include "keycodes.h"
 
 void Solitaire::onMouseClick(const Event& e)
 {
@@ -48,19 +49,19 @@ void Solitaire::onMouseDragEnd(const Event& e)
 void Solitaire::onKeyboardPress(const Event& e)
 {
     const auto& event = static_cast<const KeyboardPressEvent&>(e);
-    int key = event.key();
+    KeyCode key = event.key();
 
-    if (key == 0)
+    if (key == KeyCode::U)
         m_freecell.handleInputUndo();
-    else if (key == 1)
+    else if (key == KeyCode::R)
         m_freecell.handleInputRedo();
-    else if (key == 2)
+    else if (key == KeyCode::E)
         m_freecell.handleInputRestart();
-    else if (key == 3)
+    else if (key == KeyCode::N)
         m_freecell.handleInputNewGame();
-    else if (key == 4)
+    else if (key == KeyCode::S)
         m_uiRenderer->toggleStatsWindow();
-    else if (key == 5)
+    else if (key == KeyCode::D)
         m_uiRenderer->toggleDebugWindow();
 }
 
