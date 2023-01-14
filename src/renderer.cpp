@@ -131,13 +131,13 @@ void Renderer::renderBackground(const Board& board, RenderMode mode)
         for (int i = 0; i < 4; i++)
         {
             board.openCellsBg->pos = glm::vec3(board.openCellsMap[i], 0.0);
-            renderSprite(board.openCellsBg);
+            renderSprite(board.openCellsBg.get());
         }
 
         for (int i = 0; i < 4; i++)
         {
             board.foundationsBg->pos = glm::vec3(board.foundationsMap[i], 0.0);
-            renderSprite(board.foundationsBg);
+            renderSprite(board.foundationsBg.get());
         }
 
         drawCall();
@@ -153,13 +153,13 @@ void Renderer::renderBackground(const Board& board, RenderMode mode)
         for (int i = 0; i < 4; i++)
         {
             board.openCellsBg->pos = glm::vec3(board.openCellsMap[i], 0.0);
-            renderSprite(board.openCellsBg);
+            renderSprite(board.openCellsBg.get());
         }
 
         for (int i = 0; i < 4; i++)
         {
             board.foundationsBg->pos = glm::vec3(board.foundationsMap[i], 0.0);
-            renderSprite(board.foundationsBg);
+            renderSprite(board.foundationsBg.get());
         }
 
         drawCall();

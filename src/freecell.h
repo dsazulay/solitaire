@@ -14,28 +14,8 @@
 #include "window.h"
 #include "history.h"
 #include "gamedata.h"
-
-struct Card
-{
-    int number;
-    int suit;
-    glm::vec2 uvOffset;
-    glm::vec2 dragOffset;
-    glm::vec3 pos;
-
-    Card(int number_, int suit_, float uvOffsetX, float uvOffsetY) : number(number_), suit(suit_), uvOffset(uvOffsetX, uvOffsetY)
-    {
-    }
-
-    Card(const Card& c) : number(c.number), suit(c.suit), uvOffset(c.uvOffset), 
-        dragOffset(c.dragOffset), pos(c.pos)
-    {
-    }
-
-    Card& operator=(const Card& c) = default;
-};
-
-typedef std::vector<Card*> CardStack;
+#include "card.h"
+#include "dealer.h"
 
 struct CardSelection
 {
@@ -153,8 +133,8 @@ struct Board
     std::array<CardStack, 4> openCells;
     std::array<CardStack, 4> foundations;
 
-    Card* openCellsBg;
-    Card* foundationsBg;
+    std::unique_ptr<Card> openCellsBg;
+    std::unique_ptr<Card> foundationsBg;
 
     std::vector<MovingAnimation> movingAnimation;
     DraggingAnimation draggingAnimation;
@@ -197,12 +177,7 @@ private:
     void updatePlayerData(bool didWon, float time);
 
     void setBoardLayout();
-    void createDeck();
     void createOpenCellsAndFoundations();
-    void swap(int i, int j);
-    void shuffle();
-    void fillTable();
-    void emptyTable();
 
     bool checkWin();
     bool checkSequence(CardStack& stack, int j);
@@ -228,10 +203,10 @@ private:
     bool tryMoveFromTo(CardStack& src, std::span<CardStack> dst, std::span<glm::vec2> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, int c));
     void moveCard(CardStack& src, CardStack& dst, int n);
 
-    std::vector<Card> m_deck;
     History<Move> m_history;
     CardSelection m_cardSelected{};
     Board m_board{};
+    Dealer m_dealer;
     GameState m_currentState;
     PlayerData m_playerData;
     MatchData m_matchData;

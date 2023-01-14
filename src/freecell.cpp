@@ -21,10 +21,9 @@ void Freecell::init()
 {
     loadPlayerData();
     setBoardLayout();
-    createDeck();
     createOpenCellsAndFoundations();
-    shuffle();
-    fillTable();
+    m_dealer.shuffleDeck();
+    m_dealer.fillTableau(m_board.table, m_board.tableMap);
 
     m_currentState = GameState::Playing;
     m_matchData.startTime = Timer::time;
@@ -267,8 +266,8 @@ void Freecell::handleInputRestart()
         return;
     }
 
-    emptyTable();
-    fillTable();
+    Dealer::emptyTable(m_board.table, m_board.openCells, m_board.foundations);
+    m_dealer.fillTableau(m_board.table, m_board.tableMap);
     m_history.clearStacks();
     updatePlayerData(false, 10000.0f);
     m_currentState = GameState::Playing;
@@ -283,9 +282,9 @@ void Freecell::handleInputNewGame()
         return;
     }
     
-    emptyTable();
-    shuffle();
-    fillTable();
+    Dealer::emptyTable(m_board.table, m_board.openCells, m_board.foundations);
+    m_dealer.shuffleDeck();
+    m_dealer.fillTableau(m_board.table, m_board.tableMap);
     m_history.clearStacks();
     if (m_currentState == GameState::Playing)
         updatePlayerData(false, 10000.0f);
@@ -372,74 +371,10 @@ void Freecell::setBoardLayout()
     }
 }
 
-void Freecell::fillTable()
-{
-    int index = 0;
-    for (int i = 0; i < 8; i++)
-    {
-        for (int j = 0; j < 8; j++)
-        {
-            m_board.table[j].push_back(&m_deck.at(index++));
-            m_board.table[j].back()->pos = glm::vec3(m_board.tableMap[j][i], 0.0);
-            if (index > 51)
-                return;
-        }
-    }
-}
-
-void Freecell::emptyTable()
-{
-    for (int i = 0; i < 8; i++)
-    {
-        m_board.table[i] = CardStack();
-    }
-
-    for (int i = 0; i < 4; i++)
-    {
-        m_board.openCells[i] = CardStack();
-        m_board.foundations[i] = CardStack();
-    }
-}
-
-void Freecell::createDeck()
-{
-    m_deck.reserve(54);
-    int count = 0;
-    for (int i = 0; i < 4; i++)
-    {
-        for (int j = 0; j < 13; j++)
-        {
-            m_deck.emplace_back(j, i, (count % 8) * 0.125f, static_cast<int>(count * 0.125f) * 0.125f);
-            count++;
-        }
-    }
-
-    // Add open cells and foundation background
-    m_deck.emplace_back(-1, -1, 0.125f, 0.875f);
-
-    m_deck.emplace_back(-1, -1, 0.250f, 0.875f);
-}
-
 void Freecell::createOpenCellsAndFoundations()
 {
-    m_board.openCellsBg = &m_deck.at(52);
-    m_board.foundationsBg = &m_deck.at(53);
-}
-
-void Freecell::swap(int i, int j)
-{
-    auto tmp = m_deck[i];
-    m_deck[i] = m_deck[j];
-    m_deck[j] = tmp;
-}
-
-void Freecell::shuffle()
-{
-    for (int i = m_deck.size() - 3; i >= 0; i--)
-    {
-        int j = rand() % (i + 1);
-        swap(i, j);
-    }
+    m_board.openCellsBg = std::make_unique<Card>(-1, -1, 0.125f, 0.875f);
+    m_board.foundationsBg = std::make_unique<Card>(-1, -1, 0.250f, 0.875f);
 }
 
 void Freecell::select(CardStack* stack, int index, bool isDragStart)
