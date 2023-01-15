@@ -125,19 +125,19 @@ private:
 
 struct Board
 {
-    std::array<std::array<glm::vec2, 12>, 8> tableMap;
-    std::array<glm::vec2, 4> openCellsMap;
-    std::array<glm::vec2, 4> foundationsMap;
-
-    std::array<CardStack, 8> table;
+    std::array<CardStack, 8> tableau;
     std::array<CardStack, 4> openCells;
     std::array<CardStack, 4> foundations;
 
-    std::unique_ptr<Card> openCellsBg;
-    std::unique_ptr<Card> foundationsBg;
+    std::array<Card*, 4> openCellsBg;
+    std::array<Card*, 4> foundationsBg;
+};
 
-    std::vector<MovingAnimation> movingAnimation;
-    DraggingAnimation draggingAnimation;
+struct BoardMap
+{
+    std::array<std::array<glm::vec2, 12>, 8> tableau;
+    std::array<glm::vec2, 4> openCells;
+    std::array<glm::vec2, 4> foundations;
 };
 
 struct Move
@@ -205,10 +205,18 @@ private:
     void moveCard(CardStack& src, CardStack& dst, int n);
 
     History<Move> m_history;
-    CardSelection m_cardSelected{};
-    Board m_board{};
-    Dealer m_dealer;
+    std::vector<MovingAnimation> m_movingAnimation;
+    DraggingAnimation m_draggingAnimation;
+
     GameState m_currentState;
     PlayerData m_playerData;
     MatchData m_matchData;
+
+    BoardMap m_boardMap{};
+    CardSelection m_cardSelected{};
+
+    Dealer m_dealer;
+    std::array<Card, 4> m_openCellsBg;
+    std::array<Card, 4> m_foundationsBg;
+    Board m_board{};
 };

@@ -55,9 +55,9 @@ void Renderer::render(const Board& board, RenderMode mode)
 
         for (int j = 0; j < 8; j ++)
         {
-            for (int i = 0; i < (int) board.table[j].size(); i++)
+            for (int i = 0; i < (int) board.tableau[j].size(); i++)
             {
-                renderSprite(board.table[j].at(i));
+                renderSprite(board.tableau[j].at(i));
             }
         }
 
@@ -89,9 +89,9 @@ void Renderer::render(const Board& board, RenderMode mode)
 
         for (int j = 0; j < 8; j ++)
         {
-            for (int i = 0; i < (int) board.table[j].size(); i++)
+            for (int i = 0; i < (int) board.tableau[j].size(); i++)
             {
-                renderSprite(board.table[j].at(i));
+                renderSprite(board.tableau[j].at(i));
             }
         }
 
@@ -130,14 +130,8 @@ void Renderer::renderBackground(const Board& board, RenderMode mode)
 
         for (int i = 0; i < 4; i++)
         {
-            board.openCellsBg->pos = glm::vec3(board.openCellsMap[i], 0.0);
-            renderSprite(board.openCellsBg.get());
-        }
-
-        for (int i = 0; i < 4; i++)
-        {
-            board.foundationsBg->pos = glm::vec3(board.foundationsMap[i], 0.0);
-            renderSprite(board.foundationsBg.get());
+            renderSprite(board.openCellsBg[i]);
+            renderSprite(board.foundationsBg[i]);
         }
 
         drawCall();
@@ -152,14 +146,8 @@ void Renderer::renderBackground(const Board& board, RenderMode mode)
 
         for (int i = 0; i < 4; i++)
         {
-            board.openCellsBg->pos = glm::vec3(board.openCellsMap[i], 0.0);
-            renderSprite(board.openCellsBg.get());
-        }
-
-        for (int i = 0; i < 4; i++)
-        {
-            board.foundationsBg->pos = glm::vec3(board.foundationsMap[i], 0.0);
-            renderSprite(board.foundationsBg.get());
+            renderSprite(board.openCellsBg[i]);
+            renderSprite(board.foundationsBg[i]);
         }
 
         drawCall();

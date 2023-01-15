@@ -14,8 +14,8 @@ struct Card
 
     Card() = default;
 
-    Card(int number_, int suit_, float uvOffsetX, float uvOffsetY) : number(number_), 
-        suit(suit_), uvOffset(uvOffsetX, uvOffsetY)
+    Card(int number_, int suit_, float uvOffsetX, float uvOffsetY, glm::vec3 pos_ = glm::vec3(0.0)) : 
+        number(number_), suit(suit_), uvOffset(uvOffsetX, uvOffsetY), pos(pos_)
     {
     }
 
