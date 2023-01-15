@@ -80,14 +80,7 @@ void Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool i
             int i = getTopAreaIndexX(m_board.openCellsMap, xPos);
             if (i == -1)
             {
-                if (m_cardSelected.card != nullptr)
-                {
-                    std::span<Card*> cards(m_cardSelected.stack->data() + m_cardSelected.y, m_cardSelected.stack->size() - m_cardSelected.y);
-                    MovingAnimation m(cards, m_cardSelected.card->pos, m_cardSelected.pos);
-                    m_board.movingAnimation.push_back(m);
-
-                    deselect();
-                }
+                moveBackAndDeselectCard();
                 return;
             }
             std::span<glm::vec2> dtsAreaPos(&m_board.openCellsMap[i], 1);
@@ -98,14 +91,7 @@ void Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool i
             int i = getTopAreaIndexX(m_board.foundationsMap, xPos);
             if (i == -1)
             {
-                if (m_cardSelected.card != nullptr)
-                {
-                    std::span<Card*> cards(m_cardSelected.stack->data() + m_cardSelected.y, m_cardSelected.stack->size() - m_cardSelected.y);
-                    MovingAnimation m(cards, m_cardSelected.card->pos, m_cardSelected.pos);
-                    m_board.movingAnimation.push_back(m);
-
-                    deselect();
-                }
+                moveBackAndDeselectCard();
                 return;
             }
             std::span<glm::vec2> dtsAreaPos(&m_board.foundationsMap[i], 1);
@@ -117,28 +103,14 @@ void Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool i
         int i = getIndexX(8, xPos);
         if (i == -1)
         {
-            if (m_cardSelected.card != nullptr)
-            {
-                std::span<Card*> cards(m_cardSelected.stack->data() + m_cardSelected.y, m_cardSelected.stack->size() - m_cardSelected.y);
-                MovingAnimation m(cards, m_cardSelected.card->pos, m_cardSelected.pos);
-                m_board.movingAnimation.push_back(m);
-
-                deselect();
-            }
+            moveBackAndDeselectCard();
             return;
         }
         int stackSize = m_board.table[i].size();
         int j = getIndexY(stackSize, i, yPos);
         if (j == -1)
         {
-            if (m_cardSelected.card != nullptr)
-            {
-                std::span<Card*> cards(m_cardSelected.stack->data() + m_cardSelected.y, m_cardSelected.stack->size() - m_cardSelected.y);
-                MovingAnimation m(cards, m_cardSelected.card->pos, m_cardSelected.pos);
-                m_board.movingAnimation.push_back(m);
-                
-                deselect();
-            }
+            moveBackAndDeselectCard();
             return;
         }
 
@@ -419,6 +391,18 @@ void Freecell::deselect()
         m_board.draggingAnimation.stop();
 }
 
+void Freecell::moveBackAndDeselectCard()
+{
+    if (m_cardSelected.card == nullptr)
+        return;
+        
+    std::span<Card*> cards(m_cardSelected.stack->data() + m_cardSelected.y, m_cardSelected.stack->size() - m_cardSelected.y);
+    MovingAnimation m(cards, m_cardSelected.card->pos, m_cardSelected.pos);
+    m_board.movingAnimation.push_back(m);
+
+    deselect();
+}
+
 void Freecell::handleClick(CardStack& stack, std::span<glm::vec2> dstAreaPos, int col, int index, bool(Freecell::*isLegalMove)(Card* card, int c), bool isDragStart)
 {
     if (m_cardSelected.card == nullptr)
@@ -437,11 +421,7 @@ void Freecell::handleClick(CardStack& stack, std::span<glm::vec2> dstAreaPos, in
             return;
         }
 
-        std::span<Card*> cards(m_cardSelected.stack->data() + m_cardSelected.y, m_cardSelected.stack->size() - m_cardSelected.y);
-        MovingAnimation m(cards, m_cardSelected.card->pos, m_cardSelected.pos);
-        m_board.movingAnimation.push_back(m);
-
-        deselect();
+        moveBackAndDeselectCard();
         return;
     }
 

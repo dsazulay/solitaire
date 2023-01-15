@@ -194,6 +194,7 @@ private:
 
     void select(CardStack* stack, int index, bool isDragStart);
     void deselect();
+    void moveBackAndDeselectCard();
 
     int getIndexX(int n, double xPos);
     int getTopAreaIndexX(std::span<glm::vec2> area, double xPos);
