@@ -22,7 +22,9 @@ public:
 
 private:
     void initMesh();
-    void renderBackground(const Board& board, RenderMode mode);
+    void initBackgroundMesh();
+    void renderBackground(RenderMode mode);
+    void renderCardBackground(const Board& board, RenderMode mode);
     void renderSprite(Card* card);
     void renderMovingSprite(glm::vec2 srcPos, glm::vec2 dstPos, float len, float startTime, Card* card);
     void drawCall();
@@ -35,18 +37,12 @@ private:
     Texture* m_texture;
     Model* m_model;
 
+    Model* m_backgroundModel;
+    Shader* m_backgroundShader;
+    Shader* m_backgroundWireframeShader;
+
     unsigned int m_instanceCounter;
 
     unsigned int VBO, EBO, VAO;
-
-    static constexpr float m_vertices[16] = {
-        -1.0f, -1.0f, 0.0f, 0.0f,
-         1.0f, -1.0f, 1.0f, 0.0f,
-         1.0f,  1.0f, 1.0f, 1.0f,
-        -1.0f,  1.0f, 0.0f, 1.0f
-    };
-
-    static constexpr unsigned int m_indices[6] = {
-        0, 1, 2, 2, 3, 0
-    };
+    unsigned int VBO_BG, EBO_BG, VAO_BG;
 };

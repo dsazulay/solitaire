@@ -22,9 +22,16 @@ Renderer::Renderer()
     m_wireframeShader = ResourceManager::loadShader("../../resources/unlit.vert",
                                                     "../../resources/wireframe.frag",
                                                     "WireframeShader");
+    m_backgroundShader = ResourceManager::loadShader("../../resources/background.vert",
+                                                    "../../resources/background.frag",
+                                                    "BackgroundShader");
+    m_backgroundWireframeShader = ResourceManager::loadShader("../../resources/background.vert",
+                                                    "../../resources/wireframe.frag",
+                                                    "BackgroundWireframeShader");
     m_texture = ResourceManager::loadTexture("../../resources/cards.png", "CardTex");
 
     m_model = ResourceManager::loadModel("../../resources/card.obj", "CardModel");
+    m_backgroundModel = ResourceManager::loadModel(NativeModel::Quad, "QuadModel");
 
     initMesh();
     glActiveTexture(GL_TEXTURE0);
@@ -36,13 +43,21 @@ Renderer::Renderer()
     m_unlitShader->use();
     m_unlitShader->setMat4("u_proj", m_proj);
     m_unlitShader->setInt("umain_tex", 0);
+
+    initBackgroundMesh();
+    m_backgroundShader->use();
+    m_backgroundShader->setMat4("u_proj", m_proj);
+    
+    m_backgroundWireframeShader->use();
+    m_backgroundWireframeShader->setMat4("u_proj", m_proj);
+
 }
 
 void Renderer::render(const Board& board, RenderMode mode)
 {
     clear();
 
-    renderBackground(board, mode);
+    renderCardBackground(board, mode);
 
     glDisable(GL_BLEND);
 
@@ -114,9 +129,10 @@ void Renderer::render(const Board& board, RenderMode mode)
         drawCall();
     }
 
+    renderBackground(mode);
 }
 
-void Renderer::renderBackground(const Board& board, RenderMode mode)
+void Renderer::renderCardBackground(const Board& board, RenderMode mode)
 {
 
     glEnable(GL_BLEND);
@@ -154,6 +170,48 @@ void Renderer::renderBackground(const Board& board, RenderMode mode)
     }
 }
 
+void Renderer::renderBackground(RenderMode mode)
+{
+
+    glEnable(GL_BLEND);
+
+    if (mode == RenderMode::Shaded || mode == RenderMode::ShadedWireframe)
+    {
+        m_shader = m_backgroundShader;
+        m_shader->use();
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(640.0f, 360.0f, -0.01f));
+        model = glm::scale(model, glm::vec3(1280, 720, 1));
+
+        m_shader->setMat4("u_model", model);
+        m_shader->setVec3("u_tint", glm::vec3(0.22f, 0.49f, 0.3f));
+
+        glBindVertexArray(VAO_BG);
+        glDrawElements(GL_TRIANGLES, m_backgroundModel->indices.size(), GL_UNSIGNED_INT, nullptr);
+        glBindVertexArray(0);
+    }
+
+    if (mode == RenderMode::Wireframe || mode == RenderMode::ShadedWireframe)
+    {
+        m_shader = m_backgroundWireframeShader;
+        m_shader->use();
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(640.0f, 360.0f, -0.01f));
+        model = glm::scale(model, glm::vec3(1280, 720, 1));
+
+        m_shader->setMat4("u_model", model);
+        m_shader->setVec3("u_tint", glm::vec3(0.22f, 0.49f, 0.3f));
+
+        glBindVertexArray(VAO_BG);
+        glDrawElements(GL_TRIANGLES, m_backgroundModel->indices.size(), GL_UNSIGNED_INT, nullptr);
+        glBindVertexArray(0);
+    }
+}
+
 void Renderer::renderSprite(Card* card)
 {
     glm::mat4 model = glm::mat4(1.0f);
@@ -173,6 +231,7 @@ void Renderer::drawCall()
     glBindVertexArray(0);
 }
 
+// TODO: create a new class for mesh objects to hold VAO EBO and VBO
 void Renderer::initMesh()
 {
     glGenVertexArrays(1, &VAO);
@@ -193,7 +252,32 @@ void Renderer::initMesh()
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
 
+    glBindVertexArray(0);
 }
+
+void Renderer::initBackgroundMesh()
+{
+    glGenVertexArrays(1, &VAO_BG);
+    glGenBuffers(1, &VBO_BG);
+    glGenBuffers(1, &EBO_BG);
+
+    glBindVertexArray(VAO_BG);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_BG);
+    glBufferData(GL_ARRAY_BUFFER, m_backgroundModel->vertices.size() * sizeof(Vertex), &m_backgroundModel->vertices[0], GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_BG);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_backgroundModel->indices.size() * sizeof(int), &m_backgroundModel->indices[0], GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
+
+    glBindVertexArray(0);
+}
+
 
 void Renderer::clear()
 {

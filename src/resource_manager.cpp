@@ -111,3 +111,34 @@ Model* ResourceManager::loadModel(const char *modelFile, std::string name)
 
     return &models[name];
 }
+
+Model* ResourceManager::loadModel(NativeModel type, std::string name)
+{
+    Model model;
+
+    model.vertices.reserve(16);
+    model.indices.reserve(6);
+
+    for (int i = 0; i < 16; i += 4)
+    {
+        Vertex vertex{};
+        vertex.pos = {
+            m_vertices[i], m_vertices[i + 1], 0.0f
+        };
+
+        vertex.texCoord = {
+            m_vertices[i + 2], m_vertices[i + 3]
+        };
+
+        model.vertices.emplace_back(vertex);
+    }
+
+    for (int i = 0; i < 6; i++)
+    {
+        model.indices.emplace_back(m_indices[i]);
+    }
+
+    models[name] = model;
+
+    return &models[name];
+}
