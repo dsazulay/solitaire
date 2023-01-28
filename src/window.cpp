@@ -5,9 +5,10 @@
 #include "utils/log.h"
 #include "keycodes.h"
 
-double Window::xPos, Window::yPos;
 float Window::lastClickTime = 0.0f;
 float Window::dragStartTime = 0.0f;
+glm::vec2 Window::mousePos{};
+glm::vec2 Window::windowSize{};
 
 Window::Window()
 {
@@ -26,8 +27,10 @@ Window::~Window()
     glfwTerminate();
 }
 
-void Window::createWindow(int width, int height, const char *name)
+auto Window::createWindow(int width, int height, const char *name) -> void
 {
+    windowSize.x = (float) width;
+    windowSize.y = (float) height;
     m_window = glfwCreateWindow(width, height, name, nullptr, nullptr);
     if (m_window == nullptr)
     {
@@ -43,67 +46,69 @@ void Window::createWindow(int width, int height, const char *name)
     ASSERT(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress), "Failed to initialize GLAD");
 }
 
-bool Window::shouldClose() const
+auto Window::shouldClose() const -> bool
 {
     return glfwWindowShouldClose(m_window);
 }
 
-void Window::swapBuffers() const
+auto Window::swapBuffers() const -> void
 {
     glfwSwapBuffers(m_window);
 }
 
-void Window::pollEvents()
+auto Window::pollEvents() -> void
 {
     glfwPollEvents();
 }
 
-void Window::frameBufferCallback(GLFWwindow* window, int width, int height)
+auto Window::frameBufferCallback(GLFWwindow* window, int width, int height) -> void
 {
     glViewport(0, 0, width, height);
 }
 
-void Window::cursorPositionCallback(GLFWwindow* window, double xPos, double yPos)
+auto Window::cursorPositionCallback(GLFWwindow* window, double xPos, double yPos) -> void
 {
-    Window::xPos = xPos;
+    mousePos.x = (float) xPos;
     // Invert y position so that 0 is on the bottom
-    Window::yPos = 720 - yPos;
+    mousePos.y = windowSize.y - (float) yPos;
 }
 
-void Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+auto Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) -> void
 {
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
     {
         dragStartTime = (float) glfwGetTime();
-        MouseDragStartEvent dragStartEvent(xPos, yPos);
+        MouseDragStartEvent dragStartEvent(mousePos.x, mousePos.y);
         Dispatcher::instance().post(dragStartEvent);
     }
 
     else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
     {
-        MouseDragEndEvent dragEndEvent(xPos, yPos);
+        MouseDragEndEvent dragEndEvent(mousePos.x, mousePos.y);
         Dispatcher::instance().post(dragEndEvent);
 
-        float clickTime = (float) glfwGetTime();
+        auto clickTime = (float) glfwGetTime();
         float timeDiff = clickTime - lastClickTime;
         lastClickTime = clickTime;
 
-        if (timeDiff > 0.05 && timeDiff < 0.2)
+        const float doubleClickMinTime = 0.05f;
+        const float doubleClickMaxTime = 0.2f;
+        if (timeDiff > doubleClickMinTime && timeDiff < doubleClickMaxTime)
         {
-            MouseDoubleClickEvent doubleClickEvent(xPos, yPos);
+            MouseDoubleClickEvent doubleClickEvent(mousePos.x, mousePos.y);
             Dispatcher::instance().post(doubleClickEvent);
             return;
         }
 
-        if (clickTime - dragStartTime < 0.05)
-        {
-            //MouseClickEvent e(xPos, yPos);
+        // if (clickTime - dragStartTime < 0.05)
+        // {
+            //MouseClickEvent e(mousePos.x, mousePos.y);
             //Dispatcher::instance().post(e);
-        }
+        // }
     }
 }
 
-void Window::keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+auto Window::keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods) -> void
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     {
@@ -147,8 +152,7 @@ void Window::keyboardCallback(GLFWwindow* window, int key, int scancode, int act
     }
 }
 
-
-GLFWwindow* Window::getWindow()
+auto Window::getWindow() -> GLFWwindow*
 {
     return m_window;
 }

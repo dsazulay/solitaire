@@ -2,28 +2,35 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/vec2.hpp>
 
 class Window
 {
 public:
     Window();
+    Window(const Window& w) = default;
+    Window(Window&& w) = default;
+    auto operator=(const Window& w) -> Window& = default;
+    auto operator=(Window&& w) -> Window& = default;
     ~Window();
-    void createWindow(int width, int height, const char* name);
-    bool shouldClose() const;
-    void swapBuffers() const;
-    void pollEvents();
-    GLFWwindow* getWindow();
 
-    static double xPos;
-    static double yPos;
+    auto createWindow(int width, int height, const char* name) -> void;
+    [[nodiscard]] auto shouldClose() const -> bool;
+    auto swapBuffers() const -> void;
+    auto pollEvents() -> void;
+    auto getWindow() -> GLFWwindow*;
+
+    static glm::vec2 mousePos;
 
 private:
-    static void frameBufferCallback(GLFWwindow* window, int width, int height);
-    static void cursorPositionCallback(GLFWwindow* window, double xPos, double yPos);
-    static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
-    static void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+    static auto frameBufferCallback(GLFWwindow* window, int width, int height) -> void;
+    static auto cursorPositionCallback(GLFWwindow* window, double xPos, double yPos) -> void;
+    static auto mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) -> void;
+    static auto keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods) -> void;
 
     static float lastClickTime;
     static float dragStartTime;
-    GLFWwindow* m_window;
+    static glm::vec2 windowSize;
+
+    GLFWwindow* m_window{};
 };

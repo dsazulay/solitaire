@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <array>
 #include <string>
 
 #include "shader.h"
@@ -15,26 +16,26 @@ enum class NativeModel
 class ResourceManager
 {
 public:
-    static Shader* loadShader(const char* vertShaderFile, const char* fragShaderFile, std::string name);
-    static Texture* loadTexture(const char* textureFile, std::string name);
-    static Model* loadModel(const char* modelFile, std::string name);
-    static Model* loadModel(NativeModel type, std::string name);
+    static auto loadShader(const char *vertShaderFile, const char *fragShaderFile, std::string name) -> Shader*;
+    static auto loadTexture(const char* textureFile, std::string name) -> Texture*;
+    static auto loadModel(const char* modelFile, std::string name) -> Model*;
+    static auto loadModel(NativeModel type, std::string name) -> Model*;
 
 
     static std::map<std::string, Shader> shaders;
     static std::map<std::string, Texture> textures;
     static std::map<std::string, Model> models;
 private:
-    ResourceManager() {}
+    ResourceManager() = default;
 
-    static constexpr float m_vertices[16] = {
+    static constexpr std::array<float, 16> m_vertices{
         -1.0f, -1.0f, 0.0f, 0.0f,
          1.0f, -1.0f, 1.0f, 0.0f,
          1.0f,  1.0f, 1.0f, 1.0f,
         -1.0f,  1.0f, 0.0f, 1.0f
     };
 
-    static constexpr unsigned int m_indices[6] = {
+    static constexpr std::array<int, 6> m_indices{
         0, 1, 2, 2, 3, 0
     };
 };

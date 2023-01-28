@@ -38,7 +38,7 @@ void Freecell::update()
         if (it->isDone)
             m_movingAnimation.erase(it);
     }
-    if (!m_draggingAnimation.isDone)
+    if (!m_draggingAnimation.isDone())
         m_draggingAnimation.update(); 
     
     if (m_currentState == GameState::Playing)
@@ -392,7 +392,7 @@ void Freecell::deselect()
     m_cardSelected.stack = nullptr;
     m_cardSelected.y = -1;
 
-    if (!m_draggingAnimation.isDone)
+    if (!m_draggingAnimation.isDone())
         m_draggingAnimation.stop();
 }
 

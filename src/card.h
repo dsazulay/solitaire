@@ -15,16 +15,16 @@ struct Card
     Card() = default;
 
     Card(int number_, int suit_, float uvOffsetX, float uvOffsetY, glm::vec3 pos_ = glm::vec3(0.0)) : 
-        number(number_), suit(suit_), uvOffset(uvOffsetX, uvOffsetY), pos(pos_)
+        number(number_), suit(suit_), uvOffset(uvOffsetX, uvOffsetY), dragOffset(0.0), pos(pos_)
     {
     }
 
-    Card(const Card& c) : number(c.number), suit(c.suit), uvOffset(c.uvOffset), 
-        dragOffset(c.dragOffset), pos(c.pos)
-    {
-    }
+    Card(const Card& c) = default;
+    Card(Card&& c) = default;
+    auto operator=(const Card& c) -> Card& = default;
+    auto operator=(Card&& c) -> Card& = default;
 
-    Card& operator=(const Card& c) = default;
+    ~Card() = default;
 };
 
-typedef std::vector<Card*> CardStack;
+using CardStack = std::vector<Card*>;

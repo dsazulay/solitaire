@@ -15,14 +15,14 @@ template<Swappable T>
 class History
 {
 public:
-    void recordMove(T& t)
+    auto recordMove(T& t) -> void
     {
         m_undoStack.push(t);
         if (m_redoStack.size() > 0)
             m_redoStack = std::stack<T>();
     }
 
-    void undo()
+    auto undo() -> void
     {
         if (m_undoStack.empty())
         {
@@ -37,7 +37,7 @@ public:
         m_redoStack.push(redoMove);
     }
 
-    void redo()
+    auto redo() -> void
     {
         if (m_redoStack.empty())
         {
@@ -52,28 +52,28 @@ public:
         m_undoStack.push(undoMove);
     }
 
-    void clearStacks()
+    auto clearStacks() -> void
     {
         m_undoStack = std::stack<T>();
         m_redoStack = std::stack<T>();
     }
 
-    bool isUndoStackEmpty() const
+    [[nodiscard]] auto isUndoStackEmpty() const -> bool
     {
         return m_undoStack.empty();
     }
 
-    bool isRedoStackEmpty() const
+    [[nodiscard]] auto isRedoStackEmpty() const -> bool
     {
         return m_redoStack.empty();
     }
 
-    T getTopUndoMove() const
+    [[nodiscard]] auto getTopUndoMove() const -> T
     {
         return m_undoStack.top();
     }
 
-    T getTopRedoMove() const
+    [[nodiscard]] auto getTopRedoMove() const -> T
     {
         return m_redoStack.top();
     }

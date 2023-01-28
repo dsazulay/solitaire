@@ -14,30 +14,33 @@ public:
     void start(std::span<Card*> cards)
     {
         m_cards = cards;
-        glm::vec2 mousePos = glm::vec2(Window::xPos, Window::yPos);
         for (Card* c : cards)
         {
-            c->dragOffset = mousePos - glm::vec2(c->pos);
+            c->dragOffset = Window::mousePos - glm::vec2(c->pos);
         }
-        isDone = false;
+        m_isDone = false;
     }
 
     void update()
     {
-        glm::vec2 mousePos = glm::vec2(Window::xPos, Window::yPos);
+        const float zOffset = 0.0001f;
         for (Card* c : m_cards)
         {
-            c->pos = glm::vec3(mousePos - c->dragOffset, 0.0001);
+            c->pos = glm::vec3(Window::mousePos - c->dragOffset, zOffset);
         }
     }
 
     void stop()
     {
-        isDone = true;
+        m_isDone = true;
     }
 
-    bool isDone{true};
+    auto isDone() -> bool
+    {
+        return m_isDone;
+    }
 
 private:
     std::span<Card*> m_cards;
+    bool m_isDone{true};
 };

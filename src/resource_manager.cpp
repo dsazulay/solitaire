@@ -16,7 +16,7 @@ std::map<std::string, Shader> ResourceManager::shaders;
 std::map<std::string, Texture> ResourceManager::textures;
 std::map<std::string, Model> ResourceManager::models;
 
-Shader* ResourceManager::loadShader(const char *vertShaderFile, const char *fragShaderFile, std::string name)
+auto ResourceManager::loadShader(const char *vertShaderFile, const char *fragShaderFile, std::string name) -> Shader*
 {
     std::string vertexCode;
     std::string fragCode;
@@ -46,19 +46,19 @@ Shader* ResourceManager::loadShader(const char *vertShaderFile, const char *frag
         LOG_ERROR("Shader file not successfully read!");
     }
 
-    Shader shader;
+    Shader shader{};
     shader.compile(vertexCode.c_str(), fragCode.c_str());
     shaders[name] = shader;
 
     return &shaders[name];
 }
 
-Texture* ResourceManager::loadTexture(const char* textureFile, std::string name)
+auto ResourceManager::loadTexture(const char* textureFile, std::string name) -> Texture*
 {
     stbi_set_flip_vertically_on_load(true);
-    Texture texture;
+    Texture texture{};
 
-    int width, height, nrChannels;
+    int width{}, height{}, nrChannels{};
     unsigned char* data = stbi_load(textureFile, &width, &height, &nrChannels, 0);
     texture.generate(width, height, data);
 
@@ -68,7 +68,7 @@ Texture* ResourceManager::loadTexture(const char* textureFile, std::string name)
     return &textures[name];
 }
 
-Model* ResourceManager::loadModel(const char *modelFile, std::string name)
+auto ResourceManager::loadModel(const char *modelFile, std::string name) -> Model*
 {
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
@@ -112,14 +112,14 @@ Model* ResourceManager::loadModel(const char *modelFile, std::string name)
     return &models[name];
 }
 
-Model* ResourceManager::loadModel(NativeModel type, std::string name)
+auto ResourceManager::loadModel(NativeModel type, std::string name) -> Model *
 {
     Model model;
 
-    model.vertices.reserve(16);
-    model.indices.reserve(6);
+    model.vertices.reserve(m_vertices.size());
+    model.indices.reserve(m_indices.size());
 
-    for (int i = 0; i < 16; i += 4)
+    for (int i = 0; i < m_vertices.size(); i += 4)
     {
         Vertex vertex{};
         vertex.pos = {
@@ -133,9 +133,9 @@ Model* ResourceManager::loadModel(NativeModel type, std::string name)
         model.vertices.emplace_back(vertex);
     }
 
-    for (int i = 0; i < 6; i++)
+    for (auto& index : m_indices)
     {
-        model.indices.emplace_back(m_indices[i]);
+        model.indices.emplace_back(index);
     }
 
     models[name] = model;

@@ -21,12 +21,11 @@ public:
     void render(const Board& board, RenderMode mode);
 
 private:
-    void initMesh();
+    auto initMesh() -> void;
     void initBackgroundMesh();
     void renderBackground(RenderMode mode);
     void renderCardBackground(const Board& board, RenderMode mode);
     void renderSprite(Card* card);
-    void renderMovingSprite(glm::vec2 srcPos, glm::vec2 dstPos, float len, float startTime, Card* card);
     void drawCall();
     void clear();
 

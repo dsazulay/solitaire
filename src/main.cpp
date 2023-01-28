@@ -1,7 +1,9 @@
 #include "solitaire.h"
 
-int main()
+auto main() -> int
 {
     Solitaire app;
     app.run();
+
+    return 0;
 }
