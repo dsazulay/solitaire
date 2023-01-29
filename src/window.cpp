@@ -115,39 +115,9 @@ auto Window::keyboardCallback(GLFWwindow* window, int key, int scancode, int act
         glfwSetWindowShouldClose(window, true);
     }
     
-    else if (key == GLFW_KEY_U && action == GLFW_PRESS)
+    else if (action == GLFW_PRESS)
     {
-        KeyboardPressEvent e(KeyCode::U);
-        Dispatcher::instance().post(e);
-    }
-
-    else if (key == GLFW_KEY_R && action == GLFW_PRESS)
-    {
-        KeyboardPressEvent e(KeyCode::R);
-        Dispatcher::instance().post(e);
-    }
-
-    else if (key == GLFW_KEY_E && action == GLFW_PRESS)
-    {
-        KeyboardPressEvent e(KeyCode::E);
-        Dispatcher::instance().post(e);
-    }
-
-    else if (key == GLFW_KEY_N && action == GLFW_PRESS)
-    {
-        KeyboardPressEvent e(KeyCode::N);
-        Dispatcher::instance().post(e);
-    }
-
-    else if (key == GLFW_KEY_S && action == GLFW_PRESS)
-    {
-        KeyboardPressEvent e(KeyCode::S);
-        Dispatcher::instance().post(e);
-    }
-
-    else if (key == GLFW_KEY_D && action == GLFW_PRESS)
-    {
-        KeyboardPressEvent e(KeyCode::D);
+        KeyboardPressEvent e((KeyCode) key);
         Dispatcher::instance().post(e);
     }
 }

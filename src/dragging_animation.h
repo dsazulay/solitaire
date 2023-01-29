@@ -8,6 +8,11 @@
 #include "window.h"
 #include "card.h"
 
+namespace draganim
+{
+    const float ZOFFSET = 0.0001f;
+}
+
 class DraggingAnimation
 {
 public:
@@ -23,10 +28,9 @@ public:
 
     void update()
     {
-        const float zOffset = 0.0001f;
         for (Card* c : m_cards)
         {
-            c->pos = glm::vec3(Window::mousePos - c->dragOffset, zOffset);
+            c->pos = glm::vec3(Window::mousePos - c->dragOffset, draganim::ZOFFSET);
         }
     }
 

@@ -3,14 +3,14 @@
 #include <functional>
 #include <thread>
 #include <chrono>
-#include <time.h>
+#include <ctime>
 
 #include "timer.h"
 #include "keycodes.h"
 
 void Solitaire::onMouseClick(const Event& e)
 {
-    const auto& event = static_cast<const MouseClickEvent&>(e);
+    const auto& event = dynamic_cast<const MouseClickEvent&>(e);
     double xPos = event.xPos();
     double yPos = event.yPos();
 
@@ -19,7 +19,7 @@ void Solitaire::onMouseClick(const Event& e)
 
 void Solitaire::onMouseDoubleClick(const Event& e)
 {
-    const auto& event = static_cast<const MouseDoubleClickEvent&>(e);
+    const auto& event = dynamic_cast<const MouseDoubleClickEvent&>(e);
     double xPos = event.xPos();
     double yPos = event.yPos();
 
@@ -29,7 +29,7 @@ void Solitaire::onMouseDoubleClick(const Event& e)
 
 void Solitaire::onMouseDragStart(const Event& e)
 {
-    const auto& event = static_cast<const MouseDragStartEvent&>(e);
+    const auto& event = dynamic_cast<const MouseDragStartEvent&>(e);
     double xPos = event.xPos();
     double yPos = event.yPos();
 
@@ -39,7 +39,7 @@ void Solitaire::onMouseDragStart(const Event& e)
 
 void Solitaire::onMouseDragEnd(const Event& e)
 {
-    const auto& event = static_cast<const MouseDragEndEvent&>(e);
+    const auto& event = dynamic_cast<const MouseDragEndEvent&>(e);
     double xPos = event.xPos();
     double yPos = event.yPos();
 
@@ -48,7 +48,7 @@ void Solitaire::onMouseDragEnd(const Event& e)
 
 void Solitaire::onKeyboardPress(const Event& e)
 {
-    const auto& event = static_cast<const KeyboardPressEvent&>(e);
+    const auto& event = dynamic_cast<const KeyboardPressEvent&>(e);
     KeyCode key = event.key();
 
     if (key == KeyCode::U)

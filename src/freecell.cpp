@@ -35,7 +35,7 @@ void Freecell::update()
     if (it != m_movingAnimation.end())
     {
         it->update();
-        if (it->isDone)
+        if (it->isDone())
             m_movingAnimation.erase(it);
     }
     if (!m_draggingAnimation.isDone())

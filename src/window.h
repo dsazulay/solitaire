@@ -8,10 +8,10 @@ class Window
 {
 public:
     Window();
-    Window(const Window& w) = default;
-    Window(Window&& w) = default;
-    auto operator=(const Window& w) -> Window& = default;
-    auto operator=(Window&& w) -> Window& = default;
+    Window(const Window& w) = delete;
+    Window(Window&& w) = delete;
+    auto operator=(const Window& w) -> Window& = delete;
+    auto operator=(Window&& w) -> Window& = delete;
     ~Window();
 
     auto createWindow(int width, int height, const char* name) -> void;

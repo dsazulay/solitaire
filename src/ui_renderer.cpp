@@ -32,7 +32,7 @@ UiRenderer::~UiRenderer()
     ImGui::DestroyContext();
 }
 
-void UiRenderer::render()
+auto UiRenderer::render() -> void
 {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -60,68 +60,68 @@ void UiRenderer::render()
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-int UiRenderer::renderMode()
+auto UiRenderer::renderMode() -> int
 {
     return m_renderMode;
 }
 
-void UiRenderer::showWonWindow()
+auto UiRenderer::showWonWindow() -> void
 {
     m_shouldRenderWonWindow = true;
 }
 
-void UiRenderer::hideWonWindow()
+auto UiRenderer::hideWonWindow() -> void
 {
     m_shouldRenderWonWindow = false;
 }
 
-void UiRenderer::showStatsWindow()
+auto UiRenderer::showStatsWindow() -> void
 {
     m_shouldRenderStatsWindow = true;
 }
 
-void UiRenderer::hideStatsWindow()
+auto UiRenderer::hideStatsWindow() -> void
 {
     m_shouldRenderStatsWindow = false;
 }
 
-void UiRenderer::toggleStatsWindow()
+auto UiRenderer::toggleStatsWindow() -> void
 {
     m_shouldRenderStatsWindow = !m_shouldRenderStatsWindow;
 }
 
-void UiRenderer::showDebugWindow()
+auto UiRenderer::showDebugWindow() -> void
 {
     m_shouldRenderDebugWindow = true;
 }
 
-void UiRenderer::hideDebugWindow()
+auto UiRenderer::hideDebugWindow() -> void
 {
     m_shouldRenderDebugWindow = false;
 }
 
-void UiRenderer::toggleDebugWindow()
+auto UiRenderer::toggleDebugWindow() -> void
 {
     m_shouldRenderDebugWindow = !m_shouldRenderDebugWindow;
 }
 
-void UiRenderer::toggleWonWindow()
+auto UiRenderer::toggleWonWindow() -> void
 {
     m_shouldRenderWonWindow = !m_shouldRenderWonWindow;
 }
 
-void UiRenderer::toggleImguiDemoWindow()
+auto UiRenderer::toggleImguiDemoWindow() -> void
 {
     m_shouldRenderImguiDemoWindow = !m_shouldRenderImguiDemoWindow;
 }
 
-void UiRenderer::setPlayerAndMatchData(PlayerData* playerData, MatchData* matchData)
+auto UiRenderer::setPlayerAndMatchData(PlayerData* playerData, MatchData* matchData) -> void
 {
     m_playerData = playerData;
     m_matchData = matchData;
 }
 
-void UiRenderer::renderWonWindow()
+auto UiRenderer::renderWonWindow() -> void
 {
     const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 400, main_viewport->WorkPos.y + 180));
@@ -181,7 +181,7 @@ void UiRenderer::renderWonWindow()
     ImGui::End();
 }
 
-void UiRenderer::renderStatsWindow()
+auto UiRenderer::renderStatsWindow() -> void
 {
     const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 440, main_viewport->WorkPos.y + 210));
@@ -236,7 +236,7 @@ void UiRenderer::renderStatsWindow()
     ImGui::End();
 }
 
-void UiRenderer::renderTimeWindow()
+auto UiRenderer::renderTimeWindow() -> void
 {
     bool isOpen;
     ImGui::Begin("Time", &isOpen, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
@@ -244,7 +244,7 @@ void UiRenderer::renderTimeWindow()
     ImGui::End();
 }
 
-void UiRenderer::renderDebugWindow()
+auto UiRenderer::renderDebugWindow() -> void
 {
     ImGui::Begin("Debug");
     ImGui::Text("Frame time: %.3fms", Timer::deltaTime);
@@ -268,14 +268,14 @@ void UiRenderer::renderDebugWindow()
     ImGui::End();
 }
 
-void UiRenderer::initStyleValues()
+auto UiRenderer::initStyleValues() -> void
 {
     m_statsWindowConfig.windowPadding = ImVec2{40.0f, 31.0f};
     m_statsWindowConfig.itemSpacing = ImVec2{0.0f, 21.0f};
     m_statsWindowConfig.cellPadding = ImVec2{18.0f, 12.0f};
 }
 
-void UiRenderer::pushCommonStyle()
+auto UiRenderer::pushCommonStyle() -> void
 {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 20.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 2.0f);
@@ -284,13 +284,13 @@ void UiRenderer::pushCommonStyle()
     ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.45f, 0.72f, 0.57f, 1.0f));
 }
 
-void UiRenderer::popCommonStyle()
+auto UiRenderer::popCommonStyle() -> void
 {
     ImGui::PopStyleColor(3);
     ImGui::PopStyleVar(2);
 }
 
-void UiRenderer::pushPopupWindowStyle()
+auto UiRenderer::pushPopupWindowStyle() -> void
 {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, m_statsWindowConfig.windowPadding);
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, m_statsWindowConfig.itemSpacing);
@@ -303,7 +303,7 @@ void UiRenderer::pushPopupWindowStyle()
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 }
 
-void UiRenderer::popPopupWindowStyle()
+auto UiRenderer::popPopupWindowStyle() -> void
 {
     ImGui::PopStyleColor(3);
     ImGui::PopStyleVar(5);

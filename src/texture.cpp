@@ -1,12 +1,12 @@
 #include "texture.h"
 #include <glad/glad.h>
 
-void Texture::bind() const
+auto Texture::bind() const -> void
 {
     glBindTexture(GL_TEXTURE_2D, ID);
 }
 
-void Texture::generate(unsigned int width, unsigned int height, unsigned char *data)
+auto Texture::generate(int width, int height, unsigned char *data) -> void
 {
     glGenTextures(1, &ID);
     bind();

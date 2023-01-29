@@ -3,8 +3,8 @@
 class Texture
 {
 public:
-    void bind() const;
-    void generate(unsigned int width, unsigned int height, unsigned char* data);
+    auto bind() const -> void;
+    auto generate(int width, int height, unsigned char* data) -> void;
 
     unsigned int ID;
 };

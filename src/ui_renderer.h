@@ -17,33 +17,38 @@ class UiRenderer
 {
 public:
     UiRenderer(GLFWwindow* window);
+    UiRenderer(const UiRenderer& u) = delete;
+    UiRenderer(UiRenderer&& u) = delete;
+    auto operator=(const UiRenderer&) -> UiRenderer& = delete;
+    auto operator=(UiRenderer&&) -> UiRenderer& = delete;
     ~UiRenderer();
+
     void render();
-    int renderMode();
-    void showWonWindow();
-    void hideWonWindow();
-    void showStatsWindow();
-    void hideStatsWindow();
-    void toggleStatsWindow();
-    void showDebugWindow();
-    void hideDebugWindow();
-    void toggleDebugWindow();
-    void setPlayerAndMatchData(PlayerData* playerData, MatchData* matchInfo);
+    auto renderMode() -> int;
+    auto showWonWindow() -> void;
+    auto hideWonWindow() -> void;
+    auto showStatsWindow() -> void;
+    auto hideStatsWindow() -> void;
+    auto toggleStatsWindow() -> void;
+    auto showDebugWindow() -> void;
+    auto hideDebugWindow() -> void;
+    auto toggleDebugWindow() -> void;
+    auto setPlayerAndMatchData(PlayerData* playerData, MatchData* matchInfo) -> void;
 
 private:
-    void renderWonWindow();
-    void renderStatsWindow();
-    void renderTimeWindow();
-    void renderDebugWindow();
+    auto renderWonWindow() -> void;
+    auto renderStatsWindow() -> void;
+    auto renderTimeWindow() -> void;
+    auto renderDebugWindow() -> void;
     
-    void toggleWonWindow();
-    void toggleImguiDemoWindow();
+    auto toggleWonWindow() -> void;
+    auto toggleImguiDemoWindow() -> void;
 
-    void initStyleValues();
-    void pushCommonStyle();
-    void popCommonStyle();
-    void pushPopupWindowStyle();
-    void popPopupWindowStyle();
+    auto initStyleValues() -> void;
+    auto pushCommonStyle() -> void;
+    auto popCommonStyle() -> void;
+    auto pushPopupWindowStyle() -> void;
+    auto popPopupWindowStyle() -> void;
 
     int m_renderMode{};
     bool m_shouldRenderWonWindow{};
@@ -51,6 +56,6 @@ private:
     bool m_shouldRenderStatsWindow{};
     bool m_shouldRenderImguiDemoWindow{};
     WindowConfig m_statsWindowConfig{};
-    PlayerData* m_playerData;
-    MatchData* m_matchData;
+    PlayerData* m_playerData{};
+    MatchData* m_matchData{};
 };
