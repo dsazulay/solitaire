@@ -8,69 +8,48 @@
 #include "timer.h"
 #include "keycodes.h"
 
-void Solitaire::onMouseClick(const Event& e)
+void Solitaire::onMouseClick(const MouseClickEvent& e)
 {
-    const auto& event = dynamic_cast<const MouseClickEvent&>(e);
-    double xPos = event.xPos();
-    double yPos = event.yPos();
-
-    m_freecell.handleInputClick(xPos, yPos, false, false);
+    m_freecell.handleInputClick(e.xPos(), e.yPos(), false, false);
 }
 
-void Solitaire::onMouseDoubleClick(const Event& e)
+void Solitaire::onMouseDoubleClick(const MouseDoubleClickEvent& e)
 {
-    const auto& event = dynamic_cast<const MouseDoubleClickEvent&>(e);
-    double xPos = event.xPos();
-    double yPos = event.yPos();
-
-    m_freecell.handleInputDoubleClick(xPos, yPos);
+    m_freecell.handleInputDoubleClick(e.xPos(), e.yPos());
 }
 
-
-void Solitaire::onMouseDragStart(const Event& e)
+void Solitaire::onMouseDragStart(const MouseDragStartEvent& e)
 {
-    const auto& event = dynamic_cast<const MouseDragStartEvent&>(e);
-    double xPos = event.xPos();
-    double yPos = event.yPos();
-
-    m_freecell.handleInputClick(xPos, yPos, true, true);
+    m_freecell.handleInputClick(e.xPos(), e.yPos(), true, true);
 }
 
-
-void Solitaire::onMouseDragEnd(const Event& e)
+void Solitaire::onMouseDragEnd(const MouseDragEndEvent& e)
 {
-    const auto& event = dynamic_cast<const MouseDragEndEvent&>(e);
-    double xPos = event.xPos();
-    double yPos = event.yPos();
-
-    m_freecell.handleInputClick(xPos, yPos, true, false);
+    m_freecell.handleInputClick(e.xPos(), e.yPos(), true, false);
 }
 
-void Solitaire::onKeyboardPress(const Event& e)
+void Solitaire::onKeyboardPress(const KeyboardPressEvent& e)
 {
-    const auto& event = dynamic_cast<const KeyboardPressEvent&>(e);
-    KeyCode key = event.key();
-
-    if (key == KeyCode::U)
+    if (e.key() == KeyCode::U)
         m_freecell.handleInputUndo();
-    else if (key == KeyCode::R)
+    else if (e.key() == KeyCode::R)
         m_freecell.handleInputRedo();
-    else if (key == KeyCode::E)
+    else if (e.key() == KeyCode::E)
         m_freecell.handleInputRestart();
-    else if (key == KeyCode::N)
+    else if (e.key() == KeyCode::N)
         m_freecell.handleInputNewGame();
-    else if (key == KeyCode::S)
+    else if (e.key() == KeyCode::S)
         m_uiRenderer->toggleStatsWindow();
-    else if (key == KeyCode::D)
+    else if (e.key() == KeyCode::D)
         m_uiRenderer->toggleDebugWindow();
 }
 
-void Solitaire::onGameWin(const Event& e)
+void Solitaire::onGameWin(const GameWinEvent& e)
 {
     m_uiRenderer->showWonWindow();
 }
 
-void Solitaire::onUiNewGameEvent(const Event& e)
+void Solitaire::onUiNewGameEvent(const UiNewGameEvent& e)
 {
     m_freecell.handleInputNewGame();
 }
@@ -98,17 +77,24 @@ void Solitaire::init()
     m_uiRenderer = std::make_unique<UiRenderer>(m_window->getWindow());
 
     // Game init
-    srand(time(NULL));
+    srand(time(nullptr));
     m_freecell.init();
     m_uiRenderer->setPlayerAndMatchData(m_freecell.playerData(), m_freecell.matchData());
 
-    bindCallback(MouseClickEvent::descriptor, &Solitaire::onMouseClick);
-    bindCallback(MouseDoubleClickEvent::descriptor, &Solitaire::onMouseDoubleClick);
-    bindCallback(MouseDragStartEvent::descriptor, &Solitaire::onMouseDragStart);
-    bindCallback(MouseDragEndEvent::descriptor, &Solitaire::onMouseDragEnd);
-    bindCallback(KeyboardPressEvent::descriptor, &Solitaire::onKeyboardPress);
-    bindCallback(GameWinEvent::descriptor, &Solitaire::onGameWin);
-    bindCallback(UiNewGameEvent::descriptor, &Solitaire::onUiNewGameEvent);
+    Dispatcher<MouseClickEvent>::instance().subscribe(
+        [&] (const auto& arg) { Solitaire::onMouseClick(arg); });
+    Dispatcher<MouseDoubleClickEvent>::instance().subscribe( 
+        [&] (const auto& arg) { Solitaire::onMouseDoubleClick(arg); });
+    Dispatcher<MouseDragStartEvent>::instance().subscribe(
+        [&] (const auto& arg) { Solitaire::onMouseDragStart(arg); });
+    Dispatcher<MouseDragEndEvent>::instance().subscribe(
+        [&] (const auto& arg) { Solitaire::onMouseDragEnd(arg); });
+    Dispatcher<KeyboardPressEvent>::instance().subscribe(
+        [&] (const auto& arg) { Solitaire::onKeyboardPress(arg); });
+    Dispatcher<GameWinEvent>::instance().subscribe(
+        [&] (const auto& arg) { Solitaire::onGameWin(arg); });
+    Dispatcher<UiNewGameEvent>::instance().subscribe(
+        [&] (const auto& arg) { Solitaire::onUiNewGameEvent(arg); });
 
     //glfwSwapInterval(1); // Enable vsync
 }

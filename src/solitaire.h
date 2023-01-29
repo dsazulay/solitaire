@@ -13,8 +13,8 @@
 struct AppConfig
 {
     std::string windowName;
-    unsigned int windowWidth;
-    unsigned int windowHeight;
+    int windowWidth{};
+    int windowHeight{};
 };
 
 class Solitaire
@@ -27,16 +27,13 @@ private:
     void init();
     void mainLoop();
 
-    void onMouseClick(const Event& e);
-    void onMouseDoubleClick(const Event& e);
-    void onMouseDragStart(const Event& e);
-    void onMouseDragEnd(const Event& e);
-    void onKeyboardPress(const Event& e);
-    void onGameWin(const Event& e);
-    void onUiNewGameEvent(const Event& e);
-
-    template <class Fp>
-    void bindCallback(const char* descriptor, Fp funcPointer);
+    void onMouseClick(const MouseClickEvent& e);
+    void onMouseDoubleClick(const MouseDoubleClickEvent& e);
+    void onMouseDragStart(const MouseDragStartEvent& e);
+    void onMouseDragEnd(const MouseDragEndEvent& e);
+    void onKeyboardPress(const KeyboardPressEvent& e);
+    void onGameWin(const GameWinEvent& e);
+    void onUiNewGameEvent(const UiNewGameEvent& e);
 
     AppConfig m_appConfig;
     std::unique_ptr<Window> m_window;
@@ -44,11 +41,3 @@ private:
     std::unique_ptr<UiRenderer> m_uiRenderer;
     Freecell m_freecell;
 };
-
-template <class Fp>
-void Solitaire::bindCallback(const char* descriptor, Fp funcPointer)
-{
-    Dispatcher::instance().subscribe(descriptor, 
-        std::bind(funcPointer, this, std::placeholders::_1));
-}
-

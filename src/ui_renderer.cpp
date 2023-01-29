@@ -175,7 +175,7 @@ auto UiRenderer::renderWonWindow() -> void
     {
         hideWonWindow();
         UiNewGameEvent e;
-        Dispatcher::instance().post(e);
+        Dispatcher<UiNewGameEvent>::instance().post(e);
     }
     popPopupWindowStyle();
     ImGui::End();
