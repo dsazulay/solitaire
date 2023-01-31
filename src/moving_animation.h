@@ -11,13 +11,6 @@
 #include "card.h"
 #include "timer.h"
 
-namespace moveanim
-{
-    const float ZOFFSET = 0.0001f;
-    const float YOFFSET = 32.0f;
-    const float ANIMSPEED = 4000.0f;
-}
-
 class MovingAnimation
 {
 public:
@@ -44,7 +37,7 @@ public:
             for (int i = 0; i < (int) m_cards.size(); i++)
             {
                 pos = glm::vec3(m_dstPos, 0.0);
-                pos.y -= (float) i * moveanim::YOFFSET;
+                pos.y -= (float) i * yOffset;
                 m_cards[i]->pos = pos;
                 m_isDone = true;
             }
@@ -55,8 +48,8 @@ public:
         {
             for (int i = 0; i < (int) m_cards.size(); i++)
             {
-                pos = glm::vec3(glm::lerp(m_startPos, m_dstPos, delta), moveanim::ZOFFSET);
-                pos.y -= (float) i * moveanim::YOFFSET;
+                pos = glm::vec3(glm::lerp(m_startPos, m_dstPos, delta), zOffset);
+                pos.y -= (float) i * yOffset;
                 m_cards[i]->pos = pos;
             }
         }        
@@ -68,7 +61,11 @@ public:
     }
 
 private:
-    float m_speed = moveanim::ANIMSPEED;
+    constexpr static float zOffset = 0.0001f;
+    constexpr static float yOffset = 32.0f;
+    constexpr static float animSpeed = 4000.0f;
+
+    float m_speed = animSpeed;
     float m_startTime{};
     float m_len;
     glm::vec2 m_startPos;

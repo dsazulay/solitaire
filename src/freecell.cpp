@@ -54,7 +54,7 @@ void Freecell::update()
             m_currentState = GameState::Won;
             updatePlayerData(true, m_matchData.currentTime);
             GameWinEvent e;
-            Dispatcher<GameWinEvent>::instance().post(e);
+            Dispatcher<GameWinEvent>::post(e);
         }
     }
     else if (m_currentState == GameState::Won)

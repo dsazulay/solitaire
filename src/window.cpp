@@ -78,14 +78,14 @@ auto Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
     {
         dragStartTime = (float) glfwGetTime();
-        MouseDragStartEvent dragStartEvent(mousePos.x, mousePos.y);
-        Dispatcher<MouseDragStartEvent>::instance().post(dragStartEvent);
+        MouseDragEvent dragEvent(mousePos.x, mousePos.y, true);
+        Dispatcher<MouseDragEvent>::post(dragEvent);
     }
 
     else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
     {
-        MouseDragEndEvent dragEndEvent(mousePos.x, mousePos.y);
-        Dispatcher<MouseDragEndEvent>::instance().post(dragEndEvent);
+        MouseDragEvent dragEvent(mousePos.x, mousePos.y, false);
+        Dispatcher<MouseDragEvent>::post(dragEvent);
 
         auto clickTime = (float) glfwGetTime();
         float timeDiff = clickTime - lastClickTime;
@@ -96,7 +96,7 @@ auto Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int
         if (timeDiff > doubleClickMinTime && timeDiff < doubleClickMaxTime)
         {
             MouseDoubleClickEvent doubleClickEvent(mousePos.x, mousePos.y);
-            Dispatcher<MouseDoubleClickEvent>::instance().post(doubleClickEvent);
+            Dispatcher<MouseDoubleClickEvent>::post(doubleClickEvent);
             return;
         }
 
@@ -118,7 +118,7 @@ auto Window::keyboardCallback(GLFWwindow* window, int key, int scancode, int act
     else if (action == GLFW_PRESS)
     {
         KeyboardPressEvent e((KeyCode) key);
-        Dispatcher<KeyboardPressEvent>::instance().post(e);
+        Dispatcher<KeyboardPressEvent>::post(e);
     }
 }
 

@@ -14,33 +14,24 @@ class Dispatcher
 {
     using Callback = std::function<void(const EventType&)>;
 public:
-    Dispatcher(const Dispatcher& other) = delete;
-    Dispatcher(Dispatcher&& other) = delete;
-    auto operator=(const Dispatcher& other) -> void = delete;
-    auto operator=(Dispatcher&& other) -> void = delete;
-    ~Dispatcher() = default;
-
-    auto subscribe(Callback&& callback) -> void
+    static auto subscribe(Callback&& callback) -> void
     {
-        m_observers.push_back(callback);
+        observers.push_back(callback);
     }
 
-    auto post(const EventType& event) -> void
+    static auto post(const EventType& event) -> void
     {
-        for (auto&& observer : m_observers)
+        for (auto&& observer : observers)
         {
             observer(event);
         }
     }
 
-    static auto instance() -> Dispatcher&
-    {
-        static Dispatcher instance_;
-        return instance_;
-    }
-
 private:
     Dispatcher() = default;
 
-    std::vector<Callback> m_observers;
+    static std::vector<Callback> observers;
 };
+
+template<Derived<Event> EventType>
+std::vector<std::function<void(const EventType&)>> Dispatcher<EventType>::observers;

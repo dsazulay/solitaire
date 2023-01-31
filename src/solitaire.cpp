@@ -18,14 +18,9 @@ void Solitaire::onMouseDoubleClick(const MouseDoubleClickEvent& e)
     m_freecell.handleInputDoubleClick(e.xPos(), e.yPos());
 }
 
-void Solitaire::onMouseDragStart(const MouseDragStartEvent& e)
+void Solitaire::onMouseDrag(const MouseDragEvent& e)
 {
-    m_freecell.handleInputClick(e.xPos(), e.yPos(), true, true);
-}
-
-void Solitaire::onMouseDragEnd(const MouseDragEndEvent& e)
-{
-    m_freecell.handleInputClick(e.xPos(), e.yPos(), true, false);
+    m_freecell.handleInputClick(e.xPos(), e.yPos(), true, e.isStart());
 }
 
 void Solitaire::onKeyboardPress(const KeyboardPressEvent& e)
@@ -81,19 +76,17 @@ void Solitaire::init()
     m_freecell.init();
     m_uiRenderer->setPlayerAndMatchData(m_freecell.playerData(), m_freecell.matchData());
 
-    Dispatcher<MouseClickEvent>::instance().subscribe(
+    Dispatcher<MouseClickEvent>::subscribe(
         [&] (const auto& arg) { Solitaire::onMouseClick(arg); });
-    Dispatcher<MouseDoubleClickEvent>::instance().subscribe( 
+    Dispatcher<MouseDoubleClickEvent>::subscribe( 
         [&] (const auto& arg) { Solitaire::onMouseDoubleClick(arg); });
-    Dispatcher<MouseDragStartEvent>::instance().subscribe(
-        [&] (const auto& arg) { Solitaire::onMouseDragStart(arg); });
-    Dispatcher<MouseDragEndEvent>::instance().subscribe(
-        [&] (const auto& arg) { Solitaire::onMouseDragEnd(arg); });
-    Dispatcher<KeyboardPressEvent>::instance().subscribe(
+    Dispatcher<MouseDragEvent>::subscribe(
+        [&] (const auto& arg) { Solitaire::onMouseDrag(arg); });
+    Dispatcher<KeyboardPressEvent>::subscribe(
         [&] (const auto& arg) { Solitaire::onKeyboardPress(arg); });
-    Dispatcher<GameWinEvent>::instance().subscribe(
+    Dispatcher<GameWinEvent>::subscribe(
         [&] (const auto& arg) { Solitaire::onGameWin(arg); });
-    Dispatcher<UiNewGameEvent>::instance().subscribe(
+    Dispatcher<UiNewGameEvent>::subscribe(
         [&] (const auto& arg) { Solitaire::onUiNewGameEvent(arg); });
 
     //glfwSwapInterval(1); // Enable vsync

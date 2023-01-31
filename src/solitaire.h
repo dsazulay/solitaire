@@ -29,8 +29,7 @@ private:
 
     void onMouseClick(const MouseClickEvent& e);
     void onMouseDoubleClick(const MouseDoubleClickEvent& e);
-    void onMouseDragStart(const MouseDragStartEvent& e);
-    void onMouseDragEnd(const MouseDragEndEvent& e);
+    void onMouseDrag(const MouseDragEvent& e);
     void onKeyboardPress(const KeyboardPressEvent& e);
     void onGameWin(const GameWinEvent& e);
     void onUiNewGameEvent(const UiNewGameEvent& e);
