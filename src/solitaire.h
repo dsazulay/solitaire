@@ -21,22 +21,25 @@ class Solitaire
 {
 public:
     Solitaire();
-    void run();
+    auto run() -> void;
 
 private:
-    void init();
-    void mainLoop();
+    auto init() -> void;
+    auto mainLoop() -> void;
 
-    void onMouseClick(const MouseClickEvent& e);
-    void onMouseDoubleClick(const MouseDoubleClickEvent& e);
-    void onMouseDrag(const MouseDragEvent& e);
-    void onKeyboardPress(const KeyboardPressEvent& e);
-    void onGameWin(const GameWinEvent& e);
-    void onUiNewGameEvent(const UiNewGameEvent& e);
+    auto onMouseClick(const MouseClickEvent& e) -> void;
+    auto onMouseDoubleClick(const MouseDoubleClickEvent& e) -> void;
+    auto onMouseDrag(const MouseDragEvent& e) -> void;
+    auto onKeyboardPress(const KeyboardPressEvent& e) -> void;
+    auto onGameWin(const GameWinEvent& e) -> void;
+    auto onUiNewGameEvent(const UiNewGameEvent& e) -> void;
 
     AppConfig m_appConfig;
     std::unique_ptr<Window> m_window;
     std::unique_ptr<Renderer> m_renderer;
     std::unique_ptr<UiRenderer> m_uiRenderer;
     Freecell m_freecell;
+
+    constexpr static int DEFAULT_WINDOW_WIDTH = 1280;
+    constexpr static int DEFAULT_WINDOW_HEIGHT = 720;
 };

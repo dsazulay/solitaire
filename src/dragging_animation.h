@@ -25,7 +25,7 @@ public:
     {
         for (Card* c : m_cards)
         {
-            c->pos = glm::vec3(Window::mousePos - c->dragOffset, zOffset);
+            c->pos = glm::vec3(Window::mousePos - c->dragOffset, Z_OFFSET);
         }
     }
 
@@ -40,7 +40,7 @@ public:
     }
 
 private:
-    constexpr static float zOffset = 0.0001f;
+    constexpr static float Z_OFFSET = 0.0001f;
 
     std::span<Card*> m_cards;
     bool m_isDone{true};

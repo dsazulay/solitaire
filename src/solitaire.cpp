@@ -8,61 +8,20 @@
 #include "timer.h"
 #include "keycodes.h"
 
-void Solitaire::onMouseClick(const MouseClickEvent& e)
-{
-    m_freecell.handleInputClick(e.xPos(), e.yPos(), false, false);
-}
-
-void Solitaire::onMouseDoubleClick(const MouseDoubleClickEvent& e)
-{
-    m_freecell.handleInputDoubleClick(e.xPos(), e.yPos());
-}
-
-void Solitaire::onMouseDrag(const MouseDragEvent& e)
-{
-    m_freecell.handleInputClick(e.xPos(), e.yPos(), true, e.isStart());
-}
-
-void Solitaire::onKeyboardPress(const KeyboardPressEvent& e)
-{
-    if (e.key() == KeyCode::U)
-        m_freecell.handleInputUndo();
-    else if (e.key() == KeyCode::R)
-        m_freecell.handleInputRedo();
-    else if (e.key() == KeyCode::E)
-        m_freecell.handleInputRestart();
-    else if (e.key() == KeyCode::N)
-        m_freecell.handleInputNewGame();
-    else if (e.key() == KeyCode::S)
-        m_uiRenderer->toggleStatsWindow();
-    else if (e.key() == KeyCode::D)
-        m_uiRenderer->toggleDebugWindow();
-}
-
-void Solitaire::onGameWin(const GameWinEvent& e)
-{
-    m_uiRenderer->showWonWindow();
-}
-
-void Solitaire::onUiNewGameEvent(const UiNewGameEvent& e)
-{
-    m_freecell.handleInputNewGame();
-}
-
 Solitaire::Solitaire()
 {
     m_appConfig.windowName = "Solitaire";
-    m_appConfig.windowWidth = 1280;
-    m_appConfig.windowHeight = 720;
+    m_appConfig.windowWidth = DEFAULT_WINDOW_WIDTH;
+    m_appConfig.windowHeight = DEFAULT_WINDOW_HEIGHT;
 }
 
-void Solitaire::run()
+auto Solitaire::run() -> void
 {
     init();
     mainLoop();
 }
 
-void Solitaire::init()
+auto Solitaire::init() -> void
 {
     m_window = std::make_unique<Window>();
     m_window->createWindow(m_appConfig.windowWidth, m_appConfig.windowHeight, m_appConfig.windowName.c_str());
@@ -92,7 +51,7 @@ void Solitaire::init()
     //glfwSwapInterval(1); // Enable vsync
 }
 
-void Solitaire::mainLoop()
+auto Solitaire::mainLoop() -> void
 {
     while (!m_window->shouldClose())
     {
@@ -109,4 +68,45 @@ void Solitaire::mainLoop()
         m_window->swapBuffers();
         m_window->pollEvents();
     }
+}
+
+auto Solitaire::onMouseClick(const MouseClickEvent& e) -> void
+{
+    m_freecell.handleInputClick(e.xPos(), e.yPos(), false, false);
+}
+
+auto Solitaire::onMouseDoubleClick(const MouseDoubleClickEvent& e) -> void
+{
+    m_freecell.handleInputDoubleClick(e.xPos(), e.yPos());
+}
+
+auto Solitaire::onMouseDrag(const MouseDragEvent& e) -> void
+{
+    m_freecell.handleInputClick(e.xPos(), e.yPos(), true, e.isStart());
+}
+
+auto Solitaire::onKeyboardPress(const KeyboardPressEvent& e) -> void
+{
+    if (e.key() == KeyCode::U)
+        m_freecell.handleInputUndo();
+    else if (e.key() == KeyCode::R)
+        m_freecell.handleInputRedo();
+    else if (e.key() == KeyCode::E)
+        m_freecell.handleInputRestart();
+    else if (e.key() == KeyCode::N)
+        m_freecell.handleInputNewGame();
+    else if (e.key() == KeyCode::S)
+        m_uiRenderer->toggleStatsWindow();
+    else if (e.key() == KeyCode::D)
+        m_uiRenderer->toggleDebugWindow();
+}
+
+auto Solitaire::onGameWin(const GameWinEvent& e) -> void
+{
+    m_uiRenderer->showWonWindow();
+}
+
+auto Solitaire::onUiNewGameEvent(const UiNewGameEvent& e) -> void
+{
+    m_freecell.handleInputNewGame();
 }

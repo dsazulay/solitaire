@@ -16,7 +16,7 @@ public:
     {
     }
 
-    std::size_t serialize()
+    auto serialize() -> std::size_t
     {
         m_position = 0;
         auto out = [&](auto&& value)
@@ -37,7 +37,7 @@ public:
         return m_position;
     }
 
-    std::size_t deserialize()
+    auto deserialize() -> std::size_t
     {
         m_position = 0;
         auto in = [&](auto& value)
@@ -67,7 +67,7 @@ public:
             return;
         }
 
-        out.write(reinterpret_cast<char*>(m_data.data()), m_position);
+        out.write(reinterpret_cast<char*>(m_data.data()), (std::streamsize) m_position);
         out.close();
     }
 
@@ -89,8 +89,10 @@ public:
     }
 
 private:
-    std::array<std::byte, 256> m_data;
-    std::size_t m_position;
+    constexpr static int DATA_MAXSIZE = 256;
+
+    std::array<std::byte, DATA_MAXSIZE> m_data{};
+    std::size_t m_position{};
 
     PlayerData& m_playerData;
     std::string m_fileName;
