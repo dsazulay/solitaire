@@ -34,19 +34,29 @@ enum class GameState
 
 struct Board
 {
-    std::array<CardStack, 8> tableau;
-    std::array<CardStack, 4> openCells;
-    std::array<CardStack, 4> foundations;
+    constexpr static int tableauSize = 8;
+    constexpr static int openCellsAndFoundSize = 4;
 
-    std::array<Card*, 4> openCellsBg;
-    std::array<Card*, 4> foundationsBg;
+    std::array<CardStack, tableauSize> tableau;
+    std::array<CardStack, openCellsAndFoundSize> openCells;
+    std::array<CardStack, openCellsAndFoundSize> foundations;
+
+    std::array<Card*, openCellsAndFoundSize> openCellsBg;
+    std::array<Card*, openCellsAndFoundSize> foundationsBg;
 };
 
 struct BoardMap
 {
-    std::array<std::array<glm::vec2, 12>, 8> tableau;
-    std::array<glm::vec2, 4> openCells;
-    std::array<glm::vec2, 4> foundations;
+    constexpr static int stackMaxSize = 12;
+    constexpr static int cardHalfWidth = 50;
+    constexpr static int cardHalfHeight = 72;
+    constexpr static int cardMiddleHeight = 42;
+    constexpr static float topAreaYPos = 600.0f;
+
+    std::array<float, Board::tableauSize> tableauX;
+    std::array<float, stackMaxSize> tableauY;
+    std::array<float, Board::openCellsAndFoundSize> openCells;
+    std::array<float, Board::openCellsAndFoundSize> foundations;
 };
 
 struct Move
@@ -57,7 +67,7 @@ struct Move
     glm::vec2 srcPos;
     glm::vec2 dstPos;
 
-    Move swap()
+    auto swap() -> Move
     {
         Move newMove{dstStack, srcStack, cardQuantity, dstPos, srcPos};
         return newMove;
@@ -67,51 +77,50 @@ struct Move
 class Freecell
 {
 public:
-    void init();
-    void update();
+    auto  init() -> void;
+    auto  update() -> void;
 
-    void handleInputClick(double xPos, double yPos, bool isDraging, bool isDragStart);
-    void handleInputDoubleClick(double xPos, double yPos);
-    void handleInputUndo();
-    void handleInputRedo();
-    void handleInputRestart();
-    void handleInputNewGame();
+    auto  handleInputClick(double xPos, double yPos, bool isDraging, bool isDragStart) -> void;
+    auto  handleInputDoubleClick(double xPos, double yPos) -> void;
+    auto  handleInputUndo() -> void;
+    auto  handleInputRedo() -> void;
+    auto  handleInputRestart() -> void;
+    auto  handleInputNewGame() -> void;
 
-    Board& board();
-    PlayerData* playerData();
-    MatchData* matchData();
+    auto board() -> Board&;
+    auto playerData() -> PlayerData*;
+    auto matchData() -> MatchData*;
 
 private:
-    void loadPlayerData();
-    void updatePlayerData(bool didWon, float time);
+    auto loadPlayerData() -> void;
+    auto updatePlayerData(bool didWon, float time) -> void;
 
-    void setBoardLayout();
-    void createOpenCellsAndFoundations();
+    auto setBoardLayout() -> void;
+    auto createOpenCellsAndFoundations() -> void;
 
-    bool checkWin();
-    bool checkSequence(CardStack& stack, int j);
-    bool checkWinSequence(CardStack& stack);
-    bool isComplete();
-    void playWinAnimation();
-    int getMaxCardsToMove(bool movingToEmptySpace);
+    auto checkWin() -> bool;
+    auto checkSequence(const CardStack& stack, int j) -> bool;
+    auto checkWinSequence(const CardStack& stack) -> bool;
+    auto isComplete() -> bool;
+    auto playWinAnimation() -> void;
+    auto getMaxCardsToMove(bool movingToEmptySpace) -> int;
 
-    bool openCellsIsLegalMove(Card* card, int col);
-    bool foundationsIsLegalMove(Card* card, int col);
-    bool tableIsLegalMove(Card* card, int col);
+    auto openCellsIsLegalMove(Card* card, const CardStack& stack) -> bool;
+    auto foundationsIsLegalMove(Card* card, const CardStack& stack) -> bool;
+    auto tableIsLegalMove(Card* card, const CardStack& stack) -> bool;
 
-    void handleClick(CardStack& stack, std::span<glm::vec2> dstAreaPos, int col, int index, bool(Freecell::*isLegalMove)(Card* card, int c), bool isDragStart);
+    auto handleClick(CardStack& stack, glm::vec2 dstPos, int col, int index, bool(Freecell::*isLegalMove)(Card* card, const CardStack& stack), bool isDragStart) -> void;
 
-    void select(CardStack* stack, int index, bool isDragStart);
-    void deselect();
-    void moveBackAndDeselectCard();
+    auto select(CardStack* stack, int index, bool isDragStart) -> void;
+    auto deselect() -> void;
+    auto moveBackAndDeselectCard() -> void;
 
-    int getIndexX(int n, double xPos);
-    int getTopAreaIndexX(std::span<glm::vec2> area, double xPos);
-    int getIndexY(int n, int col, double yPos);
+    auto getIndexX(std::span<float> area, double xPos) -> int;
+    auto getIndexY(int stackSize, double yPos) -> int;
 
-    void winMoves(CardStack& src, std::span<CardStack> dst, std::span<glm::vec2> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, int c));
-    bool tryMoveFromTo(CardStack& src, std::span<CardStack> dst, std::span<glm::vec2> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, int c));
-    void moveCard(CardStack& src, CardStack& dst, int n);
+    auto winMoves(CardStack& src, std::span<CardStack> dst, std::span<float> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, const CardStack& stack)) -> void;
+    auto tryMoveFromTo(CardStack& src, std::span<CardStack> dst, std::span<float> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, const CardStack& stack)) -> bool;
+    auto moveCard(CardStack& src, CardStack& dst, int n) -> void;
 
     History<Move> m_history;
     std::vector<MovingAnimation> m_movingAnimation;

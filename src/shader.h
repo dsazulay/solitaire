@@ -14,5 +14,5 @@ public:
 private:
     unsigned int ID;
 
-    constexpr static int LOG_BUFFER_SIZE = 512;
+    constexpr static int logBufferSize = 512;
 };

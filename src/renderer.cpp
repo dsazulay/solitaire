@@ -53,7 +53,7 @@ Renderer::Renderer()
 
 }
 
-void Renderer::render(const Board& board, RenderMode mode)
+auto Renderer::render(const Board& board, RenderMode mode) -> void
 {
     clear();
 
@@ -132,7 +132,7 @@ void Renderer::render(const Board& board, RenderMode mode)
     renderBackground(mode);
 }
 
-void Renderer::renderCardBackground(const Board& board, RenderMode mode)
+auto Renderer::renderCardBackground(const Board& board, RenderMode mode) -> void
 {
 
     glEnable(GL_BLEND);
@@ -170,7 +170,7 @@ void Renderer::renderCardBackground(const Board& board, RenderMode mode)
     }
 }
 
-void Renderer::renderBackground(RenderMode mode)
+auto Renderer::renderBackground(RenderMode mode) -> void
 {
 
     glEnable(GL_BLEND);
@@ -212,7 +212,7 @@ void Renderer::renderBackground(RenderMode mode)
     }
 }
 
-void Renderer::renderSprite(Card* card)
+auto Renderer::renderSprite(Card* card) -> void
 {
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, card->pos);
@@ -232,7 +232,7 @@ void Renderer::drawCall()
 }
 
 // TODO: create a new class for mesh objects to hold VAO EBO and VBO
-void Renderer::initMesh()
+auto Renderer::initMesh() -> void
 {
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -247,15 +247,15 @@ void Renderer::initMesh()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_model->indices.size() * sizeof(int), &m_model->indices[0], GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), nullptr);
 
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, texCoord)));
 
     glBindVertexArray(0);
 }
 
-void Renderer::initBackgroundMesh()
+auto Renderer::initBackgroundMesh() -> void
 {
     glGenVertexArrays(1, &VAO_BG);
     glGenBuffers(1, &VBO_BG);
@@ -270,16 +270,16 @@ void Renderer::initBackgroundMesh()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_backgroundModel->indices.size() * sizeof(int), &m_backgroundModel->indices[0], GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), nullptr);
 
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, texCoord)));
 
     glBindVertexArray(0);
 }
 
 
-void Renderer::clear()
+auto Renderer::clear() -> void
 {
     glClearColor(0.22f, 0.49f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

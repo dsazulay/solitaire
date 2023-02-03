@@ -23,7 +23,7 @@ void Freecell::init()
     setBoardLayout();
     createOpenCellsAndFoundations();
     m_dealer.shuffleDeck();
-    m_dealer.fillTableau(m_board.tableau, m_boardMap.tableau);
+    m_dealer.fillTableau(m_board.tableau, m_boardMap.tableauX, m_boardMap.tableauY);
 
     m_currentState = GameState::Playing;
     m_matchData.startTime = Timer::time;
@@ -77,44 +77,48 @@ void Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool i
         // open cells
         if (xPos < LAYOUT_SIZE.halfScreenWidth)
         {
-            int i = getTopAreaIndexX(m_boardMap.openCells, xPos);
+            int i = getIndexX(m_boardMap.openCells, xPos);
             if (i == -1)
             {
                 moveBackAndDeselectCard();
                 return;
             }
-            std::span<glm::vec2> dtsAreaPos(&m_boardMap.openCells[i], 1);
+            glm::vec2 dtsAreaPos{m_boardMap.openCells[i], 600.0f};
             handleClick(m_board.openCells[i], dtsAreaPos, i, m_board.openCells[i].size() - 1, &Freecell::openCellsIsLegalMove, isDragStart);
         }
         else
         {
-            int i = getTopAreaIndexX(m_boardMap.foundations, xPos);
+            int i = getIndexX(m_boardMap.foundations, xPos);
             if (i == -1)
             {
                 moveBackAndDeselectCard();
                 return;
             }
-            std::span<glm::vec2> dtsAreaPos(&m_boardMap.foundations[i], 1);
+            glm::vec2 dtsAreaPos{m_boardMap.foundations[i], 600.0f};
             handleClick(m_board.foundations[i], dtsAreaPos, i, m_board.foundations[i].size() - 1, &Freecell::foundationsIsLegalMove, isDragStart);
         }
     }
     else
     {
-        int i = getIndexX(8, xPos);
+        int i = getIndexX(m_boardMap.tableauX, xPos);
         if (i == -1)
         {
             moveBackAndDeselectCard();
             return;
         }
         int stackSize = m_board.tableau[i].size();
-        int j = getIndexY(stackSize, i, yPos);
+        int j = getIndexY(stackSize, yPos);
         if (j == -1)
         {
             moveBackAndDeselectCard();
             return;
         }
 
-        std::span<glm::vec2> dtsAreaPos(m_boardMap.tableau[i]);
+        auto y = m_boardMap.tableauY[j + 1];
+        if (stackSize == 0)
+            y = m_boardMap.tableauY[j];
+
+        glm::vec2 dtsAreaPos{m_boardMap.tableauX[i], y};
         handleClick(m_board.tableau[i], dtsAreaPos, i, j, &Freecell::tableIsLegalMove, isDragStart);
     }
 }
@@ -132,7 +136,7 @@ void Freecell::handleInputDoubleClick(double xPos, double yPos)
         // open cells
         if (xPos < LAYOUT_SIZE.halfScreenWidth)
         {
-            int i = getTopAreaIndexX(m_boardMap.openCells, xPos);
+            int i = getIndexX(m_boardMap.openCells, xPos);
             if (i == -1)
                 return;
 
@@ -152,12 +156,12 @@ void Freecell::handleInputDoubleClick(double xPos, double yPos)
     }
     else
     {
-        int i = getIndexX(8, xPos);
+        int i = getIndexX(m_boardMap.tableauX, xPos);
         if (i == -1)
             return;
 
         int stackSize = m_board.tableau[i].size();
-        int j = getIndexY(stackSize, i, yPos);
+        int j = getIndexY(stackSize, yPos);
         if (j == -1)
             return;
 
@@ -172,6 +176,8 @@ void Freecell::handleInputDoubleClick(double xPos, double yPos)
             LOG_WARN("No action for double click on an empty table stack");
             return;
         }
+
+        LOG_INFO("Test " << i << " " << j);
 
         if (!tryMoveFromTo(m_board.tableau[i], m_board.foundations, m_boardMap.foundations, &Freecell::foundationsIsLegalMove))
         {
@@ -239,7 +245,7 @@ void Freecell::handleInputRestart()
     }
 
     Dealer::emptyTable(m_board.tableau, m_board.openCells, m_board.foundations);
-    m_dealer.fillTableau(m_board.tableau, m_boardMap.tableau);
+    m_dealer.fillTableau(m_board.tableau, m_boardMap.tableauX, m_boardMap.tableauY);
     m_history.clearStacks();
     updatePlayerData(false, 10000.0f);
     m_currentState = GameState::Playing;
@@ -256,7 +262,7 @@ void Freecell::handleInputNewGame()
     
     Dealer::emptyTable(m_board.tableau, m_board.openCells, m_board.foundations);
     m_dealer.shuffleDeck();
-    m_dealer.fillTableau(m_board.tableau, m_boardMap.tableau);
+    m_dealer.fillTableau(m_board.tableau, m_boardMap.tableauX, m_boardMap.tableauY);
     m_history.clearStacks();
     if (m_currentState == GameState::Playing)
         updatePlayerData(false, 10000.0f);
@@ -323,23 +329,25 @@ void Freecell::setBoardLayout()
     float offsetY = 32;
     for (int i = 0; i < 8; i++)
     {
-        for (int j = 0; j < 12; j++)
-        {
-            m_boardMap.tableau[i][j] = glm::vec2(initPosX + i * offsetX, initPosY - j * offsetY);
-        }
+        m_boardMap.tableauX[i]= initPosX + i * offsetX;
+    }
+
+    for (int j = 0; j < 12; j++)
+    {
+        m_boardMap.tableauY[j] = initPosY - j * offsetY;
     }
 
     initPosX = 140;
     offsetX = 130;
     for (int i = 0; i < 4; i++)
     {
-        m_boardMap.openCells[i] = glm::vec2(initPosX + i * offsetX, 600);
+        m_boardMap.openCells[i] = initPosX + i * offsetX;
     }
 
     initPosX += 4 * offsetX + 90;
     for (int i = 0; i < 4; i++)
     {
-        m_boardMap.foundations[i] = glm::vec2(initPosX + i * offsetX, 600);
+        m_boardMap.foundations[i] = initPosX + i * offsetX;
     }
 }
 
@@ -347,14 +355,14 @@ void Freecell::createOpenCellsAndFoundations()
 {
     for (int i = 0; i < 4; i++)
     {
-        m_openCellsBg[i] = Card(-1, -1, 0.125f, 0.875f, glm::vec3(m_boardMap.openCells[i], 0.0f));
-        m_foundationsBg[i] = Card(-1, -1, 0.250f, 0.875f, glm::vec3(m_boardMap.foundations[i], 0.0f));
+        m_openCellsBg[i] = Card(-1, -1, 0.125f, 0.875f, glm::vec3(m_boardMap.openCells[i], 600.0f, 0.0f));
+        m_foundationsBg[i] = Card(-1, -1, 0.250f, 0.875f, glm::vec3(m_boardMap.foundations[i], 600.0f, 0.0f));
         m_board.openCellsBg[i] = &m_openCellsBg[i];
         m_board.foundationsBg[i] = &m_foundationsBg[i];
     }
 }
 
-void Freecell::select(CardStack* stack, int index, bool isDragStart)
+auto Freecell::select(CardStack* stack, int index, bool isDragStart) -> void
 {
     if (!isDragStart)
         return;
@@ -379,11 +387,11 @@ void Freecell::select(CardStack* stack, int index, bool isDragStart)
     m_cardSelected.y = index;
     m_cardSelected.pos = m_cardSelected.card->pos;
 
-    std::span<Card*> cards(stack->data() + index, stack->size() - index);
+    std::span<Card*> cards(&stack->at(index), stack->size() - index);
     m_draggingAnimation.start(cards);
 }
 
-void Freecell::deselect()
+auto Freecell::deselect() -> void
 {
     if (m_cardSelected.card == nullptr)
         return;
@@ -396,19 +404,19 @@ void Freecell::deselect()
         m_draggingAnimation.stop();
 }
 
-void Freecell::moveBackAndDeselectCard()
+auto Freecell::moveBackAndDeselectCard() -> void
 {
     if (m_cardSelected.card == nullptr)
         return;
         
-    std::span<Card*> cards(m_cardSelected.stack->data() + m_cardSelected.y, m_cardSelected.stack->size() - m_cardSelected.y);
+    std::span<Card*> cards(&m_cardSelected.stack->at(m_cardSelected.y), m_cardSelected.stack->size() - m_cardSelected.y);
     MovingAnimation m(cards, m_cardSelected.card->pos, m_cardSelected.pos);
     m_movingAnimation.push_back(m);
 
     deselect();
 }
 
-void Freecell::handleClick(CardStack& stack, std::span<glm::vec2> dstAreaPos, int col, int index, bool(Freecell::*isLegalMove)(Card* card, int c), bool isDragStart)
+auto Freecell::handleClick(CardStack& stack, glm::vec2 dstPos, int col, int index, bool(Freecell::*isLegalMove)(Card* card, const CardStack& stack), bool isDragStart) -> void
 {
     if (m_cardSelected.card == nullptr)
     {
@@ -416,7 +424,7 @@ void Freecell::handleClick(CardStack& stack, std::span<glm::vec2> dstAreaPos, in
         return;
     }
 
-    if (!(this->*isLegalMove)(m_cardSelected.card, col))
+    if (!(this->*isLegalMove)(m_cardSelected.card, stack))
     {
         LOG_INFO("Invalid move");
 
@@ -430,16 +438,10 @@ void Freecell::handleClick(CardStack& stack, std::span<glm::vec2> dstAreaPos, in
         return;
     }
 
-    glm::vec2 dstPos;
-    if (dstAreaPos.size() == 1)
-        dstPos = dstAreaPos[0];
-    else
-        dstPos = dstAreaPos[stack.size()];
-
     int row = m_cardSelected.y;
     int diff = ((int)m_cardSelected.stack->size()) - row;
 
-    std::span<Card*> cards(m_cardSelected.stack->data() + row, diff);
+    std::span<Card*> cards(&m_cardSelected.stack->at(row), diff);
     CardStack* srcStack = m_cardSelected.stack;
     glm::vec2 srcPos = m_cardSelected.pos;
     MovingAnimation m(cards, m_cardSelected.card->pos, dstPos, [&, diff, srcStack, srcPos, dstPos]()
@@ -459,7 +461,7 @@ void Freecell::handleClick(CardStack& stack, std::span<glm::vec2> dstAreaPos, in
     deselect();
 }
 
-bool Freecell::checkSequence(CardStack& stack, int j)
+auto Freecell::checkSequence(const CardStack& stack, int j) -> bool
 {
     int currentCard = ((int)stack.size()) - 1;
 
@@ -475,7 +477,7 @@ bool Freecell::checkSequence(CardStack& stack, int j)
     return true;
 }
 
-bool Freecell::checkWinSequence(CardStack& stack)
+auto Freecell::checkWinSequence(const CardStack& stack) -> bool
 {
     int currentCard = ((int)stack.size()) - 1;
 
@@ -490,29 +492,30 @@ bool Freecell::checkWinSequence(CardStack& stack)
     return true;
 }
 
-bool Freecell::checkWin()
+auto Freecell::checkWin() -> bool
 {
-    for (int i = 0; i < 8; i++)
+    for (const auto& stack : m_board.tableau)
     {
-        if (!checkWinSequence(m_board.tableau[i]))
+        if (!checkWinSequence(stack))
             return false;
     }
 
     return true;
 }
 
-bool Freecell::isComplete()
+auto Freecell::isComplete() -> bool
 {
+    constexpr static int winStackSize = 13;
     for (CardStack& stack : m_board.foundations)
     {
-        if (stack.size() != 13)
+        if (stack.size() != winStackSize)
             return false;
     }
 
     return true;
 }
 
-void Freecell::playWinAnimation()
+auto Freecell::playWinAnimation() -> void
 {
     for (CardStack& stack : m_board.openCells)
     {
@@ -529,80 +532,71 @@ void Freecell::playWinAnimation()
     }
 }
 
-int Freecell::getMaxCardsToMove(bool movingToEmptySpace)
+auto Freecell::getMaxCardsToMove(bool movingToEmptySpace) -> int
 {
     // Initialize with one because you can always move one card
     int emptyOpenCells = 1;
-    for (int i = 0; i < 4; i++)
+    for (auto stack : m_board.openCells)
     {
-        emptyOpenCells += (int) m_board.openCells[i].empty();
+        emptyOpenCells += (int) stack.empty();
     }
 
     int emptyTableColumns = movingToEmptySpace ? -1 : 0;
-    for (int i = 0; i < 8; i++)
+    for (auto stack : m_board.tableau)
     {
-        emptyTableColumns += (int) m_board.tableau[i].empty();
+        emptyTableColumns += (int) stack.empty();
     }
 
     return emptyTableColumns * emptyOpenCells + emptyOpenCells;
 }
 
-
-
-int Freecell::getIndexX(int n, double xPos)
+auto Freecell::getIndexX(std::span<float> area, double xPos) -> int
 {
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < area.size(); i++)
     {
-        if (xPos > m_boardMap.tableau[i][0].x - 50 && xPos < m_boardMap.tableau[i][0].x + 50)
-            return i;
-    }
-    return -1;
-}
-
-int Freecell::getTopAreaIndexX(std::span<glm::vec2> area, double xPos)
-{
-    for (int i = 0; i < 4; i++)
-    {
-        if (xPos > area[i].x - 50 && xPos < area[i].x + 50)
+        auto x = area[i];
+        if (xPos > x - BoardMap::cardHalfWidth && xPos < x + BoardMap::cardHalfWidth)
             return i;
     }
 
     return -1;
 }
 
-int Freecell::getIndexY(int n, int col, double yPos)
+auto Freecell::getIndexY(int stackSize, double yPos) -> int
 {
-    if (n == 0)
+    if (stackSize == 0)
     {
-        if (yPos < m_boardMap.tableau[col][0].y + 74 && yPos > m_boardMap.tableau[col][0].y - 74)
+        auto y = m_boardMap.tableauY.front();
+        if (yPos < y + BoardMap::cardHalfHeight && yPos > y - BoardMap::cardHalfHeight)
             return 0;
         else
             return -1;
     }
 
-    for (int i = 0; i < n - 1; i++)
+    for (int i = 0; i < stackSize - 1; i++)
     {
-        if (yPos < m_boardMap.tableau[col][i].y + 74 && yPos > m_boardMap.tableau[col][i].y + 42)
+        auto y = m_boardMap.tableauY.at(i);
+        if (yPos < y + BoardMap::cardHalfHeight && yPos > y + BoardMap::cardMiddleHeight)
             return i;
     }
 
-
-    if (yPos < m_boardMap.tableau[col][n - 1].y + 74 && yPos > m_boardMap.tableau[col][n - 1].y - 74)
-        return n - 1;
+    auto y = m_boardMap.tableauY.at(stackSize - 1);
+    if (yPos < y + BoardMap::cardHalfHeight && yPos > y - BoardMap::cardHalfHeight)
+        return stackSize - 1;
 
     return -1;
 }
 
-void Freecell::winMoves(CardStack& src, std::span<CardStack> dst, std::span<glm::vec2> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, int c))
+auto Freecell::winMoves(CardStack& src, std::span<CardStack> dst, std::span<float> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, const CardStack& stack)) -> void
 {
     for (int i = 0; i < 4; i++)
     {
-        if ((this->*isLegalMove)(src.back(), i))
+        if ((this->*isLegalMove)(src.back(), dst[i]))
         {
-            std::span<Card*> cards(src.data() + src.size() - 1, 1);
+            std::span<Card*> cards(&src.at(src.size() - 1), 1);
             glm::vec3 srcCardPos = cards.back()->pos;
-            glm::vec2 dstPos = dstAreaPos[i];
-            MovingAnimation m(cards, cards.back()->pos, dstAreaPos[i], [&, dst, i, srcCardPos, dstPos]()
+            glm::vec2 dstPos = glm::vec2{dstAreaPos[i], BoardMap::topAreaYPos};
+            MovingAnimation m(cards, cards.back()->pos, dstPos, [&, dst, i, srcCardPos, dstPos]()
             {
                 moveCard(src, dst[i], 1);
                 // TODO: check if want to record movements
@@ -614,11 +608,11 @@ void Freecell::winMoves(CardStack& src, std::span<CardStack> dst, std::span<glm:
     }
 }
 
-bool Freecell::tryMoveFromTo(CardStack& src, std::span<CardStack> dst, std::span<glm::vec2> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, int c))
+auto Freecell::tryMoveFromTo(CardStack& src, std::span<CardStack> dst, std::span<float> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, const CardStack& stack)) -> bool
 {
     for (int i = 0; i < 4; i++)
     {
-        if ((this->*isLegalMove)(src.back(), i))
+        if ((this->*isLegalMove)(src.back(), dst[i]))
         {
             // std::span<Card*> cards(src.data() + src.size() - 1, 1);
             // MovingAnimation m(cards, cards.back()->pos, dstAreaPos[i]);
@@ -628,10 +622,10 @@ bool Freecell::tryMoveFromTo(CardStack& src, std::span<CardStack> dst, std::span
             // m_history.recordMove(&src, &dst[i], 1, cards.back()->pos, dstAreaPos[i]);
 
             // TODO: check if it's necessary to use on complete for animations
-            std::span<Card*> cards(src.data() + src.size() - 1, 1);
+            std::span<Card*> cards(&src.at(src.size() - 1), 1);
             glm::vec3 srcCardPos = cards.back()->pos;
-            glm::vec2 dstPos = dstAreaPos[i];
-            MovingAnimation m(cards, cards.back()->pos, dstAreaPos[i], [&, dst, i, srcCardPos, dstPos]()
+            glm::vec2 dstPos = glm::vec2{dstAreaPos[i], BoardMap::topAreaYPos};
+            MovingAnimation m(cards, cards.back()->pos, dstPos, [&, dst, i, srcCardPos, dstPos]()
             {
                 moveCard(src, dst[i], 1);
                 Move m{&src, &dst[i], 1, srcCardPos, dstPos};
@@ -654,7 +648,7 @@ bool Freecell::tryMoveFromTo(CardStack& src, std::span<CardStack> dst, std::span
     return false;
 }
 
-bool Freecell::openCellsIsLegalMove(Card* card, int col)
+auto Freecell::openCellsIsLegalMove(Card* card, const CardStack& stack) -> bool
 {
     if (m_cardSelected.card != nullptr)
     {
@@ -662,10 +656,10 @@ bool Freecell::openCellsIsLegalMove(Card* card, int col)
             return false;
     }
 
-    return m_board.openCells[col].size() == 0;
+    return stack.size() == 0;
 }
 
-bool Freecell::foundationsIsLegalMove(Card* card, int col)
+auto Freecell::foundationsIsLegalMove(Card* card, const CardStack& stack) -> bool
 {
     if (m_cardSelected.card != nullptr)
     {
@@ -673,32 +667,32 @@ bool Freecell::foundationsIsLegalMove(Card* card, int col)
             return false;
     }
 
-    if (m_board.foundations[col].size() == 0)
+    if (stack.size() == 0)
         return card->number == 0;
 
-    return m_board.foundations[col].back()->number == card->number - 1
-        && m_board.foundations[col].back()->suit == card->suit;
+    return stack.back()->number == card->number - 1
+        && stack.back()->suit == card->suit;
 }
 
-bool Freecell::tableIsLegalMove(Card* card, int col)
+auto Freecell::tableIsLegalMove(Card* card, const CardStack& stack) -> bool
 {
     int cardSelectedRow = m_cardSelected.y;
     int diff = ((int)m_cardSelected.stack->size()) - cardSelectedRow;
-    if (getMaxCardsToMove(m_board.tableau[col].empty()) < diff)
+    if (getMaxCardsToMove(stack.empty()) < diff)
         return false;
 
-    if (m_board.tableau[col].size() == 0)
+    if (stack.size() == 0)
         return true;
 
-    bool diffColor =  m_board.tableau[col].back()->suit % 2 != card->suit % 2;
-    bool nextNumber = m_board.tableau[col].back()->number - 1 == card->number;
+    bool diffColor =  stack.back()->suit % 2 != card->suit % 2;
+    bool nextNumber = stack.back()->number - 1 == card->number;
 
     return diffColor && nextNumber;   
 }
 
-void Freecell::moveCard(CardStack& src, CardStack& dst, int n)
+auto Freecell::moveCard(CardStack& src, CardStack& dst, int n) -> void
 {
-    for (int i = src.size() - n; i < (int) src.size(); i++)
+    for (int i = (int) src.size() - n; i < (int) src.size(); i++)
     {
         dst.push_back(src[i]);
     }

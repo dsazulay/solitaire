@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <array>
 #include <string>
+#include <string_view>
 #include <cstring>
 #include <fstream>
 

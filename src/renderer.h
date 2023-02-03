@@ -18,16 +18,16 @@ class Renderer
 {
 public:
     Renderer();
-    void render(const Board& board, RenderMode mode);
+    auto render(const Board& board, RenderMode mode) -> void;
 
 private:
     auto initMesh() -> void;
-    void initBackgroundMesh();
-    void renderBackground(RenderMode mode);
-    void renderCardBackground(const Board& board, RenderMode mode);
-    void renderSprite(Card* card);
-    void drawCall();
-    void clear();
+    auto initBackgroundMesh() -> void;
+    auto renderBackground(RenderMode mode) -> void;
+    auto renderCardBackground(const Board& board, RenderMode mode) -> void;
+    auto renderSprite(Card* card) -> void;
+    auto drawCall() -> void;
+    auto clear() -> void;
 
     glm::mat4 m_proj;
     Shader* m_shader;

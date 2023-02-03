@@ -40,6 +40,6 @@ private:
     std::unique_ptr<UiRenderer> m_uiRenderer;
     Freecell m_freecell;
 
-    constexpr static int DEFAULT_WINDOW_WIDTH = 1280;
-    constexpr static int DEFAULT_WINDOW_HEIGHT = 720;
+    constexpr static int defaultWindowWidth = 1280;
+    constexpr static int defaultWindowHeight = 720;
 };

@@ -19,7 +19,7 @@ auto Shader::compile(const char *vertexSrc, const char* fragSrc) -> void
     glGetShaderiv(vertexID, GL_COMPILE_STATUS, &success);
     if (!success)
     {
-        glGetShaderInfoLog(vertexID, LOG_BUFFER_SIZE, nullptr, infoLog.data());
+        glGetShaderInfoLog(vertexID, Shader::logBufferSize, nullptr, infoLog.data());
         LOG_ERROR("Vertex shader compilation failed: " << infoLog);
     }
 
@@ -30,7 +30,7 @@ auto Shader::compile(const char *vertexSrc, const char* fragSrc) -> void
     glGetShaderiv(fragID, GL_COMPILE_STATUS, &success);
     if (!success)
     {
-        glGetShaderInfoLog(fragID, LOG_BUFFER_SIZE, nullptr, infoLog.data());
+        glGetShaderInfoLog(fragID, Shader::logBufferSize, nullptr, infoLog.data());
         LOG_ERROR("Fragment shader compilation failed: " << infoLog);
     }
 
@@ -43,7 +43,7 @@ auto Shader::compile(const char *vertexSrc, const char* fragSrc) -> void
     glGetProgramiv(ID, GL_LINK_STATUS, &success);
     if (!success)
     {
-        glGetProgramInfoLog(ID, LOG_BUFFER_SIZE, nullptr, infoLog.data());
+        glGetProgramInfoLog(ID, Shader::logBufferSize, nullptr, infoLog.data());
         LOG_ERROR("Shader program linking failed: " << infoLog);
     }
 

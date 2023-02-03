@@ -11,8 +11,8 @@
 Solitaire::Solitaire()
 {
     m_appConfig.windowName = "Solitaire";
-    m_appConfig.windowWidth = DEFAULT_WINDOW_WIDTH;
-    m_appConfig.windowHeight = DEFAULT_WINDOW_HEIGHT;
+    m_appConfig.windowWidth = Solitaire::defaultWindowWidth;
+    m_appConfig.windowHeight = Solitaire::defaultWindowHeight;
 }
 
 auto Solitaire::run() -> void

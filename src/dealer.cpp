@@ -30,7 +30,7 @@ void Dealer::shuffleDeck()
     }
 }
 
-void Dealer::fillTableau(std::array<CardStack, 8>& tableau, const std::array<std::array<glm::vec2, 12>, 8>& tableauMap)
+void Dealer::fillTableau(std::array<CardStack, 8>& tableau, const std::array<float, 8>& tableauXMap, const std::array<float, 12>& tableauYMap)
 {
     int index = 0;
     for (int i = 0; i < 4; i++)
@@ -38,7 +38,7 @@ void Dealer::fillTableau(std::array<CardStack, 8>& tableau, const std::array<std
         tableau[i].reserve(10);
         for (int j = 0; j < 7; j++)
         {
-            m_deck[index].pos = glm::vec3(tableauMap[i][j], 0.0);
+            m_deck[index].pos = glm::vec3(tableauXMap[i], tableauYMap[j], 0.0);
             tableau[i].emplace_back(&m_deck[index]);
             index++;
         }
@@ -49,7 +49,7 @@ void Dealer::fillTableau(std::array<CardStack, 8>& tableau, const std::array<std
         tableau[i].reserve(10);
         for (int j = 0; j < 6; j++)
         {
-            m_deck[index].pos = glm::vec3(tableauMap[i][j], 0.0);
+            m_deck[index].pos = glm::vec3(tableauXMap[i], tableauYMap[j], 0.0);
             tableau[i].emplace_back(&m_deck[index]);
             index++;
         }

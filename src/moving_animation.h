@@ -37,7 +37,7 @@ public:
             for (int i = 0; i < (int) m_cards.size(); i++)
             {
                 pos = glm::vec3(m_dstPos, 0.0);
-                pos.y -= (float) i * Y_OFFSET;
+                pos.y -= (float) i * MovingAnimation::yOffset;
                 m_cards[i]->pos = pos;
                 m_isDone = true;
             }
@@ -48,8 +48,8 @@ public:
         {
             for (int i = 0; i < (int) m_cards.size(); i++)
             {
-                pos = glm::vec3(glm::lerp(m_startPos, m_dstPos, delta), Z_OFFSET);
-                pos.y -= (float) i * Y_OFFSET;
+                pos = glm::vec3(glm::lerp(m_startPos, m_dstPos, delta), MovingAnimation::zOffset);
+                pos.y -= (float) i * MovingAnimation::yOffset;
                 m_cards[i]->pos = pos;
             }
         }        
@@ -61,11 +61,11 @@ public:
     }
 
 private:
-    constexpr static float Z_OFFSET = 0.0001f;
-    constexpr static float Y_OFFSET = 32.0f;
-    constexpr static float ANIMATION_SPEED = 4000.0f;
+    constexpr static float zOffset = 0.0001f;
+    constexpr static float yOffset = 32.0f;
+    constexpr static float animationSpeed = 4000.0f;
 
-    float m_speed = ANIMATION_SPEED;
+    float m_speed = MovingAnimation::animationSpeed;
     float m_startTime{};
     float m_len;
     glm::vec2 m_startPos;
