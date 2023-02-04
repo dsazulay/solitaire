@@ -1,42 +1,55 @@
 #include "dealer.h"
 
 #include <cstdlib>
+#include <cmath>
 
-Dealer::Dealer()
+Dealer::Dealer() : m_randomEngine(m_r())
 {
     createDeck();
 }
 
 void Dealer::createDeck()
 {
-    m_deck.reserve(52);
+    constexpr static int deckSize = 52;
+    constexpr static int suitSize = 4;
+    constexpr static int cardSize = 13;
+    constexpr static int texCardsPerRow = 8;
+    constexpr static float texTile = 0.125f;
+
+    m_deck.reserve(deckSize);
     int count = 0;
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < suitSize; i++)
     {
-        for (int j = 0; j < 13; j++)
+        for (int j = 0; j < cardSize; j++)
         {
-            m_deck.emplace_back(j, i, (count % 8) * 0.125f, static_cast<int>(count * 0.125f) * 0.125f);
+            m_deck.emplace_back(j, i, static_cast<float>(count % texCardsPerRow) * texTile, std::floorf(static_cast<float>(count) * texTile) * texTile);
             count++;
         }
     }
 }
 
-void Dealer::shuffleDeck()
+auto Dealer::shuffleDeck() -> void
 {
-    for (int i = m_deck.size() - 1; i >= 0; i--)
+    std::uniform_int_distribution<int> unifomDist(0, static_cast<int>(m_deck.size()) - 1);
+    for (auto& card : m_deck)
     {
-        int j = rand() % (i + 1);
-        swapCard(m_deck[i], m_deck[j]);
+        int index = unifomDist(m_randomEngine);
+        swapCard(card, m_deck[index]);
     }
 }
 
-void Dealer::fillTableau(std::array<CardStack, 8>& tableau, const std::array<float, 8>& tableauXMap, const std::array<float, 12>& tableauYMap)
+auto Dealer::fillTableau(std::span<CardStack> tableau, const std::span<float> tableauXMap, const std::span<float> tableauYMap) -> void
 {
+    constexpr static int reserveSize = 10;
+    constexpr static int fullStackSize = 7;
+
+    int tableauSize = static_cast<int>(tableau.size());
+    int tableauHalfSize = tableauSize / 2;
     int index = 0;
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < tableauHalfSize; i++)
     {
-        tableau[i].reserve(10);
-        for (int j = 0; j < 7; j++)
+        tableau[i].reserve(reserveSize);
+        for (int j = 0; j < fullStackSize; j++)
         {
             m_deck[index].pos = glm::vec3(tableauXMap[i], tableauYMap[j], 0.0);
             tableau[i].emplace_back(&m_deck[index]);
@@ -44,10 +57,11 @@ void Dealer::fillTableau(std::array<CardStack, 8>& tableau, const std::array<flo
         }
     }
 
-    for (int i = 4; i < 8; i++)
+    constexpr static int stackSize = 6;
+    for (int i = tableauHalfSize; i < tableauSize; i++)
     {
-        tableau[i].reserve(10);
-        for (int j = 0; j < 6; j++)
+        tableau[i].reserve(reserveSize);
+        for (int j = 0; j < stackSize; j++)
         {
             m_deck[index].pos = glm::vec3(tableauXMap[i], tableauYMap[j], 0.0);
             tableau[i].emplace_back(&m_deck[index]);
@@ -56,21 +70,19 @@ void Dealer::fillTableau(std::array<CardStack, 8>& tableau, const std::array<flo
     }
 }
 
-void Dealer::emptyTable(std::array<CardStack, 8>& tableau, std::array<CardStack, 4>& openCells, std::array<CardStack, 4>& foundations)
+auto Dealer::emptyTable(std::span<CardStack> tableau, std::span<CardStack> openCells, std::span<CardStack> foundations) -> void
 {
-    for (int i = 0; i < 8; i++)
-    {
-        tableau[i] = CardStack();
-    }
+    for (auto stack : tableau)
+        stack = CardStack();
 
-    for (int i = 0; i < 4; i++)
-    {
-        openCells[i] = CardStack();
-        foundations[i] = CardStack();
-    }
+    for (auto stack : openCells)
+        stack = CardStack();
+    
+    for (auto stack : foundations)
+        stack = CardStack();
 }
 
-void Dealer::swapCard(Card& a, Card& b)
+auto Dealer::swapCard(Card& a, Card& b) -> void
 {
     auto tmp = a;
     a = b;

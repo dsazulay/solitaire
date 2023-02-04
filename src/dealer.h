@@ -1,7 +1,8 @@
 #pragma once
 
 #include <vector>
-#include <array>
+#include <span>
+#include <random>
 
 #include "card.h"
 
@@ -9,12 +10,14 @@ class Dealer
 {
 public:
     Dealer();
-    void createDeck();
-    void shuffleDeck();
-    void fillTableau(std::array<CardStack, 8>& tableau, const std::array<float, 8>& tableauXMap, const std::array<float, 12>& tableauYMap);
-    static void emptyTable(std::array<CardStack, 8>& tableau, std::array<CardStack, 4>& openCells, std::array<CardStack, 4>& foundations);
+    auto createDeck() -> void;
+    auto shuffleDeck() -> void;
+    auto fillTableau(std::span<CardStack> tableau, std::span<float> tableauXMap, std::span<float> tableauYMap) -> void;
+    auto emptyTable(std::span<CardStack> tableau, std::span<CardStack> openCells, std::span<CardStack> foundations) -> void;
 private:
-    void swapCard(Card& a, Card& b);
+    auto swapCard(Card& a, Card& b) -> void;
 
     std::vector<Card> m_deck;
+    std::random_device m_r;
+    std::default_random_engine m_randomEngine;
 };

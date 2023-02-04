@@ -3,7 +3,6 @@
 #include <functional>
 #include <thread>
 #include <chrono>
-#include <ctime>
 
 #include "timer.h"
 #include "keycodes.h"
@@ -31,7 +30,6 @@ auto Solitaire::init() -> void
     m_uiRenderer = std::make_unique<UiRenderer>(m_window->getWindow());
 
     // Game init
-    srand(time(nullptr));
     m_freecell.init();
     m_uiRenderer->setPlayerAndMatchData(m_freecell.playerData(), m_freecell.matchData());
 

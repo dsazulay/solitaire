@@ -76,7 +76,7 @@ auto Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool i
             }
             glm::vec2 dtsAreaPos{m_boardMap.openCells.at(i), BoardMap::topAreaYPos};
             auto& stack = m_board.openCells.at(i);
-            handleClick(stack, dtsAreaPos, i, (int) stack.size() - 1, &Freecell::openCellsIsLegalMove, isDragStart);
+            handleClick(stack, dtsAreaPos, i, static_cast<int>(stack.size()) - 1, &Freecell::openCellsIsLegalMove, isDragStart);
         }
         else
         {
@@ -88,7 +88,7 @@ auto Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool i
             }
             glm::vec2 dtsAreaPos{m_boardMap.foundations.at(i), BoardMap::topAreaYPos};
             auto& stack = m_board.foundations.at(i);
-            handleClick(stack, dtsAreaPos, i, (int) stack.size() - 1, &Freecell::foundationsIsLegalMove, isDragStart);
+            handleClick(stack, dtsAreaPos, i, static_cast<int>(stack.size()) - 1, &Freecell::foundationsIsLegalMove, isDragStart);
         }
     }
     else
@@ -101,7 +101,7 @@ auto Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool i
         }
         
         auto& stack = m_board.tableau.at(i);
-        int stackSize = (int) stack.size();
+        int stackSize = static_cast<int>(stack.size());
         int j = getIndexY(stackSize, yPos);
         if (j == -1)
         {
@@ -136,7 +136,7 @@ auto Freecell::handleInputDoubleClick(double xPos, double yPos) -> void
                 return;
 
             auto& stack = m_board.openCells.at(i);
-            if ((int) stack.size() == 0)
+            if (static_cast<int>(stack.size()) == 0)
             {
                 LOG_WARN("No action for double click an empty open cells stack");
                 return;
@@ -157,7 +157,7 @@ auto Freecell::handleInputDoubleClick(double xPos, double yPos) -> void
             return;
 
         auto& stack = m_board.tableau.at(i);
-        int stackSize = (int) stack.size();
+        int stackSize = static_cast<int>(stack.size());
         int j = getIndexY(stackSize, yPos);
         if (j == -1)
             return;
@@ -196,7 +196,7 @@ auto Freecell::handleInputUndo() -> void
     }
     Move move = m_history.getTopUndoMove();
     
-    int index = (int) move.dstStack->size() - move.cardQuantity;
+    int index = static_cast<int>(move.dstStack->size()) - move.cardQuantity;
     std::span<Card*> cards(&move.dstStack->at(index), move.cardQuantity);
     MovingAnimation m(cards, move.dstPos, move.srcPos, [&, move]()
     {
@@ -221,7 +221,7 @@ auto Freecell::handleInputRedo() -> void
     }
     Move move = m_history.getTopRedoMove();
 
-    int index = (int) move.dstStack->size() - move.cardQuantity;
+    int index = static_cast<int>(move.dstStack->size()) - move.cardQuantity;
     std::span<Card*> cards(&move.dstStack->at(index), move.cardQuantity);
     MovingAnimation m(cards, move.dstPos, move.srcPos, [&, move]()
     {
@@ -239,7 +239,7 @@ auto Freecell::handleInputRestart() -> void
         return;
     }
 
-    Dealer::emptyTable(m_board.tableau, m_board.openCells, m_board.foundations);
+    m_dealer.emptyTable(m_board.tableau, m_board.openCells, m_board.foundations);
     m_dealer.fillTableau(m_board.tableau, m_boardMap.tableauX, m_boardMap.tableauY);
     m_history.clearStacks();
     constexpr static float maxTime = 10000.0f;
@@ -256,7 +256,7 @@ auto Freecell::handleInputNewGame() -> void
         return;
     }
     
-    Dealer::emptyTable(m_board.tableau, m_board.openCells, m_board.foundations);
+    m_dealer.emptyTable(m_board.tableau, m_board.openCells, m_board.foundations);
     m_dealer.shuffleDeck();
     m_dealer.fillTableau(m_board.tableau, m_boardMap.tableauX, m_boardMap.tableauY);
     m_history.clearStacks();
@@ -370,13 +370,13 @@ auto Freecell::select(CardStack* stack, int index, bool isDragStart) -> void
     if (!isDragStart)
         return;
     
-    if ((int) stack->size() == 0)
+    if (static_cast<int>(stack->size()) == 0)
     {
         LOG_INFO("Cannot select empty stack");
         return;
     }
 
-    if ((int) stack->size() - 1 != index)
+    if (static_cast<int>(stack->size()) - 1 != index)
     {
         if (!checkSequence(*stack, index))
         {
@@ -442,7 +442,7 @@ auto Freecell::handleClick(CardStack& stack, glm::vec2 dstPos, int col, int inde
     }
 
     int row = m_cardSelected.y;
-    int diff = (int)m_cardSelected.stack->size() - row;
+    int diff = static_cast<int>(m_cardSelected.stack->size()) - row;
 
     std::span<Card*> cards(&m_cardSelected.stack->at(row), diff);
     CardStack* srcStack = m_cardSelected.stack;
@@ -466,7 +466,7 @@ auto Freecell::handleClick(CardStack& stack, glm::vec2 dstPos, int col, int inde
 
 auto Freecell::checkSequence(const CardStack& stack, int j) -> bool
 {
-    int currentCard = (int)stack.size() - 1;
+    int currentCard = static_cast<int>(stack.size()) - 1;
 
     for (int n = currentCard; n > j; n--)
     {
@@ -482,7 +482,7 @@ auto Freecell::checkSequence(const CardStack& stack, int j) -> bool
 
 auto Freecell::checkWinSequence(const CardStack& stack) -> bool
 {
-    int currentCard = (int)stack.size() - 1;
+    int currentCard = static_cast<int>(stack.size()) - 1;
 
     for (int n = currentCard; n > 0; n--)
     {
@@ -541,13 +541,13 @@ auto Freecell::getMaxCardsToMove(bool movingToEmptySpace) -> int
     int emptyOpenCells = 1;
     for (auto stack : m_board.openCells)
     {
-        emptyOpenCells += (int) stack.empty();
+        emptyOpenCells += static_cast<int>(stack.empty());
     }
 
     int emptyTableColumns = movingToEmptySpace ? -1 : 0;
     for (auto stack : m_board.tableau)
     {
-        emptyTableColumns += (int) stack.empty();
+        emptyTableColumns += static_cast<int>(stack.empty());
     }
 
     return emptyTableColumns * emptyOpenCells + emptyOpenCells;
@@ -555,7 +555,7 @@ auto Freecell::getMaxCardsToMove(bool movingToEmptySpace) -> int
 
 auto Freecell::getIndexX(std::span<float> area, double xPos) -> int
 {
-    for (int i = 0; i < (int) area.size(); i++)
+    for (int i = 0; i < static_cast<int>(area.size()); i++)
     {
         auto x = area[i];
         if (xPos > x - BoardMap::cardHalfWidth && xPos < x + BoardMap::cardHalfWidth)
@@ -655,7 +655,7 @@ auto Freecell::openCellsIsLegalMove(Card* card, const CardStack& stack) -> bool
 {
     if (m_cardSelected.card != nullptr)
     {
-        if (m_cardSelected.y != (int) m_cardSelected.stack->size() - 1)
+        if (m_cardSelected.y != static_cast<int>(m_cardSelected.stack->size()) - 1)
             return false;
     }
 
@@ -666,7 +666,7 @@ auto Freecell::foundationsIsLegalMove(Card* card, const CardStack& stack) -> boo
 {
     if (m_cardSelected.card != nullptr)
     {
-        if (m_cardSelected.y != (int) m_cardSelected.stack->size() - 1)
+        if (m_cardSelected.y != static_cast<int>(m_cardSelected.stack->size()) - 1)
             return false;
     }
 
@@ -680,7 +680,7 @@ auto Freecell::foundationsIsLegalMove(Card* card, const CardStack& stack) -> boo
 auto Freecell::tableIsLegalMove(Card* card, const CardStack& stack) -> bool
 {
     int cardSelectedRow = m_cardSelected.y;
-    int diff = (int) m_cardSelected.stack->size() - cardSelectedRow;
+    int diff = static_cast<int>(m_cardSelected.stack->size()) - cardSelectedRow;
     if (getMaxCardsToMove(stack.empty()) < diff)
         return false;
 
@@ -695,7 +695,7 @@ auto Freecell::tableIsLegalMove(Card* card, const CardStack& stack) -> bool
 
 auto Freecell::moveCard(CardStack& src, CardStack& dst, int n) -> void
 {
-    for (int i = (int) src.size() - n; i < (int) src.size(); i++)
+    for (int i = static_cast<int>(src.size()) - n; i < static_cast<int>(src.size()); i++)
     {
         dst.push_back(src[i]);
     }
