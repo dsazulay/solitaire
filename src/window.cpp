@@ -1,5 +1,7 @@
 #include "window.h"
 
+#include <imgui.h>
+
 #include "dispatcher.h"
 #include "event.h"
 #include "utils/log.h"
@@ -75,6 +77,10 @@ auto Window::cursorPositionCallback(GLFWwindow* window, double xPos, double yPos
 
 auto Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) -> void
 {
+    auto& io = ImGui::GetIO();
+    if (io.WantCaptureMouse)
+        return;
+
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
     {
         dragStartTime = (float) glfwGetTime();
