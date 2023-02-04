@@ -36,6 +36,7 @@ struct Board
 {
     constexpr static int tableauSize = 8;
     constexpr static int openCellsAndFoundSize = 4;
+    constexpr static int stackMaxSize = 12;
 
     std::array<CardStack, tableauSize> tableau;
     std::array<CardStack, openCellsAndFoundSize> openCells;
@@ -47,14 +48,14 @@ struct Board
 
 struct BoardMap
 {
-    constexpr static int stackMaxSize = 12;
-    constexpr static int cardHalfWidth = 50;
-    constexpr static int cardHalfHeight = 72;
-    constexpr static int cardMiddleHeight = 42;
+    constexpr static float cardHalfWidth = 50.0f;
+    constexpr static float cardHalfHeight = 74.0f;
+    constexpr static float cardMiddleHeight = 42.0f;
     constexpr static float topAreaYPos = 600.0f;
+    constexpr static float halfScreenWidth = 640.0f;
 
     std::array<float, Board::tableauSize> tableauX;
-    std::array<float, stackMaxSize> tableauY;
+    std::array<float, Board::stackMaxSize> tableauY;
     std::array<float, Board::openCellsAndFoundSize> openCells;
     std::array<float, Board::openCellsAndFoundSize> foundations;
 };
