@@ -42,8 +42,8 @@ struct Board
     std::array<CardStack, openCellsAndFoundSize> openCells;
     std::array<CardStack, openCellsAndFoundSize> foundations;
 
-    std::array<Card*, openCellsAndFoundSize> openCellsBg;
-    std::array<Card*, openCellsAndFoundSize> foundationsBg;
+    std::array<Card*, openCellsAndFoundSize> openCellsBg{};
+    std::array<Card*, openCellsAndFoundSize> foundationsBg{};
 };
 
 struct BoardMap

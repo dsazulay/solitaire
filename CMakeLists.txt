@@ -56,6 +56,11 @@ message(STATUS "Installing imgui via submodule")
 add_subdirectory(external/imgui)
 set_property(TARGET ImGui PROPERTY FOLDER "Dependencies")
 
+# fmt
+message(STATUS "Installing fmt via submodule")
+add_subdirectory(external/fmt)
+set_property(TARGET fmt PROPERTY FOLDER "Dependencies")
+
 
 # =============================================================
 
@@ -93,18 +98,21 @@ target_link_libraries(
     ImGui
     glfw
     glm_static
+    fmt
 )
 
 target_include_directories(
   ${PROJECT_NAME}
   PUBLIC external/glfw
   PUBLIC external/glm
+  PUBLIC external/fmt
 )
 
 add_dependencies(
     ${PROJECT_NAME}
     glfw
     glm_static
+    fmt
 )
 
 # =============================================================

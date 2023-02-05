@@ -119,7 +119,7 @@ auto ResourceManager::loadModel(NativeModel type, std::string name) -> Model *
     model.vertices.reserve(m_vertices.size());
     model.indices.reserve(m_indices.size());
 
-    for (int i = 0; i < m_vertices.size(); i += 4)
+    for (int i = 0; i < static_cast<int>(m_vertices.size()); i += 4)
     {
         Vertex vertex{};
         vertex.pos = {
