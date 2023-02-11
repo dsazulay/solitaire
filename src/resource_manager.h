@@ -17,6 +17,7 @@ class ResourceManager
 {
 public:
     static auto loadShader(const char *vertShaderFile, const char *fragShaderFile, std::string name) -> Shader*;
+    static auto recompileShaders() -> void;
     static auto loadTexture(const char* textureFile, std::string name) -> Texture*;
     static auto loadModel(const char* modelFile, std::string name) -> Model*;
     static auto loadModel(NativeModel type, std::string name) -> Model*;

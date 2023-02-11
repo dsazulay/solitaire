@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <unordered_map>
+#include <filesystem>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -46,11 +47,37 @@ auto ResourceManager::loadShader(const char *vertShaderFile, const char *fragSha
         LOG_ERROR("Shader file not successfully read!");
     }
 
-    Shader shader{};
-    shader.compile(vertexCode.c_str(), fragCode.c_str());
-    shaders[name] = shader;
+    if (shaders.contains(name))
+    {
+        shaders[name].compile(vertexCode.c_str(), fragCode.c_str());
+        shaders[name].vertLastWriteTime = std::filesystem::last_write_time(vertShaderFile);
+        shaders[name].fragLastWriteTime = std::filesystem::last_write_time(fragShaderFile);
+    }
+    else
+    {
+        Shader shader{};
+        shader.compile(vertexCode.c_str(), fragCode.c_str());
+        shader.vertFilePath = vertShaderFile;
+        shader.fragFilePath = fragShaderFile;
+        shader.vertLastWriteTime = std::filesystem::last_write_time(vertShaderFile);
+        shader.fragLastWriteTime = std::filesystem::last_write_time(fragShaderFile);
+        shaders[name] = shader;
+    }
 
     return &shaders[name];
+}
+
+auto ResourceManager::recompileShaders() -> void
+{
+    for (const auto& [name, shader] : shaders)
+    {
+        if (shader.vertLastWriteTime != std::filesystem::last_write_time(shader.vertFilePath) ||
+            shader.fragLastWriteTime != std::filesystem::last_write_time(shader.fragFilePath))
+        {
+            loadShader(shader.vertFilePath.c_str(), shader.fragFilePath.c_str(), name);
+            LOG_INFO("{} shader recompiled", name);
+        }
+    }
 }
 
 auto ResourceManager::loadTexture(const char* textureFile, std::string name) -> Texture*
