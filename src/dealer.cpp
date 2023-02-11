@@ -72,13 +72,13 @@ auto Dealer::fillTableau(std::span<CardStack> tableau, const std::span<float> ta
 
 auto Dealer::emptyTable(std::span<CardStack> tableau, std::span<CardStack> openCells, std::span<CardStack> foundations) -> void
 {
-    for (auto stack : tableau)
+    for (auto& stack : tableau)
         stack = CardStack();
 
-    for (auto stack : openCells)
+    for (auto& stack : openCells)
         stack = CardStack();
     
-    for (auto stack : foundations)
+    for (auto& stack : foundations)
         stack = CardStack();
 }
 
