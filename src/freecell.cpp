@@ -419,7 +419,7 @@ auto Freecell::moveBackAndDeselectCard() -> void
     deselect();
 }
 
-auto Freecell::handleClick(CardStack& stack, glm::vec2 dstPos, int col, int index, bool(Freecell::*isLegalMove)(Card* card, const CardStack& stack), bool isDragStart) -> void
+auto Freecell::handleClick(CardStack& stack, glm::vec2 dstPos, int col, int index, IsLegalMoveFunc isLegalMove, bool isDragStart) -> void
 {
     if (m_cardSelected.card == nullptr)
     {
@@ -590,7 +590,7 @@ auto Freecell::getIndexY(int stackSize, double yPos) -> int
     return -1;
 }
 
-auto Freecell::winMoves(CardStack& src, std::span<CardStack> dst, std::span<float> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, const CardStack& stack)) -> void
+auto Freecell::winMoves(CardStack& src, std::span<CardStack> dst, std::span<float> dstAreaPos, IsLegalMoveFunc isLegalMove) -> void
 {
     for (int i = 0; i < 4; i++)
     {
@@ -611,7 +611,7 @@ auto Freecell::winMoves(CardStack& src, std::span<CardStack> dst, std::span<floa
     }
 }
 
-auto Freecell::tryMoveFromTo(CardStack& src, std::span<CardStack> dst, std::span<float> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, const CardStack& stack)) -> bool
+auto Freecell::tryMoveFromTo(CardStack& src, std::span<CardStack> dst, std::span<float> dstAreaPos, IsLegalMoveFunc isLegalMove) -> bool
 {
     for (int i = 0; i < 4; i++)
     {

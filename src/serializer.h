@@ -64,7 +64,7 @@ public:
         std::ofstream out(m_fileName, std::ios::binary);
         if (!out)
         {
-            LOG_ERROR("Could not open the file " << m_fileName << " for writing");
+            LOG_ERROR("Could not open the file {} for writing", m_fileName);
             return;
         }
 
@@ -77,7 +77,7 @@ public:
         std::ifstream in(m_fileName, std::ios::binary);
         if (!in.is_open())
         {
-            LOG_ERROR("Could not open the file " << m_fileName << " for reading");
+            LOG_ERROR("Could not open the file {} for reading", m_fileName);
             return;
         }
 

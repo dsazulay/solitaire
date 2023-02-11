@@ -77,6 +77,7 @@ struct Move
 
 class Freecell
 {
+    using IsLegalMoveFunc = bool(Freecell::*)(Card* card, const CardStack& stack);
 public:
     auto  init() -> void;
     auto  update() -> void;
@@ -110,7 +111,7 @@ private:
     auto foundationsIsLegalMove(Card* card, const CardStack& stack) -> bool;
     auto tableIsLegalMove(Card* card, const CardStack& stack) -> bool;
 
-    auto handleClick(CardStack& stack, glm::vec2 dstPos, int col, int index, bool(Freecell::*isLegalMove)(Card* card, const CardStack& stack), bool isDragStart) -> void;
+    auto handleClick(CardStack& stack, glm::vec2 dstPos, int col, int index, IsLegalMoveFunc isLegalMove, bool isDragStart) -> void;
 
     auto select(CardStack* stack, int index, bool isDragStart) -> void;
     auto deselect() -> void;
@@ -119,17 +120,17 @@ private:
     auto getIndexX(std::span<float> area, double xPos) -> int;
     auto getIndexY(int stackSize, double yPos) -> int;
 
-    auto winMoves(CardStack& src, std::span<CardStack> dst, std::span<float> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, const CardStack& stack)) -> void;
-    auto tryMoveFromTo(CardStack& src, std::span<CardStack> dst, std::span<float> dstAreaPos, bool(Freecell::*isLegalMove)(Card* card, const CardStack& stack)) -> bool;
+    auto winMoves(CardStack& src, std::span<CardStack> dst, std::span<float> dstAreaPos, IsLegalMoveFunc isLegalMove) -> void;
+    auto tryMoveFromTo(CardStack& src, std::span<CardStack> dst, std::span<float> dstAreaPos, IsLegalMoveFunc isLegalMove) -> bool;
     auto moveCard(CardStack& src, CardStack& dst, int n) -> void;
 
     History<Move> m_history;
     std::vector<MovingAnimation> m_movingAnimation;
     DraggingAnimation m_draggingAnimation;
 
-    GameState m_currentState;
-    PlayerData m_playerData;
-    MatchData m_matchData;
+    GameState m_currentState{};
+    PlayerData m_playerData{};
+    MatchData m_matchData{};
 
     BoardMap m_boardMap{};
     CardSelection m_cardSelected{};

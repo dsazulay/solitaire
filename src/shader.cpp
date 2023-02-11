@@ -20,7 +20,7 @@ auto Shader::compile(const char *vertexSrc, const char* fragSrc) -> void
     if (!success)
     {
         glGetShaderInfoLog(vertexID, Shader::logBufferSize, nullptr, infoLog.data());
-        LOG_ERROR("Vertex shader compilation failed: " << infoLog);
+        LOG_ERROR("Vertex shader compilation failed: {}", infoLog);
     }
 
     fragID = glCreateShader(GL_FRAGMENT_SHADER);
@@ -31,7 +31,7 @@ auto Shader::compile(const char *vertexSrc, const char* fragSrc) -> void
     if (!success)
     {
         glGetShaderInfoLog(fragID, Shader::logBufferSize, nullptr, infoLog.data());
-        LOG_ERROR("Fragment shader compilation failed: " << infoLog);
+        LOG_ERROR("Fragment shader compilation failed: {}", infoLog);
     }
 
     ID = glCreateProgram();
@@ -44,7 +44,7 @@ auto Shader::compile(const char *vertexSrc, const char* fragSrc) -> void
     if (!success)
     {
         glGetProgramInfoLog(ID, Shader::logBufferSize, nullptr, infoLog.data());
-        LOG_ERROR("Shader program linking failed: " << infoLog);
+        LOG_ERROR("Shader program linking failed: {}", infoLog);
     }
 
     glDeleteShader(vertexID);
