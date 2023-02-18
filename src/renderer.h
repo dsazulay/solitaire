@@ -19,6 +19,7 @@ class Renderer
 public:
     Renderer();
     auto render(const Board& board, RenderMode mode) -> void;
+    auto reloadShaders() -> void;
 
 private:
     auto initMesh() -> void;

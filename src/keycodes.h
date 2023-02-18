@@ -3,6 +3,7 @@
 enum class KeyCode
 {
     Escape = 256,
+    C = 67,
     D = 68,
     E = 69,
     N = 78,

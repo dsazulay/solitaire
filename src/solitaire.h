@@ -33,6 +33,7 @@ private:
     auto onKeyboardPress(const KeyboardPressEvent& e) -> void;
     auto onGameWin(const GameWinEvent& e) -> void;
     auto onUiNewGameEvent(const UiNewGameEvent& e) -> void;
+    auto onUiRecompileShaderEvent(const UiRecompileShaderEvent& e) -> void;
 
     AppConfig m_appConfig;
     std::unique_ptr<Window> m_window;

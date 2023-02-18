@@ -129,6 +129,11 @@ auto Renderer::render(const Board& board, RenderMode mode) -> void
     renderBackground(mode);
 }
 
+auto Renderer::reloadShaders() -> void
+{
+    setShaderUniforms();
+}
+
 auto Renderer::renderCardBackground(const Board& board, RenderMode mode) -> void
 {
 

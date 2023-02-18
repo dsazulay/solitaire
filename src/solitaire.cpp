@@ -6,6 +6,7 @@
 
 #include "timer.h"
 #include "keycodes.h"
+#include "resource_manager.h"
 
 Solitaire::Solitaire()
 {
@@ -45,6 +46,8 @@ auto Solitaire::init() -> void
         [&] (const auto& arg) { Solitaire::onGameWin(arg); });
     Dispatcher<UiNewGameEvent>::subscribe(
         [&] (const auto& arg) { Solitaire::onUiNewGameEvent(arg); });
+    Dispatcher<UiRecompileShaderEvent>::subscribe(
+        [&] (const auto& arg) { Solitaire::onUiRecompileShaderEvent(arg); });
 
     //glfwSwapInterval(1); // Enable vsync
 }
@@ -97,6 +100,11 @@ auto Solitaire::onKeyboardPress(const KeyboardPressEvent& e) -> void
         m_uiRenderer->toggleStatsWindow();
     else if (e.key() == KeyCode::D)
         m_uiRenderer->toggleDebugWindow();
+    else if (e.key() == KeyCode::C)
+    {
+        ResourceManager::recompileShaders();
+        m_renderer->reloadShaders();
+    }
 }
 
 auto Solitaire::onGameWin(const GameWinEvent& e) -> void
@@ -108,3 +116,10 @@ auto Solitaire::onUiNewGameEvent(const UiNewGameEvent& e) -> void
 {
     m_freecell.handleInputNewGame();
 }
+
+auto Solitaire::onUiRecompileShaderEvent(const UiRecompileShaderEvent& e) -> void
+{
+    ResourceManager::recompileShaders();
+    m_renderer->reloadShaders();
+}
+

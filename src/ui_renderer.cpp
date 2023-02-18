@@ -264,6 +264,11 @@ auto UiRenderer::renderDebugWindow() -> void
     {
         toggleImguiDemoWindow();
     }
+    if (ImGui::Button("Recompile Shaders"))
+    {
+        UiRecompileShaderEvent e;
+        Dispatcher<UiRecompileShaderEvent>::post(e);
+    }
 
     ImGui::End();
 }

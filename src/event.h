@@ -64,3 +64,5 @@ private:
 class GameWinEvent : public Event {};
 
 class UiNewGameEvent : public Event {};
+
+class UiRecompileShaderEvent : public Event{};
