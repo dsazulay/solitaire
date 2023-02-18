@@ -56,6 +56,11 @@ auto Shader::use() const -> void
     glUseProgram(ID);
 }
 
+auto Shader::setUniformBlock(const char* blockName, int blockID) -> void
+{
+    glUniformBlockBinding(ID, glGetUniformBlockIndex(ID, blockName), blockID);
+}
+
 auto Shader::setInt(const std::string& name, const int value) const -> void
 {
     glUniform1i(glGetUniformLocation(ID, name.c_str()), value);

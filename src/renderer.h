@@ -23,6 +23,10 @@ public:
 private:
     auto initMesh() -> void;
     auto initBackgroundMesh() -> void;
+    auto createUBO() -> void;
+    auto setCameraUBO() -> void;
+    auto setShaderUniformBlock() -> void;
+    auto setShaderUniforms() -> void;
     auto renderBackground(RenderMode mode) -> void;
     auto renderCardBackground(const Board& board, RenderMode mode) -> void;
     auto renderSprite(Card* card) -> void;
@@ -40,8 +44,11 @@ private:
     Shader* m_backgroundShader;
     Shader* m_backgroundWireframeShader;
 
+    std::vector<Shader*> m_shaders;
+
     unsigned int m_instanceCounter;
 
+    unsigned int UBO;
     unsigned int VBO, EBO, VAO;
     unsigned int VBO_BG, EBO_BG, VAO_BG;
 };

@@ -6,7 +6,11 @@ layout (location = 1) in vec2 a_uv;
 out vec2 v_uv;
 out float v_instanceID;
 
-uniform mat4 u_proj;
+layout (std140) uniform Matrices
+{
+    uniform mat4 u_proj;
+};
+
 uniform mat4 u_model[60];
 uniform vec2 u_offset[60];
 

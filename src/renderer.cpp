@@ -2,6 +2,7 @@
 
 #include <glad/glad.h>
 
+#include <glm/gtc/type_ptr.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -33,24 +34,20 @@ Renderer::Renderer()
     m_model = ResourceManager::loadModel("../../resources/card.obj", "CardModel");
     m_backgroundModel = ResourceManager::loadModel(NativeModel::Quad, "QuadModel");
 
+    m_shaders.reserve(4);
+    m_shaders.push_back(m_unlitShader);
+    m_shaders.push_back(m_wireframeShader);
+    m_shaders.push_back(m_backgroundShader);
+    m_shaders.push_back(m_backgroundWireframeShader);
+
     initMesh();
-    glActiveTexture(GL_TEXTURE0);
-    m_texture->bind();
-
-    m_wireframeShader->use();
-    m_wireframeShader->setMat4("u_proj", m_proj);
-
-    m_unlitShader->use();
-    m_unlitShader->setMat4("u_proj", m_proj);
-    m_unlitShader->setInt("umain_tex", 0);
-
     initBackgroundMesh();
-    m_backgroundShader->use();
-    m_backgroundShader->setMat4("u_proj", m_proj);
-    
-    m_backgroundWireframeShader->use();
-    m_backgroundWireframeShader->setMat4("u_proj", m_proj);
 
+    createUBO();
+
+    setCameraUBO();
+    setShaderUniformBlock();
+    setShaderUniforms();
 }
 
 auto Renderer::render(const Board& board, RenderMode mode) -> void
@@ -278,6 +275,38 @@ auto Renderer::initBackgroundMesh() -> void
     glBindVertexArray(0);
 }
 
+auto Renderer::createUBO() -> void
+{
+    glGenBuffers(1, &UBO);
+    glBindBuffer(GL_UNIFORM_BUFFER, UBO);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(m_proj), nullptr, GL_STATIC_DRAW);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, UBO);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
+
+auto Renderer::setCameraUBO() -> void
+{
+    glBindBuffer(GL_UNIFORM_BUFFER, UBO);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(m_proj), glm::value_ptr(m_proj));
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
+
+auto Renderer::setShaderUniformBlock() -> void
+{
+    for (auto shader : m_shaders)
+    {
+        shader->setUniformBlock("Matrices", 0);
+    }
+}
+
+auto Renderer::setShaderUniforms() -> void
+{
+    glActiveTexture(GL_TEXTURE0);
+    m_texture->bind();
+
+    m_unlitShader->use();
+    m_unlitShader->setInt("umain_tex", 0);
+}
 
 auto Renderer::clear() -> void
 {
