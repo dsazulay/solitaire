@@ -56,6 +56,12 @@ auto Solitaire::mainLoop() -> void
 {
     while (!m_window->shouldClose())
     {
+        if (!m_window->isFocused())
+        {
+            Timer::halt();
+            m_window->pollEvents();
+            continue;
+        }
         Timer::update();
         // TODO: change harcoded value for value selected by user
         auto target_fps = std::chrono::steady_clock::now() + std::chrono::milliseconds(14);

@@ -16,6 +16,7 @@ public:
 
     auto createWindow(int width, int height, const char* name) -> void;
     [[nodiscard]] auto shouldClose() const -> bool;
+    [[nodiscard]] auto isFocused() const -> bool;
     auto swapBuffers() const -> void;
     auto pollEvents() -> void;
     auto getWindow() -> GLFWwindow*;

@@ -3,9 +3,11 @@
 class Timer
 {
 public:
-    static void update();
+    static auto update() -> void;
+    static auto halt() -> void;
 
     static float time;
+    static float systemTime;
     static float deltaTime;
 private:
     static float lastFrame;

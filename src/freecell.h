@@ -36,7 +36,7 @@ struct Board
 {
     constexpr static int tableauSize = 8;
     constexpr static int openCellsAndFoundSize = 4;
-    constexpr static int stackMaxSize = 12;
+    constexpr static int stackMaxSize = 14;
 
     std::array<CardStack, tableauSize> tableau;
     std::array<CardStack, openCellsAndFoundSize> openCells;

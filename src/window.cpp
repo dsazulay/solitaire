@@ -53,6 +53,11 @@ auto Window::shouldClose() const -> bool
     return glfwWindowShouldClose(m_window);
 }
 
+auto Window::isFocused() const -> bool
+{
+    return glfwGetWindowAttrib(m_window, GLFW_FOCUSED);
+}
+
 auto Window::swapBuffers() const -> void
 {
     glfwSwapBuffers(m_window);
