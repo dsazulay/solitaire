@@ -247,7 +247,7 @@ auto UiRenderer::renderTimeWindow() -> void
 auto UiRenderer::renderDebugWindow() -> void
 {
     ImGui::Begin("Debug");
-    ImGui::Text("Frame time: %.3fms", Timer::deltaTime);
+    ImGui::Text("Frame time: %.5fms", Timer::deltaTime);
     ImGui::Text("FPS: %d", (int)(1 / Timer::deltaTime));
     ImGui::Combo("Render mode", &m_renderMode, "Shaded\0Wireframe\0Shaded Wireframe\0\0");
     ImGui::Separator();

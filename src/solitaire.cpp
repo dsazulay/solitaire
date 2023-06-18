@@ -7,12 +7,15 @@
 #include "timer.h"
 #include "keycodes.h"
 #include "resource_manager.h"
+#include "utils/log.h"
 
 Solitaire::Solitaire()
 {
     m_appConfig.windowName = "Solitaire";
     m_appConfig.windowWidth = Solitaire::defaultWindowWidth;
     m_appConfig.windowHeight = Solitaire::defaultWindowHeight;
+    m_appConfig.fps = Solitaire::fps;
+    m_appConfig.idleFps = Solitaire::idleFps;
 }
 
 auto Solitaire::run() -> void
@@ -49,32 +52,55 @@ auto Solitaire::init() -> void
     Dispatcher<UiRecompileShaderEvent>::subscribe(
         [&] (const auto& arg) { Solitaire::onUiRecompileShaderEvent(arg); });
 
+    // VSync not working on macos ventura 
     //glfwSwapInterval(1); // Enable vsync
 }
 
 auto Solitaire::mainLoop() -> void
 {
+    const double frameMs = 1000.0 / m_appConfig.fps;
+    const double frameIdleMs = 1000.0 / m_appConfig.idleFps;
+    const std::chrono::duration<double, std::milli> frameTime(frameMs);
+    const std::chrono::duration<double, std::milli> idleFrameTime(frameIdleMs);
+
     while (!m_window->shouldClose())
     {
+        auto startTime = std::chrono::steady_clock::now();
+        auto targetFps = startTime + frameTime;
         if (!m_window->isFocused())
         {
+            targetFps = startTime + idleFrameTime;
+            
             Timer::halt();
+            m_uiRenderer->render();
+            m_window->swapBuffers();
             m_window->pollEvents();
+            
+            std::this_thread::sleep_until(targetFps);
+            
             continue;
         }
         Timer::update();
-        // TODO: change harcoded value for value selected by user
-        auto target_fps = std::chrono::steady_clock::now() + std::chrono::milliseconds(14);
 
         m_freecell.update();
         m_renderer->render(m_freecell.board(), (RenderMode) m_uiRenderer->renderMode());
         m_uiRenderer->render();
 
-        std::this_thread::sleep_until(target_fps);
 
         m_window->swapBuffers();
         m_window->pollEvents();
+        
+        std::this_thread::sleep_until(targetFps);
     }
+}
+
+auto Solitaire::sleepToTargetFps(std::chrono::time_point<std::chrono::steady_clock> startTime,
+        std::chrono::duration<double, std::milli> frameTime) -> void
+{
+    std::chrono::duration<double, std::milli> diff{};
+    do {
+        diff = std::chrono::steady_clock::now() - startTime;
+    } while (diff.count() <= frameTime.count());
 }
 
 auto Solitaire::onMouseClick(const MouseClickEvent& e) -> void

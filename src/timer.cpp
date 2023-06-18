@@ -18,5 +18,7 @@ auto Timer::update() -> void
 
 auto Timer::halt() -> void
 {
-    lastFrame = (float) glfwGetTime();
+    systemTime = (float) glfwGetTime();
+    deltaTime = systemTime - lastFrame;
+    lastFrame = systemTime;
 }

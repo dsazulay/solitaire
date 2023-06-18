@@ -15,6 +15,8 @@ struct AppConfig
     std::string windowName;
     int windowWidth{};
     int windowHeight{};
+    double fps{};
+    double idleFps{};
 };
 
 class Solitaire
@@ -26,6 +28,9 @@ public:
 private:
     auto init() -> void;
     auto mainLoop() -> void;
+
+    auto sleepToTargetFps(std::chrono::time_point<std::chrono::steady_clock> startTime,
+            std::chrono::duration<double, std::milli> frameTime) -> void;
 
     auto onMouseClick(const MouseClickEvent& e) -> void;
     auto onMouseDoubleClick(const MouseDoubleClickEvent& e) -> void;
@@ -41,6 +46,8 @@ private:
     std::unique_ptr<UiRenderer> m_uiRenderer;
     Freecell m_freecell;
 
-    constexpr static int defaultWindowWidth = 1280;
-    constexpr static int defaultWindowHeight = 720;
+    constexpr static const int defaultWindowWidth = 1280;
+    constexpr static const int defaultWindowHeight = 720;
+    constexpr static const double fps = 60.0;
+    constexpr static const double idleFps = 5.0;
 };
