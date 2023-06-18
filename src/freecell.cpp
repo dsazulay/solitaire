@@ -34,7 +34,7 @@ auto Freecell::update() -> void
     
     if (m_currentState == GameState::Playing)
     {
-        m_matchData.currentTime = Timer::time;
+        m_matchData.currentTime = Timer::time - m_matchData.startTime;
     }
     else if (m_currentState == GameState::WinAnimation)
     {
