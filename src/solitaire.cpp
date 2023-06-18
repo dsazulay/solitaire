@@ -7,7 +7,6 @@
 #include "timer.h"
 #include "keycodes.h"
 #include "resource_manager.h"
-#include "utils/log.h"
 
 Solitaire::Solitaire()
 {
@@ -85,7 +84,6 @@ auto Solitaire::mainLoop() -> void
         m_freecell.update();
         m_renderer->render(m_freecell.board(), (RenderMode) m_uiRenderer->renderMode());
         m_uiRenderer->render();
-
 
         m_window->swapBuffers();
         m_window->pollEvents();

@@ -2,6 +2,7 @@
 
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include "fmt/core.h"
 #include "timer.h"
 #include "dispatcher.h"
 #include "event.h"
@@ -238,9 +239,16 @@ auto UiRenderer::renderStatsWindow() -> void
 
 auto UiRenderer::renderTimeWindow() -> void
 {
-    bool isOpen;
+    bool isOpen{};
+
+    const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 30, main_viewport->WorkPos.y + 670));
+    ImGui::SetNextWindowSize(ImVec2(110, 30));
+    
     ImGui::Begin("Time", &isOpen, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-    ImGui::Text("TIME: %d:%d", (int)m_matchData->currentTime / 60, (int)m_matchData->currentTime % 60);
+    auto text = fmt::format("TIME: {0:0{1}}:{2:0{3}}", (int)m_matchData->currentTime / 60, 2, (int)m_matchData->currentTime % 60, 2);
+    ImGui::SetCursorPosX((ImGui::GetWindowWidth() - ImGui::CalcTextSize(text.c_str()).x) * 0.5f);
+    ImGui::Text("%s", text.c_str());
     ImGui::End();
 }
 
