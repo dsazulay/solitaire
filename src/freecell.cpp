@@ -17,7 +17,7 @@ auto Freecell::init() -> void
     m_dealer.fillTableau(m_board.tableau, m_boardMap.tableauX, m_boardMap.tableauY);
 
     m_currentState = GameState::Playing;
-    m_matchData.startTime = Timer::systemTime;
+    m_matchData.startTime = Timer::time;
 }
 
 auto Freecell::update() -> void
@@ -245,7 +245,7 @@ auto Freecell::handleInputRestart() -> void
     constexpr static float maxTime = 10000.0f;
     updatePlayerData(false, maxTime);
     m_currentState = GameState::Playing;
-    m_matchData.startTime = Timer::systemTime;
+    m_matchData.startTime = Timer::time;
 }
 
 auto Freecell::handleInputNewGame() -> void
@@ -265,7 +265,7 @@ auto Freecell::handleInputNewGame() -> void
         updatePlayerData(false, maxTime);
     else
         m_currentState = GameState::Playing;
-    m_matchData.startTime = Timer::systemTime;
+    m_matchData.startTime = Timer::time;
 }
 
 auto Freecell::board() -> Board&
