@@ -5,6 +5,13 @@
 class Event
 {
 public:
+    enum GameEvent {
+        NewGame,
+        Restart,
+        Undo,
+        Redo,
+    };
+
     Event() = default;
     Event(const Event& e) = default;
     Event(Event&& e) = default;
@@ -63,6 +70,14 @@ private:
 
 class GameWinEvent : public Event {};
 
-class UiNewGameEvent : public Event {};
+class UiGameEvent : public Event
+{
+public:
+    UiGameEvent(Event::GameEvent event) : m_event(event) {}
+    [[nodiscard]] auto event() const -> Event::GameEvent { return m_event; }
 
-class UiRecompileShaderEvent : public Event{};
+private:
+    Event::GameEvent m_event;
+};
+
+class UiRecompileShaderEvent : public Event {};

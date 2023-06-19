@@ -51,7 +51,7 @@ struct BoardMap
     constexpr static float cardHalfWidth = 50.0f;
     constexpr static float cardHalfHeight = 74.0f;
     constexpr static float cardMiddleHeight = 42.0f;
-    constexpr static float topAreaYPos = 600.0f;
+    constexpr static float topAreaYPos = 560.0f;
     constexpr static float halfScreenWidth = 640.0f;
 
     std::array<float, Board::tableauSize> tableauX;

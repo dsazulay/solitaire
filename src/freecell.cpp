@@ -323,8 +323,8 @@ auto Freecell::setBoardLayout() -> void
 {
     constexpr static float tableauInitPosX = 220.0f;
     constexpr static float tableOffsetX = 120.0f;
-    constexpr static float tableauInitPosY = 400.0f;
-    constexpr static float tableauOffsetY = 32.0f;
+    constexpr static float tableauInitPosY = 380.0f;
+    constexpr static float tableauOffsetY = 30.0f;
 
     for (int i = 0; i < Board::tableauSize; i++)
     {

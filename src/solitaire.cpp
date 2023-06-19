@@ -46,8 +46,8 @@ auto Solitaire::init() -> void
         [&] (const auto& arg) { Solitaire::onKeyboardPress(arg); });
     Dispatcher<GameWinEvent>::subscribe(
         [&] (const auto& arg) { Solitaire::onGameWin(arg); });
-    Dispatcher<UiNewGameEvent>::subscribe(
-        [&] (const auto& arg) { Solitaire::onUiNewGameEvent(arg); });
+    Dispatcher<UiGameEvent>::subscribe(
+        [&] (const auto& arg) { Solitaire::onUiGameEvent(arg); });
     Dispatcher<UiRecompileShaderEvent>::subscribe(
         [&] (const auto& arg) { Solitaire::onUiRecompileShaderEvent(arg); });
 
@@ -142,9 +142,23 @@ auto Solitaire::onGameWin(const GameWinEvent& e) -> void
     m_uiRenderer->showWonWindow();
 }
 
-auto Solitaire::onUiNewGameEvent(const UiNewGameEvent& e) -> void
+auto Solitaire::onUiGameEvent(const UiGameEvent& e) -> void
 {
-    m_freecell.handleInputNewGame();
+    switch (e.event())
+    {
+        case Event::GameEvent::NewGame:
+            m_freecell.handleInputNewGame();
+            break;
+        case Event::GameEvent::Restart:
+            m_freecell.handleInputRestart();
+            break;
+        case Event::GameEvent::Undo:
+            m_freecell.handleInputUndo();
+            break;
+        case Event::GameEvent::Redo:
+            m_freecell.handleInputRedo();
+            break;
+    }
 }
 
 auto Solitaire::onUiRecompileShaderEvent(const UiRecompileShaderEvent& e) -> void

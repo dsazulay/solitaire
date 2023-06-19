@@ -3,6 +3,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include "fmt/core.h"
+#include "imgui.h"
 #include "timer.h"
 #include "dispatcher.h"
 #include "event.h"
@@ -39,8 +40,11 @@ auto UiRenderer::render() -> void
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    pushCommonStyle();
+    pushTopBarStyle();
+    renderTopBar();
+    popTopBarStyle();
 
+    pushCommonStyle();
     renderTimeWindow();
 
     if (m_shouldRenderWonWindow)
@@ -122,6 +126,67 @@ auto UiRenderer::setPlayerAndMatchData(PlayerData* playerData, MatchData* matchD
     m_matchData = matchData;
 }
 
+auto UiRenderer::renderTopBar() -> void
+{
+    bool isOpen{};
+
+    ImGui::SetNextWindowPos(ImVec2(0, 0));
+    ImGui::SetNextWindowSize(ImVec2(1280, 54));
+    ImGui::Begin("Top Bar", &isOpen, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+
+    if (ImGui::BeginTable("TopBar", 3, ImGuiTableFlags_BordersInnerV))
+    {
+        ImGui::TableSetupColumn("one", ImGuiTableColumnFlags_WidthFixed, 140.0f); // Default to 100.0f
+        ImGui::TableSetupColumn("two", ImGuiTableColumnFlags_WidthStretch);       // Default to auto
+        ImGui::TableSetupColumn("three", ImGuiTableColumnFlags_WidthFixed, 140.0f); // Default to 100.0f
+        
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x - 110) * 0.5);
+        if (ImGui::Button("Games", ImVec2{110, 28}))
+        {
+            fmt::print("No support for different games yet!\n");
+        }
+
+        ImGui::TableNextColumn();
+        pushTopBarCenterButtonStyle();
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x - 464) * 0.5);
+        if (ImGui::Button("New Game", ImVec2{110, 28}))
+        {
+            UiGameEvent e(Event::GameEvent::NewGame);
+            Dispatcher<UiGameEvent>::post(e);
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Restart", ImVec2{110, 28}))
+        {
+            UiGameEvent e(Event::GameEvent::Restart);
+            Dispatcher<UiGameEvent>::post(e);
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Undo", ImVec2{110, 28}))
+        {
+            UiGameEvent e(Event::GameEvent::Undo);
+            Dispatcher<UiGameEvent>::post(e);
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Redo", ImVec2{110, 28}))
+        {
+            UiGameEvent e(Event::GameEvent::Redo);
+            Dispatcher<UiGameEvent>::post(e);
+        }
+
+        ImGui::TableNextColumn();
+        popTopBarCenterButtonStyle();
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x - 110) * 0.5);
+        if (ImGui::Button("Statistics", ImVec2{110, 28}))
+        {
+            toggleStatsWindow();
+        }
+        ImGui::EndTable();
+    }
+    ImGui::End();
+}
+
 auto UiRenderer::renderWonWindow() -> void
 {
     const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
@@ -136,7 +201,7 @@ auto UiRenderer::renderWonWindow() -> void
         hideWonWindow();
     }
     // ImGui::Spacing();
-    if (ImGui::BeginTable("Stats", 2))
+    if (ImGui::BeginTable("WonWindow", 2))
     {
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
@@ -175,8 +240,8 @@ auto UiRenderer::renderWonWindow() -> void
     if (ImGui::Button("Play again", ImVec2{110, 28}))
     {
         hideWonWindow();
-        UiNewGameEvent e;
-        Dispatcher<UiNewGameEvent>::post(e);
+        UiGameEvent e(Event::GameEvent::NewGame);
+        Dispatcher<UiGameEvent>::post(e);
     }
     popPopupWindowStyle();
     ImGui::End();
@@ -286,6 +351,32 @@ auto UiRenderer::initStyleValues() -> void
     m_statsWindowConfig.windowPadding = ImVec2{40.0f, 31.0f};
     m_statsWindowConfig.itemSpacing = ImVec2{0.0f, 21.0f};
     m_statsWindowConfig.cellPadding = ImVec2{18.0f, 12.0f};
+}
+
+auto UiRenderer::pushTopBarStyle() -> void
+{
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.85f, 0.85f, 0.85f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1f, 0.3f, 0.1f, 1.0f));
+    // Button Style
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+}
+
+auto UiRenderer::popTopBarStyle() -> void
+{
+    ImGui::PopStyleColor(5);
+}
+
+auto UiRenderer::pushTopBarCenterButtonStyle() -> void
+{
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 12.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+}
+
+auto UiRenderer::popTopBarCenterButtonStyle() -> void
+{
+    ImGui::PopStyleVar(2);
 }
 
 auto UiRenderer::pushCommonStyle() -> void

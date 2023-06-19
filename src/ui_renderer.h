@@ -36,6 +36,7 @@ public:
     auto setPlayerAndMatchData(PlayerData* playerData, MatchData* matchInfo) -> void;
 
 private:
+    auto renderTopBar() -> void;
     auto renderWonWindow() -> void;
     auto renderStatsWindow() -> void;
     auto renderTimeWindow() -> void;
@@ -45,6 +46,10 @@ private:
     auto toggleImguiDemoWindow() -> void;
 
     auto initStyleValues() -> void;
+    auto pushTopBarStyle() -> void;
+    auto popTopBarStyle() -> void;
+    auto pushTopBarCenterButtonStyle() -> void;
+    auto popTopBarCenterButtonStyle() -> void;
     auto pushCommonStyle() -> void;
     auto popCommonStyle() -> void;
     auto pushPopupWindowStyle() -> void;

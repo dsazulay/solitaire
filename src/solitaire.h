@@ -37,7 +37,7 @@ private:
     auto onMouseDrag(const MouseDragEvent& e) -> void;
     auto onKeyboardPress(const KeyboardPressEvent& e) -> void;
     auto onGameWin(const GameWinEvent& e) -> void;
-    auto onUiNewGameEvent(const UiNewGameEvent& e) -> void;
+    auto onUiGameEvent(const UiGameEvent& e) -> void;
     auto onUiRecompileShaderEvent(const UiRecompileShaderEvent& e) -> void;
 
     AppConfig m_appConfig;
