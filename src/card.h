@@ -9,13 +9,15 @@ struct Card
     int number;
     int suit;
     glm::vec2 uvOffset;
+    glm::vec2 frontfaceUv;
+    glm::vec2 backfaceUv;
     glm::vec2 dragOffset;
     glm::vec3 pos;
 
     Card() = default;
 
-    Card(int number_, int suit_, float uvOffsetX, float uvOffsetY, glm::vec3 pos_ = glm::vec3(0.0)) : 
-        number(number_), suit(suit_), uvOffset(uvOffsetX, uvOffsetY), dragOffset(0.0), pos(pos_)
+    Card(int number_, int suit_, float uvOffsetX, float uvOffsetY, float backUvX, float backUvY, glm::vec3 pos_ = glm::vec3(0.0)) : 
+        number(number_), suit(suit_), uvOffset(uvOffsetX, uvOffsetY), frontfaceUv(uvOffsetX, uvOffsetY), backfaceUv(backUvX, backUvY), dragOffset(0.0), pos(pos_)
     {
     }
 

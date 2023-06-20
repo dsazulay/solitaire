@@ -11,4 +11,6 @@ struct MatchData
 {
     float startTime;
     float currentTime;
+    float timePaused;
+    float timePausedStart;
 };

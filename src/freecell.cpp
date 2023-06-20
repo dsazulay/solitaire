@@ -18,6 +18,7 @@ auto Freecell::init() -> void
 
     m_currentState = GameState::Playing;
     m_matchData.startTime = Timer::time;
+    m_matchData.timePaused = 0.0f;
 }
 
 auto Freecell::update() -> void
@@ -34,7 +35,7 @@ auto Freecell::update() -> void
     
     if (m_currentState == GameState::Playing)
     {
-        m_matchData.currentTime = Timer::time - m_matchData.startTime;
+        m_matchData.currentTime = Timer::time - m_matchData.startTime - m_matchData.timePaused;
     }
     else if (m_currentState == GameState::WinAnimation)
     {
@@ -246,6 +247,7 @@ auto Freecell::handleInputRestart() -> void
     updatePlayerData(false, maxTime);
     m_currentState = GameState::Playing;
     m_matchData.startTime = Timer::time;
+    m_matchData.timePaused = 0.0f;
 }
 
 auto Freecell::handleInputNewGame() -> void
@@ -266,8 +268,25 @@ auto Freecell::handleInputNewGame() -> void
     else
         m_currentState = GameState::Playing;
     m_matchData.startTime = Timer::time;
+    m_matchData.timePaused = 0.0f;
 }
 
+auto Freecell::handleInputPause() -> void
+{
+    if (m_currentState == GameState::Pause)
+    {
+        m_matchData.timePaused += Timer::time - m_matchData.timePausedStart;
+        m_currentState = GameState::Playing;
+        m_dealer.turnCardsUp();
+    }
+    else if (m_currentState == GameState::Playing)
+    {
+        m_matchData.timePausedStart = Timer::time;
+        m_currentState = GameState::Pause;
+        m_dealer.turnCardsDown();
+    }
+
+}
 auto Freecell::board() -> Board&
 {
     return m_board;
@@ -358,8 +377,8 @@ auto Freecell::createOpenCellsAndFoundations() -> void
     {
         glm::vec3 openCellsPos{m_boardMap.openCells[i], BoardMap::topAreaYPos, 0.0f};
         glm::vec3 foundationsPos{m_boardMap.foundations[i], BoardMap::topAreaYPos, 0.0f};
-        m_openCellsBg[i] = Card(-1, -1, openCellsUVX, openCellsFoundUVY, openCellsPos);
-        m_foundationsBg[i] = Card(-1, -1, foundationsUVX, openCellsFoundUVY, foundationsPos); 
+        m_openCellsBg[i] = Card(-1, -1, openCellsUVX, openCellsFoundUVY, 0.0f, 0.0f, openCellsPos);
+        m_foundationsBg[i] = Card(-1, -1, foundationsUVX, openCellsFoundUVY, 0.0f, 0.0f, foundationsPos); 
         m_board.openCellsBg[i] = &m_openCellsBg[i];
         m_board.foundationsBg[i] = &m_foundationsBg[i];
     }

@@ -130,6 +130,8 @@ auto Solitaire::onKeyboardPress(const KeyboardPressEvent& e) -> void
         m_uiRenderer->toggleStatsWindow();
     else if (e.key() == KeyCode::D)
         m_uiRenderer->toggleDebugWindow();
+    else if (e.key() == KeyCode::P)
+        m_freecell.handleInputPause();
     else if (e.key() == KeyCode::C)
     {
         ResourceManager::recompileShaders();

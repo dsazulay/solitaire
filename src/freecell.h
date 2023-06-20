@@ -29,7 +29,8 @@ enum class GameState
 {
     Playing,
     WinAnimation,
-    Won
+    Won,
+    Pause
 };
 
 struct Board
@@ -82,12 +83,13 @@ public:
     auto  init() -> void;
     auto  update() -> void;
 
-    auto  handleInputClick(double xPos, double yPos, bool isDraging, bool isDragStart) -> void;
-    auto  handleInputDoubleClick(double xPos, double yPos) -> void;
-    auto  handleInputUndo() -> void;
-    auto  handleInputRedo() -> void;
-    auto  handleInputRestart() -> void;
-    auto  handleInputNewGame() -> void;
+    auto handleInputClick(double xPos, double yPos, bool isDraging, bool isDragStart) -> void;
+    auto handleInputDoubleClick(double xPos, double yPos) -> void;
+    auto handleInputUndo() -> void;
+    auto handleInputRedo() -> void;
+    auto handleInputRestart() -> void;
+    auto handleInputNewGame() -> void;
+    auto handleInputPause() -> void;
 
     auto board() -> Board&;
     auto playerData() -> PlayerData*;

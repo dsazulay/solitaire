@@ -15,6 +15,8 @@ void Dealer::createDeck()
     constexpr static int cardSize = 13;
     constexpr static int texCardsPerRow = 8;
     constexpr static float texTile = 0.125f;
+    constexpr static float backTileX = 0.0f;
+    constexpr static float backTileY = 0.875f;
 
     m_deck.reserve(deckSize);
     int count = 0;
@@ -22,7 +24,7 @@ void Dealer::createDeck()
     {
         for (int j = 0; j < cardSize; j++)
         {
-            m_deck.emplace_back(j, i, static_cast<float>(count % texCardsPerRow) * texTile, std::floorf(static_cast<float>(count) * texTile) * texTile);
+            m_deck.emplace_back(j, i, static_cast<float>(count % texCardsPerRow) * texTile, std::floorf(static_cast<float>(count) * texTile) * texTile, backTileX, backTileY);
             count++;
         }
     }
@@ -35,6 +37,22 @@ auto Dealer::shuffleDeck() -> void
     {
         int index = unifomDist(m_randomEngine);
         swapCard(card, m_deck[index]);
+    }
+}
+
+auto Dealer::turnCardsDown() -> void
+{
+    for (auto& c : m_deck)
+    {
+        c.uvOffset = c.backfaceUv;
+    }
+}
+
+auto Dealer::turnCardsUp() -> void
+{
+    for (auto& c : m_deck)
+    {
+        c.uvOffset = c.frontfaceUv;
     }
 }
 
