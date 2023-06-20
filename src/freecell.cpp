@@ -57,6 +57,11 @@ auto Freecell::update() -> void
 
 auto Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool isDragStart) -> void
 {
+    if (m_currentState != GameState::Playing)
+    {
+        return;
+    }
+
     if (m_movingAnimation.size() > 0)
     {
         LOG_WARN("Can't input while card is moving!");
@@ -121,6 +126,11 @@ auto Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool i
 
 auto Freecell::handleInputDoubleClick(double xPos, double yPos) -> void
 {
+    if (m_currentState != GameState::Playing)
+    {
+        return;
+    }
+
     if (m_movingAnimation.size() > 0)
     {
         LOG_WARN("Can't input while card is moving!");
@@ -184,6 +194,11 @@ auto Freecell::handleInputDoubleClick(double xPos, double yPos) -> void
 
 auto Freecell::handleInputUndo() -> void
 {
+    if (m_currentState != GameState::Playing)
+    {
+        return;
+    }
+
     if (m_movingAnimation.size() > 0)
     {
         LOG_WARN("Can't input while card is moving!");
@@ -209,6 +224,11 @@ auto Freecell::handleInputUndo() -> void
 
 auto Freecell::handleInputRedo() -> void
 {
+    if (m_currentState != GameState::Playing)
+    {
+        return;
+    }
+
     if (m_movingAnimation.size() > 0)
     {
         LOG_WARN("Can't input while card is moving!");
@@ -242,6 +262,7 @@ auto Freecell::handleInputRestart() -> void
 
     m_dealer.emptyTable(m_board.tableau, m_board.openCells, m_board.foundations);
     m_dealer.fillTableau(m_board.tableau, m_boardMap.tableauX, m_boardMap.tableauY);
+    m_dealer.turnCardsUp();
     m_history.clearStacks();
     constexpr static float maxTime = 10000.0f;
     updatePlayerData(false, maxTime);
@@ -261,6 +282,7 @@ auto Freecell::handleInputNewGame() -> void
     m_dealer.emptyTable(m_board.tableau, m_board.openCells, m_board.foundations);
     m_dealer.shuffleDeck();
     m_dealer.fillTableau(m_board.tableau, m_boardMap.tableauX, m_boardMap.tableauY);
+    m_dealer.turnCardsUp();
     m_history.clearStacks();
     constexpr static float maxTime = 10000.0f;
     if (m_currentState == GameState::Playing)
@@ -273,6 +295,12 @@ auto Freecell::handleInputNewGame() -> void
 
 auto Freecell::handleInputPause() -> void
 {
+    if (m_movingAnimation.size() > 0)
+    {
+        LOG_WARN("Can't input while card is moving!");
+        return;
+    }
+
     if (m_currentState == GameState::Pause)
     {
         m_matchData.timePaused += Timer::time - m_matchData.timePausedStart;
@@ -285,8 +313,8 @@ auto Freecell::handleInputPause() -> void
         m_currentState = GameState::Pause;
         m_dealer.turnCardsDown();
     }
-
 }
+
 auto Freecell::board() -> Board&
 {
     return m_board;
@@ -439,7 +467,7 @@ auto Freecell::moveBackAndDeselectCard() -> void
 }
 
 auto Freecell::handleClick(CardStack& stack, glm::vec2 dstPos, int col, int index, IsLegalMoveFunc isLegalMove, bool isDragStart) -> void
-{
+{ 
     if (m_cardSelected.card == nullptr)
     {
         select(&stack, index, isDragStart);
