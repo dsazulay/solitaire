@@ -342,6 +342,11 @@ auto UiRenderer::renderDebugWindow() -> void
         UiRecompileShaderEvent e;
         Dispatcher<UiRecompileShaderEvent>::post(e);
     }
+    if (ImGui::Button("Print cards positions"))
+    {
+        UiPrintCardEvent e;
+        Dispatcher<UiPrintCardEvent>::post(e);
+    }
 
     ImGui::End();
 }

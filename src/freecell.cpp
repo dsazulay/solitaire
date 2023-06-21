@@ -315,6 +315,19 @@ auto Freecell::handleInputPause() -> void
     }
 }
 
+auto Freecell::handleInputPrintCards() -> void
+{
+    for (auto& stack : m_board.tableau)
+    {
+        for (auto c : stack)
+        {
+            c->print();
+        }
+        fmt::print("\n");
+    }
+    fmt::print("\n");
+}
+
 auto Freecell::board() -> Board&
 {
     return m_board;

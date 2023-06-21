@@ -50,6 +50,8 @@ auto Solitaire::init() -> void
         [&] (const auto& arg) { Solitaire::onUiGameEvent(arg); });
     Dispatcher<UiRecompileShaderEvent>::subscribe(
         [&] (const auto& arg) { Solitaire::onUiRecompileShaderEvent(arg); });
+    Dispatcher<UiPrintCardEvent>::subscribe(
+        [&] (const auto& arg) { Solitaire::onUiPrintCardEvent(arg); });
 
     // VSync not working on macos ventura 
     //glfwSwapInterval(1); // Enable vsync
@@ -71,8 +73,6 @@ auto Solitaire::mainLoop() -> void
             targetFps = startTime + idleFrameTime;
             
             Timer::halt();
-            m_uiRenderer->render();
-            m_window->swapBuffers();
             m_window->pollEvents();
             
             std::this_thread::sleep_until(targetFps);
@@ -167,5 +167,10 @@ auto Solitaire::onUiRecompileShaderEvent(const UiRecompileShaderEvent& e) -> voi
 {
     ResourceManager::recompileShaders();
     m_renderer->reloadShaders();
+}
+
+auto Solitaire::onUiPrintCardEvent(const UiPrintCardEvent& e) -> void
+{
+    m_freecell.handleInputPrintCards();
 }
 

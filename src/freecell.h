@@ -90,6 +90,7 @@ public:
     auto handleInputRestart() -> void;
     auto handleInputNewGame() -> void;
     auto handleInputPause() -> void;
+    auto handleInputPrintCards() -> void;
 
     auto board() -> Board&;
     auto playerData() -> PlayerData*;

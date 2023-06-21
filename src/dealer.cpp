@@ -106,3 +106,4 @@ auto Dealer::swapCard(Card& a, Card& b) -> void
     a = b;
     b = tmp;
 }
+

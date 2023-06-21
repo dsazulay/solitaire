@@ -39,6 +39,7 @@ private:
     auto onGameWin(const GameWinEvent& e) -> void;
     auto onUiGameEvent(const UiGameEvent& e) -> void;
     auto onUiRecompileShaderEvent(const UiRecompileShaderEvent& e) -> void;
+    auto onUiPrintCardEvent(const UiPrintCardEvent& e) -> void;
 
     AppConfig m_appConfig;
     std::unique_ptr<Window> m_window;

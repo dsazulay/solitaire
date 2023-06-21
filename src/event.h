@@ -81,3 +81,5 @@ private:
 };
 
 class UiRecompileShaderEvent : public Event {};
+
+class UiPrintCardEvent : public Event {};
