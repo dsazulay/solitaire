@@ -62,7 +62,7 @@ public:
 
 private:
     constexpr static float zOffset = 0.0001f;
-    constexpr static float yOffset = 32.0f;
+    constexpr static float yOffset = 30.0f;
     constexpr static float animationSpeed = 4000.0f;
 
     float m_speed = MovingAnimation::animationSpeed;
