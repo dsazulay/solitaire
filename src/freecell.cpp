@@ -131,7 +131,7 @@ auto Freecell::handleInputDoubleClick(double xPos, double yPos) -> void
         return;
     }
 
-    if (m_movingAnimation.size() > 0)
+    if (m_movingAnimation.size() > 0 || !m_draggingAnimation.isDone())
     {
         LOG_WARN("Can't input while card is moving!");
         return;
@@ -199,7 +199,7 @@ auto Freecell::handleInputUndo() -> void
         return;
     }
 
-    if (m_movingAnimation.size() > 0)
+    if (m_movingAnimation.size() > 0 || !m_draggingAnimation.isDone())
     {
         LOG_WARN("Can't input while card is moving!");
         return;
@@ -229,7 +229,7 @@ auto Freecell::handleInputRedo() -> void
         return;
     }
 
-    if (m_movingAnimation.size() > 0)
+    if (m_movingAnimation.size() > 0 || !m_draggingAnimation.isDone())
     {
         LOG_WARN("Can't input while card is moving!");
         return;
@@ -254,7 +254,7 @@ auto Freecell::handleInputRedo() -> void
 
 auto Freecell::handleInputRestart() -> void
 {
-    if (m_movingAnimation.size() > 0)
+    if (m_movingAnimation.size() > 0 || !m_draggingAnimation.isDone())
     {
         LOG_WARN("Can't input while card is moving!");
         return;
@@ -273,7 +273,7 @@ auto Freecell::handleInputRestart() -> void
 
 auto Freecell::handleInputNewGame() -> void
 {
-    if (m_movingAnimation.size() > 0)
+    if (m_movingAnimation.size() > 0 || !m_draggingAnimation.isDone())
     {
         LOG_WARN("Can't input while card is moving!");
         return;
@@ -295,7 +295,7 @@ auto Freecell::handleInputNewGame() -> void
 
 auto Freecell::handleInputPause() -> void
 {
-    if (m_movingAnimation.size() > 0)
+    if (m_movingAnimation.size() > 0 || !m_draggingAnimation.isDone())
     {
         LOG_WARN("Can't input while card is moving!");
         return;
