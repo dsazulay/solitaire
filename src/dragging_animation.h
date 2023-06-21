@@ -31,6 +31,10 @@ public:
 
     void stop()
     {
+        for (Card* c : m_cards)
+        {
+            c->pos.z = 0.0f;
+        }
         m_isDone = true;
     }
 
