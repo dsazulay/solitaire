@@ -8,7 +8,6 @@
 #include "ui_renderer.h"
 #include "freecell.h"
 #include "event.h"
-#include "dispatcher.h"
 
 struct AppConfig
 {
@@ -46,9 +45,5 @@ private:
     std::unique_ptr<Renderer> m_renderer;
     std::unique_ptr<UiRenderer> m_uiRenderer;
     Freecell m_freecell;
-
-    constexpr static const int defaultWindowWidth = 1280;
-    constexpr static const int defaultWindowHeight = 720;
-    constexpr static const double fps = 60.0;
-    constexpr static const double idleFps = 5.0;
 };
+

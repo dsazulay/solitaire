@@ -1,6 +1,5 @@
 #include "solitaire.h"
 
-#include <functional>
 #include <thread>
 #include <chrono>
 
@@ -10,11 +9,16 @@
 
 Solitaire::Solitaire()
 {
+    constexpr const int defaultWindowWidth = 1280;
+    constexpr const int defaultWindowHeight = 720;
+    constexpr const double fps = 60.0;
+    constexpr const double idleFps = 5.0;
+
     m_appConfig.windowName = "Solitaire";
-    m_appConfig.windowWidth = Solitaire::defaultWindowWidth;
-    m_appConfig.windowHeight = Solitaire::defaultWindowHeight;
-    m_appConfig.fps = Solitaire::fps;
-    m_appConfig.idleFps = Solitaire::idleFps;
+    m_appConfig.windowWidth = defaultWindowWidth;
+    m_appConfig.windowHeight = defaultWindowHeight;
+    m_appConfig.fps = fps;
+    m_appConfig.idleFps = idleFps;
 }
 
 auto Solitaire::run() -> void
@@ -26,7 +30,8 @@ auto Solitaire::run() -> void
 auto Solitaire::init() -> void
 {
     m_window = std::make_unique<Window>();
-    m_window->createWindow(m_appConfig.windowWidth, m_appConfig.windowHeight, m_appConfig.windowName.c_str());
+    m_window->createWindow(m_appConfig.windowWidth, 
+            m_appConfig.windowHeight, m_appConfig.windowName.c_str());
 
     m_renderer = std::make_unique<Renderer>();
 
@@ -38,7 +43,7 @@ auto Solitaire::init() -> void
 
     Dispatcher<MouseClickEvent>::subscribe(
         [&] (const auto& arg) { Solitaire::onMouseClick(arg); });
-    Dispatcher<MouseDoubleClickEvent>::subscribe( 
+    Dispatcher<MouseDoubleClickEvent>::subscribe(
         [&] (const auto& arg) { Solitaire::onMouseDoubleClick(arg); });
     Dispatcher<MouseDragEvent>::subscribe(
         [&] (const auto& arg) { Solitaire::onMouseDrag(arg); });
@@ -53,7 +58,7 @@ auto Solitaire::init() -> void
     Dispatcher<UiPrintCardEvent>::subscribe(
         [&] (const auto& arg) { Solitaire::onUiPrintCardEvent(arg); });
 
-    // VSync not working on macos ventura 
+    // VSync not working on macos ventura
     //glfwSwapInterval(1); // Enable vsync
 }
 
@@ -71,12 +76,12 @@ auto Solitaire::mainLoop() -> void
         if (!m_window->isFocused())
         {
             targetFps = startTime + idleFrameTime;
-            
+
             Timer::halt();
             m_window->pollEvents();
-            
+
             std::this_thread::sleep_until(targetFps);
-            
+
             continue;
         }
         Timer::update();
@@ -87,7 +92,7 @@ auto Solitaire::mainLoop() -> void
 
         m_window->swapBuffers();
         m_window->pollEvents();
-        
+
         std::this_thread::sleep_until(targetFps);
     }
 }

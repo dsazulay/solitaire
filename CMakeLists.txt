@@ -41,18 +41,18 @@ add_subdirectory(external/glfw)
 set_property(TARGET glfw PROPERTY FOLDER "Dependencies")
 
 # Glad
-message(STATUS "Installing glad via submodule")
+message(STATUS "Installing glad")
 add_subdirectory(external/glad)
 set_property(TARGET Glad PROPERTY FOLDER "Dependencies")
 
 # glm
-message(STATUS "Installing glm via sybmodule")
+message(STATUS "Installing glm via submodule")
 set(BUILD_STATIC_LIBS ON)
 add_subdirectory(external/glm)
 set_property(TARGET glm_static PROPERTY FOLDER "Dependencies")
 
 # ImGui
-message(STATUS "Installing imgui via submodule")
+message(STATUS "Installing imgui")
 add_subdirectory(external/imgui)
 set_property(TARGET ImGui PROPERTY FOLDER "Dependencies")
 
@@ -61,6 +61,15 @@ message(STATUS "Installing fmt via submodule")
 add_subdirectory(external/fmt)
 set_property(TARGET fmt PROPERTY FOLDER "Dependencies")
 
+# stb_image
+message(STATUS "Installing stb_image")
+add_subdirectory(external/stb_image)
+set_property(TARGET stb_image PROPERTY FOLDER "Dependencies")
+
+# tiny_obj_loader
+message(STATUS "Installing tiny_obj_loader")
+add_subdirectory(external/tiny_obj_loader)
+set_property(TARGET tiny_obj_loader PROPERTY FOLDER "Dependencies")
 
 # =============================================================
 
@@ -83,45 +92,21 @@ endforeach()
 
 # Finalize App
 
-add_executable(
-    ${PROJECT_NAME}
-    "${FILE_SOURCES}"
-)
+add_executable(Solitaire "${FILE_SOURCES}")
 
 # =============================================================
 
 # Finish Dependencies
 
-target_link_libraries(
-    ${PROJECT_NAME}
-    Glad
-    ImGui
-    glfw
-    glm_static
-    fmt
-)
-
-target_include_directories(
-  ${PROJECT_NAME}
-  PUBLIC external/glfw
-  PUBLIC external/glm
-  PUBLIC external/fmt
-)
-
-add_dependencies(
-    ${PROJECT_NAME}
-    glfw
-    glm_static
-    fmt
-)
+target_link_libraries(Solitaire Glad ImGui glfw glm_static fmt stb_image tiny_obj_loader)
 
 # =============================================================
 
 # Finish Settings
 
-target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra)
+target_compile_options(Solitaire PRIVATE -Wall -Wextra)
 
 # Change output dir to bin
-set_target_properties(${PROJECT_NAME} PROPERTIES
+set_target_properties(Solitaire PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
