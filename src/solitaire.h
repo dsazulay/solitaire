@@ -28,7 +28,8 @@ private:
     auto init() -> void;
     auto mainLoop() -> void;
 
-    auto sleepToTargetFps(std::chrono::time_point<std::chrono::steady_clock> startTime,
+    auto sleepToTargetFps(
+            std::chrono::time_point<std::chrono::steady_clock> startTime,
             std::chrono::duration<double, std::milli> frameTime) -> void;
 
     auto onMouseClick(const MouseClickEvent& e) -> void;
@@ -41,7 +42,7 @@ private:
     auto onUiPrintCardEvent(const UiPrintCardEvent& e) -> void;
 
     AppConfig m_appConfig;
-    std::unique_ptr<Window> m_window;
+    Window m_window;
     std::unique_ptr<Renderer> m_renderer;
     std::unique_ptr<UiRenderer> m_uiRenderer;
     Freecell m_freecell;

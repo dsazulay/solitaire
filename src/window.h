@@ -19,19 +19,25 @@ public:
     [[nodiscard]] auto isFocused() const -> bool;
     auto swapBuffers() const -> void;
     auto pollEvents() -> void;
-    auto getWindow() -> GLFWwindow*;
+    auto getGlfwWindow() -> GLFWwindow*;
 
     static glm::vec2 mousePos;
 
 private:
-    static auto frameBufferCallback(GLFWwindow* window, int width, int height) -> void;
-    static auto cursorPositionCallback(GLFWwindow* window, double xPos, double yPos) -> void;
-    static auto mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) -> void;
-    static auto keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods) -> void;
+    auto cursorPositionCallback(double x, double y) -> void;
+    auto mouseButtonCallback(int button, int action) -> void;
 
-    static float lastClickTime;
-    static float dragStartTime;
-    static glm::vec2 windowSize;
+    static auto frameBufferCallback(GLFWwindow* window, int width,
+            int height) -> void;
+    static auto cursorPositionCallback(GLFWwindow* window, double xpos,
+            double ypos) -> void;
+    static auto mouseButtonCallback(GLFWwindow* window, int button, int action,
+            int mods) -> void;
+    static auto keyboardCallback(GLFWwindow* window, int key, int scancode,
+            int action, int mods) -> void;
 
-    GLFWwindow* m_window{};
+    float m_lastClickTime{};
+    float m_dragStartTime{};
+    glm::vec2 m_windowSize{};
+    GLFWwindow* m_glfwWindow{};
 };

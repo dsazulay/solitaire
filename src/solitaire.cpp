@@ -6,6 +6,7 @@
 #include "timer.h"
 #include "keycodes.h"
 #include "resource_manager.h"
+#include "dispatcher.h"
 
 Solitaire::Solitaire()
 {
@@ -29,13 +30,12 @@ auto Solitaire::run() -> void
 
 auto Solitaire::init() -> void
 {
-    m_window = std::make_unique<Window>();
-    m_window->createWindow(m_appConfig.windowWidth, 
+    m_window.createWindow(m_appConfig.windowWidth,
             m_appConfig.windowHeight, m_appConfig.windowName.c_str());
 
     m_renderer = std::make_unique<Renderer>();
 
-    m_uiRenderer = std::make_unique<UiRenderer>(m_window->getWindow());
+    m_uiRenderer = std::make_unique<UiRenderer>(m_window.getGlfwWindow());
 
     // Game init
     m_freecell.init();
@@ -69,16 +69,16 @@ auto Solitaire::mainLoop() -> void
     const std::chrono::duration<double, std::milli> frameTime(frameMs);
     const std::chrono::duration<double, std::milli> idleFrameTime(frameIdleMs);
 
-    while (!m_window->shouldClose())
+    while (!m_window.shouldClose())
     {
         auto startTime = std::chrono::steady_clock::now();
         auto targetFps = startTime + frameTime;
-        if (!m_window->isFocused())
+        if (!m_window.isFocused())
         {
             targetFps = startTime + idleFrameTime;
 
             Timer::halt();
-            m_window->pollEvents();
+            m_window.pollEvents();
 
             std::this_thread::sleep_until(targetFps);
 
@@ -87,11 +87,12 @@ auto Solitaire::mainLoop() -> void
         Timer::update();
 
         m_freecell.update();
-        m_renderer->render(m_freecell.board(), (RenderMode) m_uiRenderer->renderMode());
+        m_renderer->render(m_freecell.board(),
+                (RenderMode) m_uiRenderer->renderMode());
         m_uiRenderer->render();
 
-        m_window->swapBuffers();
-        m_window->pollEvents();
+        m_window.swapBuffers();
+        m_window.pollEvents();
 
         std::this_thread::sleep_until(targetFps);
     }

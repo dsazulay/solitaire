@@ -7,10 +7,11 @@
 #include "utils/log.h"
 #include "keycodes.h"
 
-float Window::lastClickTime = 0.0f;
-float Window::dragStartTime = 0.0f;
+#define UNUSED(x) (void)x;
+
+constexpr const float doubleClickMinTime = 0.05f;
+constexpr const float doubleClickMaxTime = 0.2f;
 glm::vec2 Window::mousePos{};
-glm::vec2 Window::windowSize{};
 
 Window::Window()
 {
@@ -31,36 +32,37 @@ Window::~Window()
 
 auto Window::createWindow(int width, int height, const char *name) -> void
 {
-    windowSize.x = (float) width;
-    windowSize.y = (float) height;
-    m_window = glfwCreateWindow(width, height, name, nullptr, nullptr);
-    if (m_window == nullptr)
+    m_windowSize = { static_cast<float>(width), static_cast<float>(height) };
+    m_glfwWindow = glfwCreateWindow(width, height, name, nullptr, nullptr);
+    if (m_glfwWindow == nullptr)
     {
         LOG_ERROR("Failed to create GLFW window");
         return;
     }
-    glfwMakeContextCurrent(m_window);
-    glfwSetFramebufferSizeCallback(m_window, frameBufferCallback);
-    glfwSetCursorPosCallback(m_window, cursorPositionCallback);
-    glfwSetMouseButtonCallback(m_window, mouseButtonCallback);
-    glfwSetKeyCallback(m_window, keyboardCallback);
+    glfwMakeContextCurrent(m_glfwWindow);
+    glfwSetWindowUserPointer(m_glfwWindow, this);
+    glfwSetFramebufferSizeCallback(m_glfwWindow, frameBufferCallback);
+    glfwSetCursorPosCallback(m_glfwWindow, cursorPositionCallback);
+    glfwSetMouseButtonCallback(m_glfwWindow, mouseButtonCallback);
+    glfwSetKeyCallback(m_glfwWindow, keyboardCallback);
 
-    ASSERT(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress), "Failed to initialize GLAD");
+    ASSERT(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress),
+            "Failed to initialize GLAD");
 }
 
 auto Window::shouldClose() const -> bool
 {
-    return glfwWindowShouldClose(m_window);
+    return glfwWindowShouldClose(m_glfwWindow);
 }
 
 auto Window::isFocused() const -> bool
 {
-    return glfwGetWindowAttrib(m_window, GLFW_FOCUSED);
+    return glfwGetWindowAttrib(m_glfwWindow, GLFW_FOCUSED);
 }
 
 auto Window::swapBuffers() const -> void
 {
-    glfwSwapBuffers(m_window);
+    glfwSwapBuffers(m_glfwWindow);
 }
 
 auto Window::pollEvents() -> void
@@ -68,19 +70,13 @@ auto Window::pollEvents() -> void
     glfwPollEvents();
 }
 
-auto Window::frameBufferCallback(GLFWwindow* window, int width, int height) -> void
+auto Window::cursorPositionCallback(double x, double y) -> void
 {
-    glViewport(0, 0, width, height);
-}
-
-auto Window::cursorPositionCallback(GLFWwindow* window, double xPos, double yPos) -> void
-{
-    mousePos.x = (float) xPos;
     // Invert y position so that 0 is on the bottom
-    mousePos.y = windowSize.y - (float) yPos;
+    mousePos = { static_cast<float>(x), m_windowSize.y - static_cast<float>(y) };
 }
 
-auto Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) -> void
+auto Window::mouseButtonCallback(int button, int action) -> void
 {
     auto& io = ImGui::GetIO();
     if (io.WantCaptureMouse)
@@ -88,7 +84,7 @@ auto Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int
 
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
     {
-        dragStartTime = (float) glfwGetTime();
+        m_dragStartTime = (float) glfwGetTime();
         MouseDragEvent dragEvent(mousePos.x, mousePos.y, true);
         Dispatcher<MouseDragEvent>::post(dragEvent);
     }
@@ -99,11 +95,9 @@ auto Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int
         Dispatcher<MouseDragEvent>::post(dragEvent);
 
         auto clickTime = (float) glfwGetTime();
-        float timeDiff = clickTime - lastClickTime;
-        lastClickTime = clickTime;
+        float timeDiff = clickTime - m_lastClickTime;
+        m_lastClickTime = clickTime;
 
-        const float doubleClickMinTime = 0.05f;
-        const float doubleClickMaxTime = 0.2f;
         if (timeDiff > doubleClickMinTime && timeDiff < doubleClickMaxTime)
         {
             MouseDoubleClickEvent doubleClickEvent(mousePos.x, mousePos.y);
@@ -119,13 +113,38 @@ auto Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int
     }
 }
 
-auto Window::keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods) -> void
+auto Window::frameBufferCallback(GLFWwindow* window, int width,
+        int height) -> void
 {
+    UNUSED(window);
+    glViewport(0, 0, width, height);
+}
+
+auto Window::cursorPositionCallback(GLFWwindow* window, double xpos,
+        double ypos) -> void
+{
+    auto w = static_cast<Window*>(glfwGetWindowUserPointer(window));
+    w->cursorPositionCallback(xpos, ypos);
+}
+
+auto Window::mouseButtonCallback(GLFWwindow* window, int button, int action,
+        int mods) -> void
+{
+    UNUSED(mods);
+    auto w = static_cast<Window*>(glfwGetWindowUserPointer(window));
+    w->mouseButtonCallback(button, action);
+}
+
+auto Window::keyboardCallback(GLFWwindow* window, int key, int scancode,
+        int action, int mods) -> void
+{
+    UNUSED(scancode);
+    UNUSED(mods);
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(window, true);
     }
-    
+
     else if (action == GLFW_PRESS)
     {
         KeyboardPressEvent e((KeyCode) key);
@@ -133,7 +152,7 @@ auto Window::keyboardCallback(GLFWwindow* window, int key, int scancode, int act
     }
 }
 
-auto Window::getWindow() -> GLFWwindow*
+auto Window::getGlfwWindow() -> GLFWwindow*
 {
-    return m_window;
+    return m_glfwWindow;
 }
