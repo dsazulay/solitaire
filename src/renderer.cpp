@@ -1,7 +1,6 @@
 #include "renderer.h"
 
 #include <glad/glad.h>
-
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
@@ -11,37 +10,36 @@
 #include "resource_manager.h"
 #include "window.h"
 
+constexpr const char* unlitVertPath = "../../resources/unlit.vert";
+constexpr const char* unlitFragPath = "../../resources/unlit.frag";
+constexpr const char* bgVertPath = "../../resources/background.vert";
+constexpr const char* bgFragPath = "../../resources/background.frag";
+constexpr const char* wireframeFragPath = "../../resources/wireframe.frag";
+constexpr const char* cardsTexPath = "../../resources/cards.png";
+constexpr const char* cardModelPath = "../../resources/card.obj";
+
+constexpr const float width = 1280.0f;
+constexpr const float height = 720.0f;
+
 Renderer::Renderer()
 {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    m_proj = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f, -1.0f, 1.0f);
-    m_unlitShader = ResourceManager::loadShader("../../resources/unlit.vert", 
-                                                "../../resources/unlit.frag",
-                                                "UnlitShader");
-    m_wireframeShader = ResourceManager::loadShader("../../resources/unlit.vert",
-                                                    "../../resources/wireframe.frag",
-                                                    "WireframeShader");
-    m_backgroundShader = ResourceManager::loadShader("../../resources/background.vert",
-                                                    "../../resources/background.frag",
-                                                    "BackgroundShader");
-    m_backgroundWireframeShader = ResourceManager::loadShader("../../resources/background.vert",
-                                                    "../../resources/wireframe.frag",
-                                                    "BackgroundWireframeShader");
-    m_texture = ResourceManager::loadTexture("../../resources/cards.png", "CardTex");
+    m_proj = glm::ortho(0.0f, width, 0.0f, height, -1.0f, 1.0f);
+    m_unlitShader = ResourceManager::loadShader(
+            unlitVertPath, unlitFragPath, "UnlitShader");
+    m_wireframeShader = ResourceManager::loadShader(
+            unlitVertPath, wireframeFragPath, "WireframeShader");
+    m_backgroundShader = ResourceManager::loadShader(
+            bgVertPath, bgFragPath, "BackgroundShader");
+    m_backgroundWireframeShader = ResourceManager::loadShader(
+            bgVertPath, wireframeFragPath, "BackgroundWireframeShader");
+    m_texture = ResourceManager::loadTexture(cardsTexPath, "CardTex");
 
-    m_model = ResourceManager::loadModel("../../resources/card.obj", "CardModel");
-    m_backgroundModel = ResourceManager::loadModel(NativeModel::Quad, "QuadModel");
-
-    m_shaders.reserve(4);
-    m_shaders.push_back(m_unlitShader);
-    m_shaders.push_back(m_wireframeShader);
-    m_shaders.push_back(m_backgroundShader);
-    m_shaders.push_back(m_backgroundWireframeShader);
-
-    initMesh();
-    initBackgroundMesh();
+    m_model = ResourceManager::loadModel(cardModelPath, "CardModel");
+    m_backgroundModel = ResourceManager::loadModel(
+            NativeModel::Quad, "QuadModel");
 
     createUBO();
 
@@ -190,7 +188,7 @@ auto Renderer::renderBackground(RenderMode mode) -> void
         m_shader->setMat4("u_model", model);
         m_shader->setVec3("u_tint", glm::vec3(0.22f, 0.49f, 0.3f));
 
-        glBindVertexArray(VAO_BG);
+        glBindVertexArray(m_backgroundModel->mesh.getVao());
         glDrawElements(GL_TRIANGLES, m_backgroundModel->indices.size(), GL_UNSIGNED_INT, nullptr);
         glBindVertexArray(0);
     }
@@ -208,7 +206,7 @@ auto Renderer::renderBackground(RenderMode mode) -> void
         m_shader->setMat4("u_model", model);
         m_shader->setVec3("u_tint", glm::vec3(0.22f, 0.49f, 0.3f));
 
-        glBindVertexArray(VAO_BG);
+        glBindVertexArray(m_backgroundModel->mesh.getVao());
         glDrawElements(GL_TRIANGLES, m_backgroundModel->indices.size(), GL_UNSIGNED_INT, nullptr);
         glBindVertexArray(0);
     }
@@ -228,55 +226,8 @@ auto Renderer::renderSprite(Card* card) -> void
 
 void Renderer::drawCall()
 {
-    glBindVertexArray(VAO);
+    glBindVertexArray(m_model->mesh.getVao());
     glDrawElementsInstanced(GL_TRIANGLES, m_model->indices.size(), GL_UNSIGNED_INT, nullptr, m_instanceCounter);
-    glBindVertexArray(0);
-}
-
-// TODO: create a new class for mesh objects to hold VAO EBO and VBO
-auto Renderer::initMesh() -> void
-{
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, m_model->vertices.size() * sizeof(Vertex), &m_model->vertices[0], GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_model->indices.size() * sizeof(int), &m_model->indices[0], GL_STATIC_DRAW);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), nullptr);
-
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, texCoord)));
-
-    glBindVertexArray(0);
-}
-
-auto Renderer::initBackgroundMesh() -> void
-{
-    glGenVertexArrays(1, &VAO_BG);
-    glGenBuffers(1, &VBO_BG);
-    glGenBuffers(1, &EBO_BG);
-
-    glBindVertexArray(VAO_BG);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO_BG);
-    glBufferData(GL_ARRAY_BUFFER, m_backgroundModel->vertices.size() * sizeof(Vertex), &m_backgroundModel->vertices[0], GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_BG);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_backgroundModel->indices.size() * sizeof(int), &m_backgroundModel->indices[0], GL_STATIC_DRAW);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), nullptr);
-
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, texCoord)));
-
     glBindVertexArray(0);
 }
 
@@ -298,10 +249,10 @@ auto Renderer::setCameraUBO() -> void
 
 auto Renderer::setShaderUniformBlock() -> void
 {
-    for (auto shader : m_shaders)
-    {
-        shader->setUniformBlock("Matrices", 0);
-    }
+    m_unlitShader->setUniformBlock("Matrices", 0);
+    m_wireframeShader->setUniformBlock("Matrices", 0);
+    m_backgroundShader->setUniformBlock("Matrices", 0);
+    m_backgroundWireframeShader->setUniformBlock("Matrices", 0);
 }
 
 auto Renderer::setShaderUniforms() -> void

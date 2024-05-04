@@ -84,7 +84,7 @@ auto Window::mouseButtonCallback(int button, int action) -> void
 
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
     {
-        m_dragStartTime = (float) glfwGetTime();
+        m_dragStartTime = static_cast<float>(glfwGetTime());
         MouseDragEvent dragEvent(mousePos.x, mousePos.y, true);
         Dispatcher<MouseDragEvent>::post(dragEvent);
     }
@@ -105,11 +105,11 @@ auto Window::mouseButtonCallback(int button, int action) -> void
             return;
         }
 
-        // if (clickTime - dragStartTime < 0.05)
-        // {
-            //MouseClickEvent e(mousePos.x, mousePos.y);
-            //Dispatcher::instance().post(e);
-        // }
+        //if (clickTime - m_dragStartTime < 0.05)
+        //{
+        //    MouseClickEvent e(mousePos.x, mousePos.y);
+        //    Dispatcher<MouseClickEvent>::post(e);
+        //}
     }
 }
 
