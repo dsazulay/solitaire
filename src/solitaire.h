@@ -7,6 +7,7 @@
 #include "graphics/renderer.h"
 #include "ui_renderer.h"
 #include "freecell.h"
+#include "scoundrel/scoundrel.h"
 #include "event.h"
 
 struct AppConfig
@@ -46,5 +47,6 @@ private:
     Renderer m_renderer;
     std::unique_ptr<UiRenderer> m_uiRenderer;
     Freecell m_freecell;
+    Scoundrel m_scoundrel;
 };
 

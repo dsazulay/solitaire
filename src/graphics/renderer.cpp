@@ -47,11 +47,10 @@ auto Renderer::init() -> void
     setShaderUniforms();
 }
 
-auto Renderer::render(std::span<Card*> cards, std::span<Card*> cardsBg, RenderMode mode) -> void
+auto Renderer::render(std::span<Card*> cards, std::span<Card*> cardsBg,
+        RenderMode mode) -> void
 {
     clear();
-
-    renderCardBackground(cardsBg, mode);
 
     if (mode == RenderMode::Shaded || mode == RenderMode::ShadedWireframe)
     {
@@ -60,11 +59,19 @@ auto Renderer::render(std::span<Card*> cards, std::span<Card*> cardsBg, RenderMo
         m_shader->use();
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+        glEnable(GL_BLEND);
+        for (auto card : cardsBg)
+        {
+            renderSprite(card);
+        }
+        drawCall();
+        glDisable(GL_BLEND);
+
+        m_instanceCounter = 0;
         for (auto card : cards)
         {
             renderSprite(card);
         }
-
         drawCall();
     }
 
@@ -75,11 +82,19 @@ auto Renderer::render(std::span<Card*> cards, std::span<Card*> cardsBg, RenderMo
         m_shader->use();
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+        glEnable(GL_BLEND);
+        for (auto card : cardsBg)
+        {
+            renderSprite(card);
+        }
+        drawCall();
+        glDisable(GL_BLEND);
+
+        m_instanceCounter = 0;
         for (auto card : cards)
         {
             renderSprite(card);
         }
-
         drawCall();
     }
 
@@ -89,45 +104,6 @@ auto Renderer::render(std::span<Card*> cards, std::span<Card*> cardsBg, RenderMo
 auto Renderer::reloadShaders() -> void
 {
     setShaderUniforms();
-}
-
-auto Renderer::renderCardBackground(std::span<Card*> cardsBg, RenderMode mode) -> void
-{
-
-    glEnable(GL_BLEND);
-
-    if (mode == RenderMode::Shaded || mode == RenderMode::ShadedWireframe)
-    {
-        m_shader = m_unlitShader;
-        m_instanceCounter = 0;
-        m_shader->use();
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-        for (auto card : cardsBg)
-        {
-            renderSprite(card);
-        }
-
-        drawCall();
-    }
-
-    if (mode == RenderMode::Wireframe || mode == RenderMode::ShadedWireframe)
-    {
-        m_shader = m_wireframeShader;
-        m_instanceCounter = 0;
-        m_shader->use();
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-        for (auto card : cardsBg)
-        {
-            renderSprite(card);
-        }
-
-        drawCall();
-
-    }
-
-    glDisable(GL_BLEND);
 }
 
 auto Renderer::renderBackground(RenderMode mode) -> void

@@ -37,6 +37,7 @@ auto Solitaire::init() -> void
 
     // Game init
     m_freecell.init();
+    m_scoundrel.init();
     m_uiRenderer->setPlayerAndMatchData(m_freecell.playerData(), m_freecell.matchData());
 
     Dispatcher<MouseClickEvent>::subscribe(
@@ -84,8 +85,12 @@ auto Solitaire::mainLoop() -> void
         }
         Timer::update();
 
-        m_freecell.update();
-        m_renderer.render(m_freecell.board().cards, m_freecell.board().openCellsAndFoundBg,
+        //m_freecell.update();
+        //m_renderer.render(m_freecell.board().cards,
+        //        m_freecell.board().openCellsAndFoundBg,
+        //        (RenderMode) m_uiRenderer->renderMode());
+        m_renderer.render(m_scoundrel.board().cards,
+                m_scoundrel.board().cardsBg,
                 (RenderMode) m_uiRenderer->renderMode());
         m_uiRenderer->render();
 

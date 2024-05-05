@@ -41,7 +41,7 @@ struct Board
 
     std::array<Card*, openCellsAndFoundSize * 2> openCellsAndFoundBg{};
 
-    std::vector<Card*> cards{};
+    CardStack cards{};
 
     auto updateCards() -> void
     {
@@ -99,7 +99,7 @@ struct Move
     glm::vec2 srcPos;
     glm::vec2 dstPos;
 
-    auto swap() -> Move
+    auto swap() noexcept  -> Move
     {
         Move newMove{dstStack, srcStack, cardQuantity, dstPos, srcPos};
         return newMove;

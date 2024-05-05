@@ -19,7 +19,8 @@ class Renderer
 {
 public:
     auto init() -> void;
-    auto render(std::span<Card*> cards, std::span<Card*> cardsBg, RenderMode mode) -> void;
+    auto render(std::span<Card*> cards, std::span<Card*> cardsBg,
+            RenderMode mode) -> void;
     auto reloadShaders() -> void;
 
 private:
@@ -28,7 +29,6 @@ private:
     auto setShaderUniformBlock() -> void;
     auto setShaderUniforms() -> void;
     auto renderBackground(RenderMode mode) -> void;
-    auto renderCardBackground(std::span<Card*> cardsBg, RenderMode mode) -> void;
     auto renderSprite(Card* card) -> void;
     auto drawCall() -> void;
     auto clear() -> void;

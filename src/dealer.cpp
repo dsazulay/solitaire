@@ -2,20 +2,16 @@
 
 #include <cmath>
 
-Dealer::Dealer() : m_randomEngine(m_r())
-{
-    createDeck();
-}
+Dealer::Dealer() : m_randomEngine(m_r()) {}
 
-void Dealer::createDeck()
+auto Dealer::createFreecellDeck() -> void
 {
     constexpr const int deckSize = 52;
     constexpr const int suitSize = 4;
     constexpr const int cardSize = 13;
     constexpr const int texCardsPerRow = 8;
     constexpr const float texTile = 0.125f;
-    constexpr const float backTileX = 0.0f;
-    constexpr const float backTileY = 0.875f;
+    constexpr const glm::vec2 backTile{ 0.0, 0.875f };
 
     m_deck.reserve(deckSize);
     int count = 0;
@@ -27,8 +23,35 @@ void Dealer::createDeck()
                 static_cast<float>(count % texCardsPerRow) * texTile,
                 std::floorf(static_cast<float>(count) * texTile) * texTile,
             };
-            m_deck.emplace_back(j, i, uvOffset, glm::vec2{ backTileX, backTileY });
+            m_deck.emplace_back(j, i, uvOffset, backTile);
             count++;
+        }
+    }
+}
+
+auto Dealer::createScoundrelDeck() -> void
+{
+    constexpr const int deckSize = 44;
+    constexpr const int suitSize = 4;
+    constexpr const int cardSize = 13;
+    constexpr const int texCardsPerRow = 8;
+    constexpr const float texTile = 0.125f;
+    constexpr const glm::vec2 backTile{ 0.0, 0.875f };
+
+    m_deck.reserve(deckSize);
+    int count = 0;
+    for (int i = 0; i < suitSize; i++)
+    {
+        for (int j = 0; j < cardSize; j++)
+        {
+            glm::vec2 uvOffset = {
+                static_cast<float>(count % texCardsPerRow) * texTile,
+                std::floorf(static_cast<float>(count) * texTile) * texTile,
+            };
+
+            count++;
+            if ((i == 0 || i == 2) && (j == 0 || j > 9)) { continue; }
+            m_deck.emplace_back(j, i, uvOffset, backTile);
         }
     }
 }
@@ -60,7 +83,9 @@ auto Dealer::turnCardsUp() -> void
     }
 }
 
-auto Dealer::fillTableau(std::span<CardStack> tableau, const std::span<float> tableauXMap, const std::span<float> tableauYMap) -> void
+auto Dealer::fillTableau(std::span<CardStack> tableau,
+        const std::span<float> tableauXMap,
+        const std::span<float> tableauYMap) -> void
 {
     constexpr const int reserveSize = 10;
     constexpr const int fullStackSize = 7;
@@ -102,6 +127,16 @@ auto Dealer::emptyTable(std::span<CardStack> tableau, std::span<CardStack> openC
 
     for (auto& stack : foundations)
         stack = CardStack();
+}
+
+auto Dealer::fillDungeon(CardStack& dungeon, glm::vec2 pos) -> void
+{
+    dungeon.reserve(m_deck.size());
+    for (auto& card : m_deck)
+    {
+        card.pos = glm::vec3{ pos, 0.0 };
+        dungeon.emplace_back(&card);
+    }
 }
 
 auto Dealer::swapCard(Card& a, Card& b) -> void

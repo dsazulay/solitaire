@@ -14,6 +14,7 @@ auto Freecell::init() -> void
     loadPlayerData();
     setBoardLayout();
     createOpenCellsAndFoundations();
+    m_dealer.createFreecellDeck();
     m_dealer.shuffleDeck();
     m_dealer.fillTableau(m_board.tableau, m_boardMap.tableauX,
             m_boardMap.tableauY);
