@@ -39,8 +39,42 @@ struct Board
     std::array<CardStack, openCellsAndFoundSize> openCells;
     std::array<CardStack, openCellsAndFoundSize> foundations;
 
-    std::array<Card*, openCellsAndFoundSize> openCellsBg{};
-    std::array<Card*, openCellsAndFoundSize> foundationsBg{};
+    std::array<Card*, openCellsAndFoundSize * 2> openCellsAndFoundBg{};
+
+    std::vector<Card*> cards{};
+
+    auto updateCards() -> void
+    {
+        cards.clear();
+        for (auto stack : tableau)
+        {
+            for (auto card : stack)
+            {
+                cards.push_back(card);
+            }
+        }
+
+        for (auto stack : openCells)
+        {
+            if (stack.size() > 0)
+            {
+                cards.push_back(stack.back());
+            }
+        }
+
+        for (auto stack : foundations)
+        {
+            unsigned long size = stack.size();
+            if (size > 0)
+            {
+                if (size > 1)
+                {
+                    cards.push_back(stack[size - 2]);
+                }
+                cards.push_back(stack.back());
+            }
+        }
+    }
 };
 
 struct BoardMap

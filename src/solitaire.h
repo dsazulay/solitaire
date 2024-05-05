@@ -4,7 +4,7 @@
 #include <string>
 
 #include "window.h"
-#include "renderer.h"
+#include "graphics/renderer.h"
 #include "ui_renderer.h"
 #include "freecell.h"
 #include "event.h"

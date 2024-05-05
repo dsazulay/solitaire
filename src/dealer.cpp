@@ -35,7 +35,8 @@ void Dealer::createDeck()
 
 auto Dealer::shuffleDeck() -> void
 {
-    std::uniform_int_distribution<int> unifomDist(0, static_cast<int>(m_deck.size()) - 1);
+    std::uniform_int_distribution<int> unifomDist(0,
+            static_cast<int>(m_deck.size()) - 1);
     for (auto& card : m_deck)
     {
         int index = unifomDist(m_randomEngine);
@@ -61,8 +62,8 @@ auto Dealer::turnCardsUp() -> void
 
 auto Dealer::fillTableau(std::span<CardStack> tableau, const std::span<float> tableauXMap, const std::span<float> tableauYMap) -> void
 {
-    constexpr static int reserveSize = 10;
-    constexpr static int fullStackSize = 7;
+    constexpr const int reserveSize = 10;
+    constexpr const int fullStackSize = 7;
 
     int tableauSize = static_cast<int>(tableau.size());
     int tableauHalfSize = tableauSize / 2;
@@ -78,7 +79,7 @@ auto Dealer::fillTableau(std::span<CardStack> tableau, const std::span<float> ta
         }
     }
 
-    constexpr static int stackSize = 6;
+    constexpr const int stackSize = 6;
     for (int i = tableauHalfSize; i < tableauSize; i++)
     {
         tableau[i].reserve(reserveSize);

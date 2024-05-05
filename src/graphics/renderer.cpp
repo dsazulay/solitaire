@@ -8,7 +8,6 @@
 #include <glm/ext/matrix_clip_space.hpp>
 
 #include "resource_manager.h"
-#include "window.h"
 
 constexpr const char* unlitVertPath = "../../resources/unlit.vert";
 constexpr const char* unlitFragPath = "../../resources/unlit.frag";
@@ -48,13 +47,11 @@ auto Renderer::init() -> void
     setShaderUniforms();
 }
 
-auto Renderer::render(const Board& board, RenderMode mode) -> void
+auto Renderer::render(std::span<Card*> cards, std::span<Card*> cardsBg, RenderMode mode) -> void
 {
     clear();
 
-    renderCardBackground(board, mode);
-
-    glDisable(GL_BLEND);
+    renderCardBackground(cardsBg, mode);
 
     if (mode == RenderMode::Shaded || mode == RenderMode::ShadedWireframe)
     {
@@ -63,28 +60,9 @@ auto Renderer::render(const Board& board, RenderMode mode) -> void
         m_shader->use();
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-        for (int j = 0; j < 8; j ++)
+        for (auto card : cards)
         {
-            for (int i = 0; i < (int) board.tableau[j].size(); i++)
-            {
-                renderSprite(board.tableau[j].at(i));
-            }
-        }
-
-        for (int i = 0; i < 4; i++)
-        {
-            if (board.openCells[i].size() == 0)
-                continue;
-            renderSprite(board.openCells[i].back());
-        }
-
-        for (int i = 0; i < 4; i++)
-        {
-            if (board.foundations[i].size() == 0)
-                continue;
-            else if(board.foundations[i].size() > 1)
-                renderSprite(board.foundations[i][board.foundations[i].size() - 2]);
-            renderSprite(board.foundations[i].back());
+            renderSprite(card);
         }
 
         drawCall();
@@ -97,28 +75,9 @@ auto Renderer::render(const Board& board, RenderMode mode) -> void
         m_shader->use();
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-        for (int j = 0; j < 8; j ++)
+        for (auto card : cards)
         {
-            for (int i = 0; i < (int) board.tableau[j].size(); i++)
-            {
-                renderSprite(board.tableau[j].at(i));
-            }
-        }
-
-        for (int i = 0; i < 4; i++)
-        {
-            if (board.openCells[i].size() == 0)
-                continue;
-            renderSprite(board.openCells[i].back());
-        }
-
-        for (int i = 0; i < 4; i++)
-        {
-            if (board.foundations[i].size() == 0)
-                continue;
-            else if(board.foundations[i].size() > 1)
-                renderSprite(board.foundations[i][board.foundations[i].size() - 2]);
-            renderSprite(board.foundations[i].back());
+            renderSprite(card);
         }
 
         drawCall();
@@ -132,7 +91,7 @@ auto Renderer::reloadShaders() -> void
     setShaderUniforms();
 }
 
-auto Renderer::renderCardBackground(const Board& board, RenderMode mode) -> void
+auto Renderer::renderCardBackground(std::span<Card*> cardsBg, RenderMode mode) -> void
 {
 
     glEnable(GL_BLEND);
@@ -144,10 +103,9 @@ auto Renderer::renderCardBackground(const Board& board, RenderMode mode) -> void
         m_shader->use();
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-        for (int i = 0; i < 4; i++)
+        for (auto card : cardsBg)
         {
-            renderSprite(board.openCellsBg[i]);
-            renderSprite(board.foundationsBg[i]);
+            renderSprite(card);
         }
 
         drawCall();
@@ -160,21 +118,20 @@ auto Renderer::renderCardBackground(const Board& board, RenderMode mode) -> void
         m_shader->use();
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-        for (int i = 0; i < 4; i++)
+        for (auto card : cardsBg)
         {
-            renderSprite(board.openCellsBg[i]);
-            renderSprite(board.foundationsBg[i]);
+            renderSprite(card);
         }
 
         drawCall();
+
     }
+
+    glDisable(GL_BLEND);
 }
 
 auto Renderer::renderBackground(RenderMode mode) -> void
 {
-
-    glEnable(GL_BLEND);
-
     if (mode == RenderMode::Shaded || mode == RenderMode::ShadedWireframe)
     {
         m_shader = m_backgroundShader;

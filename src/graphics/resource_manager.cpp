@@ -11,7 +11,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
-#include "utils/log.h"
+#include "../utils/log.h"
 
 std::map<std::string, Shader> ResourceManager::shaders;
 std::map<std::string, Texture> ResourceManager::textures;

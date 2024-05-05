@@ -1,9 +1,9 @@
 #include "shader.h"
 
-#include "glm/fwd.hpp"
-#include "utils/log.h"
-
 #include <glad/glad.h>
+
+#include "glm/fwd.hpp"
+#include "../utils/log.h"
 
 auto Shader::compile(const char *vertexSrc, const char* fragSrc) -> void
 {

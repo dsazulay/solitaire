@@ -15,8 +15,9 @@ auto Freecell::init() -> void
     setBoardLayout();
     createOpenCellsAndFoundations();
     m_dealer.shuffleDeck();
-    m_dealer.fillTableau(m_board.tableau, m_boardMap.tableauX, m_boardMap.tableauY);
-
+    m_dealer.fillTableau(m_board.tableau, m_boardMap.tableauX,
+            m_boardMap.tableauY);
+    m_board.updateCards();
     m_currentState = GameState::Playing;
     m_matchData.startTime = Timer::time;
     m_matchData.timePaused = 0.0f;
@@ -411,9 +412,9 @@ auto Freecell::setBoardLayout() -> void
 
 auto Freecell::createOpenCellsAndFoundations() -> void
 {
-    constexpr static float openCellsUVX = 0.125f;
-    constexpr static float foundationsUVX = 0.250f;
-    constexpr static float openCellsFoundUVY = 0.875f;
+    constexpr const float openCellsUVX = 0.125f;
+    constexpr const float foundationsUVX = 0.250f;
+    constexpr const float openCellsFoundUVY = 0.875f;
 
     for (int i = 0; i < Board::openCellsAndFoundSize; i++)
     {
@@ -425,8 +426,8 @@ auto Freecell::createOpenCellsAndFoundations() -> void
         m_foundationsBg[i] = Card(-1, -1,
                 glm::vec2{ foundationsUVX, openCellsFoundUVY },
                 glm::vec2{ 0.0 }, foundationsPos);
-        m_board.openCellsBg[i] = &m_openCellsBg[i];
-        m_board.foundationsBg[i] = &m_foundationsBg[i];
+        m_board.openCellsAndFoundBg[i] = &m_openCellsBg[i];
+        m_board.openCellsAndFoundBg[4 + i] = &m_foundationsBg[i];
     }
 }
 
@@ -755,7 +756,7 @@ auto Freecell::tableIsLegalMove(Card* card, const CardStack& stack) -> bool
     bool diffColor =  stack.back()->suit % 2 != card->suit % 2;
     bool nextNumber = stack.back()->number - 1 == card->number;
 
-    return diffColor && nextNumber;   
+    return diffColor && nextNumber;
 }
 
 auto Freecell::moveCard(CardStack& src, CardStack& dst, int n) -> void
@@ -769,4 +770,7 @@ auto Freecell::moveCard(CardStack& src, CardStack& dst, int n) -> void
     {
         src.pop_back();
     }
+
+    // Update card order after moving card
+    m_board.updateCards();
 }

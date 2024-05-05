@@ -5,7 +5,7 @@
 
 #include "timer.h"
 #include "keycodes.h"
-#include "resource_manager.h"
+#include "graphics/resource_manager.h"
 #include "dispatcher.h"
 
 Solitaire::Solitaire()
@@ -85,7 +85,7 @@ auto Solitaire::mainLoop() -> void
         Timer::update();
 
         m_freecell.update();
-        m_renderer.render(m_freecell.board(),
+        m_renderer.render(m_freecell.board().cards, m_freecell.board().openCellsAndFoundBg,
                 (RenderMode) m_uiRenderer->renderMode());
         m_uiRenderer->render();
 
