@@ -43,7 +43,7 @@ private:
 
     AppConfig m_appConfig;
     Window m_window;
-    std::unique_ptr<Renderer> m_renderer;
+    Renderer m_renderer;
     std::unique_ptr<UiRenderer> m_uiRenderer;
     Freecell m_freecell;
 };

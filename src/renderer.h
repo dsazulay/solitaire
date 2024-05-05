@@ -17,7 +17,7 @@ enum class RenderMode
 class Renderer
 {
 public:
-    Renderer();
+    auto init() -> void;
     auto render(const Board& board, RenderMode mode) -> void;
     auto reloadShaders() -> void;
 
@@ -36,12 +36,13 @@ private:
     Shader* m_shader;
     Shader* m_unlitShader;
     Shader* m_wireframeShader;
-    Texture* m_texture;
-    Model* m_model;
-
-    Model* m_backgroundModel;
     Shader* m_backgroundShader;
     Shader* m_backgroundWireframeShader;
+
+    Texture* m_texture;
+
+    Model* m_model;
+    Model* m_backgroundModel;
 
     unsigned int m_instanceCounter;
 

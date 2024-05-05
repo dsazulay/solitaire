@@ -1,6 +1,5 @@
 #include "dealer.h"
 
-#include <cstdlib>
 #include <cmath>
 
 Dealer::Dealer() : m_randomEngine(m_r())
@@ -10,13 +9,13 @@ Dealer::Dealer() : m_randomEngine(m_r())
 
 void Dealer::createDeck()
 {
-    constexpr static int deckSize = 52;
-    constexpr static int suitSize = 4;
-    constexpr static int cardSize = 13;
-    constexpr static int texCardsPerRow = 8;
-    constexpr static float texTile = 0.125f;
-    constexpr static float backTileX = 0.0f;
-    constexpr static float backTileY = 0.875f;
+    constexpr const int deckSize = 52;
+    constexpr const int suitSize = 4;
+    constexpr const int cardSize = 13;
+    constexpr const int texCardsPerRow = 8;
+    constexpr const float texTile = 0.125f;
+    constexpr const float backTileX = 0.0f;
+    constexpr const float backTileY = 0.875f;
 
     m_deck.reserve(deckSize);
     int count = 0;
@@ -24,7 +23,11 @@ void Dealer::createDeck()
     {
         for (int j = 0; j < cardSize; j++)
         {
-            m_deck.emplace_back(j, i, static_cast<float>(count % texCardsPerRow) * texTile, std::floorf(static_cast<float>(count) * texTile) * texTile, backTileX, backTileY);
+            glm::vec2 uvOffset = {
+                static_cast<float>(count % texCardsPerRow) * texTile,
+                std::floorf(static_cast<float>(count) * texTile) * texTile,
+            };
+            m_deck.emplace_back(j, i, uvOffset, glm::vec2{ backTileX, backTileY });
             count++;
         }
     }
@@ -95,7 +98,7 @@ auto Dealer::emptyTable(std::span<CardStack> tableau, std::span<CardStack> openC
 
     for (auto& stack : openCells)
         stack = CardStack();
-    
+
     for (auto& stack : foundations)
         stack = CardStack();
 }

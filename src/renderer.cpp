@@ -21,7 +21,7 @@ constexpr const char* cardModelPath = "../../resources/card.obj";
 constexpr const float width = 1280.0f;
 constexpr const float height = 720.0f;
 
-Renderer::Renderer()
+auto Renderer::init() -> void
 {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
@@ -227,7 +227,8 @@ auto Renderer::renderSprite(Card* card) -> void
 void Renderer::drawCall()
 {
     glBindVertexArray(m_model->mesh.getVao());
-    glDrawElementsInstanced(GL_TRIANGLES, m_model->indices.size(), GL_UNSIGNED_INT, nullptr, m_instanceCounter);
+    glDrawElementsInstanced(GL_TRIANGLES, m_model->indices.size(),
+            GL_UNSIGNED_INT, nullptr, m_instanceCounter);
     glBindVertexArray(0);
 }
 

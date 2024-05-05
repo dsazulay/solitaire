@@ -2,6 +2,7 @@
 
 #include <filesystem>
 
+#include "card.h"
 #include "event.h"
 #include "dispatcher.h"
 #include "utils/log.h"
@@ -32,7 +33,7 @@ auto Freecell::update() -> void
     }
     if (!m_draggingAnimation.isDone())
         m_draggingAnimation.update(); 
-    
+
     if (m_currentState == GameState::Playing)
     {
         m_matchData.currentTime = Timer::time - m_matchData.startTime - m_matchData.timePaused;
@@ -105,7 +106,7 @@ auto Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool i
             moveBackAndDeselectCard();
             return;
         }
-        
+
         auto& stack = m_board.tableau.at(i);
         int stackSize = static_cast<int>(stack.size());
         int j = getIndexY(stackSize, yPos);
@@ -211,7 +212,7 @@ auto Freecell::handleInputUndo() -> void
         return;
     }
     Move move = m_history.getTopUndoMove();
-    
+
     int index = static_cast<int>(move.dstStack->size()) - move.cardQuantity;
     std::span<Card*> cards(&move.dstStack->at(index), move.cardQuantity);
     MovingAnimation m(cards, move.dstPos, move.srcPos, [&, move]()
@@ -278,7 +279,7 @@ auto Freecell::handleInputNewGame() -> void
         LOG_WARN("Can't input while card is moving!");
         return;
     }
-    
+
     m_dealer.emptyTable(m_board.tableau, m_board.openCells, m_board.foundations);
     m_dealer.shuffleDeck();
     m_dealer.fillTableau(m_board.tableau, m_boardMap.tableauX, m_boardMap.tableauY);
@@ -321,7 +322,7 @@ auto Freecell::handleInputPrintCards() -> void
     {
         for (auto c : stack)
         {
-            c->print();
+            printCard(*c);
         }
         fmt::print("\n");
     }
@@ -359,7 +360,7 @@ auto Freecell::loadPlayerData() -> void
     m_playerData.gamesPlayed = 0;
     m_playerData.gamesWon = 0;
     m_playerData.bestTime = maxTime;
-    
+
     Serializer serializer(m_playerData, "../../resources/gamedata.dat");
     serializer.serialize();
     serializer.save();
@@ -373,7 +374,7 @@ auto Freecell::updatePlayerData(bool didWon, float time) -> void
 
     if (time < m_playerData.bestTime)
         m_playerData.bestTime = time;
-    
+
     Serializer serializer(m_playerData, "../../resources/gamedata.dat");
     serializer.serialize();
     serializer.save();
@@ -418,8 +419,12 @@ auto Freecell::createOpenCellsAndFoundations() -> void
     {
         glm::vec3 openCellsPos{m_boardMap.openCells[i], BoardMap::topAreaYPos, 0.0f};
         glm::vec3 foundationsPos{m_boardMap.foundations[i], BoardMap::topAreaYPos, 0.0f};
-        m_openCellsBg[i] = Card(-1, -1, openCellsUVX, openCellsFoundUVY, 0.0f, 0.0f, openCellsPos);
-        m_foundationsBg[i] = Card(-1, -1, foundationsUVX, openCellsFoundUVY, 0.0f, 0.0f, foundationsPos); 
+        m_openCellsBg[i] = Card(-1, -1,
+                glm::vec2{ openCellsUVX, openCellsFoundUVY },
+                glm::vec2{ 0.0 }, openCellsPos);
+        m_foundationsBg[i] = Card(-1, -1,
+                glm::vec2{ foundationsUVX, openCellsFoundUVY },
+                glm::vec2{ 0.0 }, foundationsPos);
         m_board.openCellsBg[i] = &m_openCellsBg[i];
         m_board.foundationsBg[i] = &m_foundationsBg[i];
     }
@@ -429,7 +434,7 @@ auto Freecell::select(CardStack* stack, int index, bool isDragStart) -> void
 {
     if (!isDragStart)
         return;
-    
+
     if (static_cast<int>(stack->size()) == 0)
     {
         LOG_INFO("Cannot select empty stack");
@@ -471,7 +476,7 @@ auto Freecell::moveBackAndDeselectCard() -> void
 {
     if (m_cardSelected.card == nullptr)
         return;
-        
+
     std::span<Card*> cards(&m_cardSelected.stack->at(m_cardSelected.y), m_cardSelected.stack->size() - m_cardSelected.y);
     MovingAnimation m(cards, m_cardSelected.card->pos, m_cardSelected.pos);
     m_movingAnimation.push_back(m);
@@ -480,7 +485,7 @@ auto Freecell::moveBackAndDeselectCard() -> void
 }
 
 auto Freecell::handleClick(CardStack& stack, glm::vec2 dstPos, int col, int index, IsLegalMoveFunc isLegalMove, bool isDragStart) -> void
-{ 
+{
     if (m_cardSelected.card == nullptr)
     {
         select(&stack, index, isDragStart);
@@ -666,7 +671,7 @@ auto Freecell::winMoves(CardStack& src, std::span<CardStack> dst, std::span<floa
                 Move m{&src, &dst[i], 1, srcCardPos, dstPos};
                 m_history.recordMove(m);
             });
-            m_movingAnimation.push_back(m);            
+            m_movingAnimation.push_back(m);
         }
     }
 }
@@ -701,7 +706,7 @@ auto Freecell::tryMoveFromTo(CardStack& src, std::span<CardStack> dst, std::span
                 }
             });
             m_movingAnimation.push_back(m);
-            
+
             return true;
         }
     }

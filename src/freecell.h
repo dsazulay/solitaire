@@ -1,15 +1,11 @@
 #pragma once
 
 #include <vector>
-#include <stack>
 #include <array>
 #include <span>
-#include <functional>
 
 #include <glm/vec2.hpp>
 
-#include "timer.h"
-#include "window.h"
 #include "history.h"
 #include "gamedata.h"
 #include "card.h"

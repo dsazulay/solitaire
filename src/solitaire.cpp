@@ -32,9 +32,7 @@ auto Solitaire::init() -> void
 {
     m_window.createWindow(m_appConfig.windowWidth,
             m_appConfig.windowHeight, m_appConfig.windowName.c_str());
-
-    m_renderer = std::make_unique<Renderer>();
-
+    m_renderer.init();
     m_uiRenderer = std::make_unique<UiRenderer>(m_window.getGlfwWindow());
 
     // Game init
@@ -87,7 +85,7 @@ auto Solitaire::mainLoop() -> void
         Timer::update();
 
         m_freecell.update();
-        m_renderer->render(m_freecell.board(),
+        m_renderer.render(m_freecell.board(),
                 (RenderMode) m_uiRenderer->renderMode());
         m_uiRenderer->render();
 
@@ -141,7 +139,7 @@ auto Solitaire::onKeyboardPress(const KeyboardPressEvent& e) -> void
     else if (e.key() == KeyCode::C)
     {
         ResourceManager::recompileShaders();
-        m_renderer->reloadShaders();
+        m_renderer.reloadShaders();
     }
 }
 
@@ -172,7 +170,7 @@ auto Solitaire::onUiGameEvent(const UiGameEvent& e) -> void
 auto Solitaire::onUiRecompileShaderEvent(const UiRecompileShaderEvent& e) -> void
 {
     ResourceManager::recompileShaders();
-    m_renderer->reloadShaders();
+    m_renderer.reloadShaders();
 }
 
 auto Solitaire::onUiPrintCardEvent(const UiPrintCardEvent& e) -> void
