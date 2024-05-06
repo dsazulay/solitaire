@@ -47,7 +47,7 @@ auto Renderer::init() -> void
     setShaderUniforms();
 }
 
-auto Renderer::render(std::span<CardEntity*> cards, std::span<CardEntity*> cardsBg,
+auto Renderer::render(std::span<CardEntity*> cards, std::span<CardBg*> cardsBg,
         RenderMode mode) -> void
 {
     clear();
@@ -62,7 +62,7 @@ auto Renderer::render(std::span<CardEntity*> cards, std::span<CardEntity*> cards
         glEnable(GL_BLEND);
         for (auto card : cardsBg)
         {
-            renderSprite(card);
+            renderSprite(card->sprite, card->transform.model());
         }
         drawCall();
         glDisable(GL_BLEND);
@@ -70,7 +70,7 @@ auto Renderer::render(std::span<CardEntity*> cards, std::span<CardEntity*> cards
         m_instanceCounter = 0;
         for (auto card : cards)
         {
-            renderSprite(card);
+            renderSprite(card->sprite, card->transform.model());
         }
         drawCall();
     }
@@ -85,7 +85,7 @@ auto Renderer::render(std::span<CardEntity*> cards, std::span<CardEntity*> cards
         glEnable(GL_BLEND);
         for (auto card : cardsBg)
         {
-            renderSprite(card);
+            renderSprite(card->sprite, card->transform.model());
         }
         drawCall();
         glDisable(GL_BLEND);
@@ -93,7 +93,7 @@ auto Renderer::render(std::span<CardEntity*> cards, std::span<CardEntity*> cards
         m_instanceCounter = 0;
         for (auto card : cards)
         {
-            renderSprite(card);
+            renderSprite(card->sprite, card->transform.model());
         }
         drawCall();
     }
@@ -145,12 +145,12 @@ auto Renderer::renderBackground(RenderMode mode) -> void
     }
 }
 
-auto Renderer::renderSprite(CardEntity* card) -> void
+auto Renderer::renderSprite(Sprite sprite, const glm::mat4& model) -> void
 {
     m_shader->setMat4("u_model[" + std::to_string(m_instanceCounter) + "]",
-            card->transform.model());
+            model);
     m_shader->setVec2("u_offset[" + std::to_string(m_instanceCounter) + "]",
-            card->sprite.uv.x, card->sprite.uv.y);
+            sprite.uv.x, sprite.uv.y);
 
     m_instanceCounter++;
 }

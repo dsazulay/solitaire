@@ -15,7 +15,7 @@ struct ScoundrelBoard
     CardStack discard;
     std::array<CardEntity*, ROOM_SIZE> room;
     CardStack weapon;
-    std::array<CardEntity*, CARD_BG_SIZE> cardsBg;
+    std::array<CardBg*, CARD_BG_SIZE> cardsBg;
 
     CardStack cards{};
 
@@ -79,7 +79,7 @@ private:
 
     int m_life;
     Dealer m_dealer;
-    std::array<CardEntity, CARD_BG_SIZE> m_cardBg;
+    std::array<CardBg, CARD_BG_SIZE> m_cardBg;
     ScoundrelBoard m_board;
     ScoundrelBoardMap m_boardMap;
 };

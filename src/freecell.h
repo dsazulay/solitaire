@@ -39,7 +39,7 @@ struct Board
     std::array<CardStack, openCellsAndFoundSize> openCells;
     std::array<CardStack, openCellsAndFoundSize> foundations;
 
-    std::array<CardEntity*, openCellsAndFoundSize * 2> openCellsAndFoundBg{};
+    std::array<CardBg*, openCellsAndFoundSize * 2> openCellsAndFoundBg{};
 
     CardStack cards{};
 
@@ -169,7 +169,7 @@ private:
     CardSelection m_cardSelected{};
 
     Dealer m_dealer;
-    std::array<CardEntity, 4> m_openCellsBg;
-    std::array<CardEntity, 4> m_foundationsBg;
+    std::array<CardBg, 4> m_openCellsBg;
+    std::array<CardBg, 4> m_foundationsBg;
     Board m_board{};
 };

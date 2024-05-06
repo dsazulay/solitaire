@@ -49,6 +49,13 @@ struct CardBg
 {
     Transform transform;
     Sprite sprite;
+
+    CardBg() = default;
+    CardBg(glm::vec2 uvOffset, glm::vec3 pos = glm::vec3{ 0.0 })
+    {
+        sprite.uv = uvOffset;
+        transform.pos(pos);
+    }
 };
 
 using CardStack = std::vector<CardEntity*>;

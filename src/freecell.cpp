@@ -413,20 +413,15 @@ auto Freecell::setBoardLayout() -> void
 
 auto Freecell::createOpenCellsAndFoundations() -> void
 {
-    constexpr const float openCellsUVX = 0.125f;
-    constexpr const float foundationsUVX = 0.250f;
-    constexpr const float openCellsFoundUVY = 0.875f;
+    constexpr const glm::vec2 openCellsUV = { 0.125, 0.875 };
+    constexpr const glm::vec2 foundationsUV = { 0.250f, 0.875 };
 
     for (int i = 0; i < Board::openCellsAndFoundSize; i++)
     {
         glm::vec3 openCellsPos{m_boardMap.openCells[i], BoardMap::topAreaYPos, 0.0f};
         glm::vec3 foundationsPos{m_boardMap.foundations[i], BoardMap::topAreaYPos, 0.0f};
-        m_openCellsBg[i] = CardEntity(-1, -1,
-                glm::vec2{ openCellsUVX, openCellsFoundUVY },
-                openCellsPos);
-        m_foundationsBg[i] = CardEntity(-1, -1,
-                glm::vec2{ foundationsUVX, openCellsFoundUVY },
-                foundationsPos);
+        m_openCellsBg[i] = CardBg(openCellsUV, openCellsPos);
+        m_foundationsBg[i] = CardBg(foundationsUV,foundationsPos);
         m_board.openCellsAndFoundBg[i] = &m_openCellsBg[i];
         m_board.openCellsAndFoundBg[4 + i] = &m_foundationsBg[i];
     }
