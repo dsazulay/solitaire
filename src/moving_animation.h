@@ -14,8 +14,10 @@
 class MovingAnimation
 {
 public:
-    MovingAnimation(std::span<Card *> cards, glm::vec2 startPos, glm::vec2 dstPos, std::function<void()> onComplete = nullptr)
-        : m_startPos(startPos), m_dstPos(dstPos), m_cards(cards), m_onCompleteCallback(std::move(onComplete))
+    MovingAnimation(std::span<CardEntity *> cards, glm::vec2 startPos,
+            glm::vec2 dstPos, std::function<void()> onComplete = nullptr)
+        : m_startPos(startPos), m_dstPos(dstPos), m_cards(cards),
+        m_onCompleteCallback(std::move(onComplete))
     {
         m_len = glm::max(glm::length(m_dstPos - m_startPos), 0.00001f);
     }
@@ -38,7 +40,7 @@ public:
             {
                 pos = glm::vec3(m_dstPos, 0.0);
                 pos.y -= (float) i * MovingAnimation::yOffset;
-                m_cards[i]->pos = pos;
+                m_cards[i]->transform.pos(pos);
                 m_isDone = true;
             }
             if (m_onCompleteCallback != nullptr)
@@ -50,9 +52,9 @@ public:
             {
                 pos = glm::vec3(glm::lerp(m_startPos, m_dstPos, delta), MovingAnimation::zOffset);
                 pos.y -= (float) i * MovingAnimation::yOffset;
-                m_cards[i]->pos = pos;
+                m_cards[i]->transform.pos(pos);
             }
-        }        
+        }
     }
 
     auto isDone() -> bool
@@ -70,7 +72,7 @@ private:
     float m_len;
     glm::vec2 m_startPos;
     glm::vec2 m_dstPos;
-    std::span<Card*> m_cards;
+    std::span<CardEntity*> m_cards;
     std::function<void()> m_onCompleteCallback;
     bool m_hasStarted{};
     bool m_isDone{};

@@ -4,7 +4,6 @@
 #include <span>
 #include <random>
 #include <glm/vec2.hpp>
-
 #include "card.h"
 
 class Dealer
@@ -27,9 +26,10 @@ public:
     auto fillDungeon(CardStack& dungeon, glm::vec2 pos) -> void;
 
 private:
-    auto swapCard(Card& a, Card& b) -> void;
+    auto swapCard(CardEntity& a, CardEntity& b) -> void;
 
-    std::vector<Card> m_deck;
+    std::vector<CardEntity> m_deck;
+    std::vector<glm::vec2> m_deckUVs;
     std::random_device m_r;
     std::default_random_engine m_randomEngine;
 };

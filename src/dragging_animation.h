@@ -8,32 +8,37 @@
 #include "window.h"
 #include "card.h"
 
+constexpr const float Z_OFFSET = 0.0001f;
+constexpr const int MAX_STACK_SIZE = 13;
+
 class DraggingAnimation
 {
 public:
-    void start(std::span<Card*> cards)
+    void start(std::span<CardEntity*> cards)
     {
         m_cards = cards;
-        for (Card* c : cards)
+        for (int i = 0; i < m_cards.size(); ++i)
         {
-            c->dragOffset = Window::mousePos - glm::vec2(c->pos);
+            m_dragOffset[i] = Window::mousePos - glm::vec2(
+                    m_cards[i]->transform.pos());
         }
         m_isDone = false;
     }
 
     void update()
     {
-        for (Card* c : m_cards)
+        for (int i = 0; i < m_cards.size(); ++i)
         {
-            c->pos = glm::vec3(Window::mousePos - c->dragOffset, Z_OFFSET);
+            m_cards[i]->transform.pos(glm::vec3(
+                        Window::mousePos - m_dragOffset[i], Z_OFFSET));
         }
     }
 
     void stop()
     {
-        for (Card* c : m_cards)
+        for (CardEntity* c : m_cards)
         {
-            c->pos.z = 0.0f;
+            c->transform.posZ(0.0);
         }
         m_isDone = true;
     }
@@ -44,8 +49,8 @@ public:
     }
 
 private:
-    constexpr static float Z_OFFSET = 0.0001f;
 
-    std::span<Card*> m_cards;
+    std::span<CardEntity*> m_cards;
+    std::array<glm::vec2, MAX_STACK_SIZE> m_dragOffset;
     bool m_isDone{true};
 };

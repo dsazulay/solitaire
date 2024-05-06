@@ -47,7 +47,7 @@ auto Renderer::init() -> void
     setShaderUniforms();
 }
 
-auto Renderer::render(std::span<Card*> cards, std::span<Card*> cardsBg,
+auto Renderer::render(std::span<CardEntity*> cards, std::span<CardEntity*> cardsBg,
         RenderMode mode) -> void
 {
     clear();
@@ -145,14 +145,12 @@ auto Renderer::renderBackground(RenderMode mode) -> void
     }
 }
 
-auto Renderer::renderSprite(Card* card) -> void
+auto Renderer::renderSprite(CardEntity* card) -> void
 {
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, card->pos);
-    model = glm::scale(model, glm::vec3(76, 76, 1));
-
-    m_shader->setMat4("u_model[" + std::to_string(m_instanceCounter) + "]", model);
-    m_shader->setVec2("u_offset[" + std::to_string(m_instanceCounter) + "]", card->uvOffset.x, card->uvOffset.y);
+    m_shader->setMat4("u_model[" + std::to_string(m_instanceCounter) + "]",
+            card->transform.model());
+    m_shader->setVec2("u_offset[" + std::to_string(m_instanceCounter) + "]",
+            card->sprite.uv.x, card->sprite.uv.y);
 
     m_instanceCounter++;
 }

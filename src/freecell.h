@@ -16,7 +16,7 @@
 struct CardSelection
 {
     int y{};
-    Card* card{};
+    CardEntity* card{};
     CardStack* stack{};
     glm::vec2 pos{};
 };
@@ -39,7 +39,7 @@ struct Board
     std::array<CardStack, openCellsAndFoundSize> openCells;
     std::array<CardStack, openCellsAndFoundSize> foundations;
 
-    std::array<Card*, openCellsAndFoundSize * 2> openCellsAndFoundBg{};
+    std::array<CardEntity*, openCellsAndFoundSize * 2> openCellsAndFoundBg{};
 
     CardStack cards{};
 
@@ -99,7 +99,7 @@ struct Move
     glm::vec2 srcPos;
     glm::vec2 dstPos;
 
-    auto swap() noexcept  -> Move
+    auto swap() noexcept -> Move
     {
         Move newMove{dstStack, srcStack, cardQuantity, dstPos, srcPos};
         return newMove;
@@ -108,7 +108,7 @@ struct Move
 
 class Freecell
 {
-    using IsLegalMoveFunc = bool(Freecell::*)(Card* card, const CardStack& stack);
+    using IsLegalMoveFunc = bool(Freecell::*)(CardEntity* card, const CardStack& stack);
 public:
     auto  init() -> void;
     auto  update() -> void;
@@ -140,9 +140,9 @@ private:
     auto playWinAnimation() -> void;
     auto getMaxCardsToMove(bool movingToEmptySpace) -> int;
 
-    auto openCellsIsLegalMove(Card* card, const CardStack& stack) -> bool;
-    auto foundationsIsLegalMove(Card* card, const CardStack& stack) -> bool;
-    auto tableIsLegalMove(Card* card, const CardStack& stack) -> bool;
+    auto openCellsIsLegalMove(CardEntity* card, const CardStack& stack) -> bool;
+    auto foundationsIsLegalMove(CardEntity* card, const CardStack& stack) -> bool;
+    auto tableIsLegalMove(CardEntity* card, const CardStack& stack) -> bool;
 
     auto handleClick(CardStack& stack, glm::vec2 dstPos, int col, int index, IsLegalMoveFunc isLegalMove, bool isDragStart) -> void;
 
@@ -169,7 +169,7 @@ private:
     CardSelection m_cardSelected{};
 
     Dealer m_dealer;
-    std::array<Card, 4> m_openCellsBg;
-    std::array<Card, 4> m_foundationsBg;
+    std::array<CardEntity, 4> m_openCellsBg;
+    std::array<CardEntity, 4> m_foundationsBg;
     Board m_board{};
 };

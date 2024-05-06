@@ -11,9 +11,9 @@ auto Dealer::createFreecellDeck() -> void
     constexpr const int cardSize = 13;
     constexpr const int texCardsPerRow = 8;
     constexpr const float texTile = 0.125f;
-    constexpr const glm::vec2 backTile{ 0.0, 0.875f };
 
     m_deck.reserve(deckSize);
+    m_deckUVs.reserve(deckSize);
     int count = 0;
     for (int i = 0; i < suitSize; i++)
     {
@@ -23,7 +23,8 @@ auto Dealer::createFreecellDeck() -> void
                 static_cast<float>(count % texCardsPerRow) * texTile,
                 std::floorf(static_cast<float>(count) * texTile) * texTile,
             };
-            m_deck.emplace_back(j, i, uvOffset, backTile);
+            m_deck.emplace_back(j, i, uvOffset);
+            m_deckUVs.emplace_back(uvOffset);
             count++;
         }
     }
@@ -36,7 +37,6 @@ auto Dealer::createScoundrelDeck() -> void
     constexpr const int cardSize = 13;
     constexpr const int texCardsPerRow = 8;
     constexpr const float texTile = 0.125f;
-    constexpr const glm::vec2 backTile{ 0.0, 0.875f };
 
     m_deck.reserve(deckSize);
     int count = 0;
@@ -51,7 +51,7 @@ auto Dealer::createScoundrelDeck() -> void
 
             count++;
             if ((i == 0 || i == 2) && (j == 0 || j > 9)) { continue; }
-            m_deck.emplace_back(j, i, uvOffset, backTile);
+            m_deck.emplace_back(j, i, uvOffset);
         }
     }
 }
@@ -69,17 +69,18 @@ auto Dealer::shuffleDeck() -> void
 
 auto Dealer::turnCardsDown() -> void
 {
+    constexpr const glm::vec2 backTile{ 0.0, 0.875 };
     for (auto& c : m_deck)
     {
-        c.uvOffset = c.backfaceUv;
+        c.sprite.uv = backTile;
     }
 }
 
 auto Dealer::turnCardsUp() -> void
 {
-    for (auto& c : m_deck)
+    for (int i = 0; i < m_deck.size(); ++i)
     {
-        c.uvOffset = c.frontfaceUv;
+        m_deck[i].sprite.uv = m_deckUVs[i];
     }
 }
 
@@ -98,7 +99,8 @@ auto Dealer::fillTableau(std::span<CardStack> tableau,
         tableau[i].reserve(reserveSize);
         for (int j = 0; j < fullStackSize; j++)
         {
-            m_deck[index].pos = glm::vec3(tableauXMap[i], tableauYMap[j], 0.0);
+            m_deck[index].transform.pos(glm::vec3(tableauXMap[i],
+                        tableauYMap[j], 0.0));
             tableau[i].emplace_back(&m_deck[index]);
             index++;
         }
@@ -110,14 +112,16 @@ auto Dealer::fillTableau(std::span<CardStack> tableau,
         tableau[i].reserve(reserveSize);
         for (int j = 0; j < stackSize; j++)
         {
-            m_deck[index].pos = glm::vec3(tableauXMap[i], tableauYMap[j], 0.0);
+            m_deck[index].transform.pos(glm::vec3(tableauXMap[i],
+                        tableauYMap[j], 0.0));
             tableau[i].emplace_back(&m_deck[index]);
             index++;
         }
     }
 }
 
-auto Dealer::emptyTable(std::span<CardStack> tableau, std::span<CardStack> openCells, std::span<CardStack> foundations) -> void
+auto Dealer::emptyTable(std::span<CardStack> tableau,
+        std::span<CardStack> openCells, std::span<CardStack> foundations) -> void
 {
     for (auto& stack : tableau)
         stack = CardStack();
@@ -134,12 +138,12 @@ auto Dealer::fillDungeon(CardStack& dungeon, glm::vec2 pos) -> void
     dungeon.reserve(m_deck.size());
     for (auto& card : m_deck)
     {
-        card.pos = glm::vec3{ pos, 0.0 };
+        card.transform.pos(glm::vec3{ pos, 0.0 });
         dungeon.emplace_back(&card);
     }
 }
 
-auto Dealer::swapCard(Card& a, Card& b) -> void
+auto Dealer::swapCard(CardEntity& a, CardEntity& b) -> void
 {
     auto tmp = a;
     a = b;
