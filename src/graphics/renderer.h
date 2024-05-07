@@ -19,8 +19,8 @@ class Renderer
 {
 public:
     auto init() -> void;
-    auto render(const std::span<CardEntity*> cards, const std::span<CardBg*> cardsBg,
-            RenderMode mode) -> void;
+    auto render(const std::span<CardEntity*> cards,
+            const std::span<CardBg> cardBgs, RenderMode mode) -> void;
     auto reloadShaders() -> void;
 
 private:

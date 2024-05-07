@@ -4,12 +4,11 @@ constexpr const int MAX_LIFE = 20;
 
 auto Scoundrel::init() -> void
 {
-    m_boardMap.setBoardLayout();
     createBgCards();
     m_dealer.createScoundrelDeck();
     m_dealer.shuffleDeck();
     m_dealer.fillDungeon(m_board.dungeon, glm::vec2{ 0.0 });
-    m_board.updateCards();
+    m_board.updateCardList();
     m_life = MAX_LIFE;
 }
 
@@ -25,10 +24,7 @@ auto Scoundrel::createBgCards() -> void
     m_cardBg[2] = CardBg(potionUV, glm::vec3{ m_boardMap.potion, 0.0 });
     m_cardBg[3] = CardBg(handsUV, glm::vec3{ m_boardMap.hands, 0.0 });
 
-    m_board.cardsBg[0] = &m_cardBg[0];
-    m_board.cardsBg[1] = &m_cardBg[1];
-    m_board.cardsBg[2] = &m_cardBg[2];
-    m_board.cardsBg[3] = &m_cardBg[3];
+    m_board.cardBgs = m_cardBg;
 }
 
 auto Scoundrel::board() -> ScoundrelBoard&

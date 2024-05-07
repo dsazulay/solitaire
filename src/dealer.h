@@ -27,6 +27,7 @@ public:
 
 private:
     auto swapCard(CardEntity& a, CardEntity& b) -> void;
+    auto swapUVs(glm::vec2& a, glm::vec2& b) -> void;
 
     std::vector<CardEntity> m_deck;
     std::vector<glm::vec2> m_deckUVs;

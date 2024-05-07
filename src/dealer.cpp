@@ -39,6 +39,7 @@ auto Dealer::createScoundrelDeck() -> void
     constexpr const float texTile = 0.125f;
 
     m_deck.reserve(deckSize);
+    m_deckUVs.reserve(deckSize);
     int count = 0;
     for (int i = 0; i < suitSize; i++)
     {
@@ -52,6 +53,7 @@ auto Dealer::createScoundrelDeck() -> void
             count++;
             if ((i == 0 || i == 2) && (j == 0 || j > 9)) { continue; }
             m_deck.emplace_back(j, i, uvOffset);
+            m_deckUVs.emplace_back(uvOffset);
         }
     }
 }
@@ -60,10 +62,14 @@ auto Dealer::shuffleDeck() -> void
 {
     std::uniform_int_distribution<int> unifomDist(0,
             static_cast<int>(m_deck.size()) - 1);
+
+    auto uv = m_deckUVs.begin();
     for (auto& card : m_deck)
     {
         int index = unifomDist(m_randomEngine);
         swapCard(card, m_deck[index]);
+        swapUVs(*uv, m_deckUVs[index]);
+        ++uv;
     }
 }
 
@@ -144,6 +150,13 @@ auto Dealer::fillDungeon(CardStack& dungeon, glm::vec2 pos) -> void
 }
 
 auto Dealer::swapCard(CardEntity& a, CardEntity& b) -> void
+{
+    auto tmp = a;
+    a = b;
+    b = tmp;
+}
+
+auto Dealer::swapUVs(glm::vec2& a, glm::vec2& b) -> void
 {
     auto tmp = a;
     a = b;

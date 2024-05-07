@@ -12,6 +12,7 @@
 #include "dealer.h"
 #include "dragging_animation.h"
 #include "moving_animation.h"
+#include "game_board.h"
 
 struct CardSelection
 {
@@ -27,68 +28,6 @@ enum class GameState
     WinAnimation,
     Won,
     Pause
-};
-
-struct Board
-{
-    constexpr static int tableauSize = 8;
-    constexpr static int openCellsAndFoundSize = 4;
-    constexpr static int stackMaxSize = 14;
-
-    std::array<CardStack, tableauSize> tableau;
-    std::array<CardStack, openCellsAndFoundSize> openCells;
-    std::array<CardStack, openCellsAndFoundSize> foundations;
-
-    std::array<CardBg*, openCellsAndFoundSize * 2> openCellsAndFoundBg{};
-
-    CardStack cards{};
-
-    auto updateCards() -> void
-    {
-        cards.clear();
-        for (auto stack : tableau)
-        {
-            for (auto card : stack)
-            {
-                cards.push_back(card);
-            }
-        }
-
-        for (auto stack : openCells)
-        {
-            if (stack.size() > 0)
-            {
-                cards.push_back(stack.back());
-            }
-        }
-
-        for (auto stack : foundations)
-        {
-            unsigned long size = stack.size();
-            if (size > 0)
-            {
-                if (size > 1)
-                {
-                    cards.push_back(stack[size - 2]);
-                }
-                cards.push_back(stack.back());
-            }
-        }
-    }
-};
-
-struct BoardMap
-{
-    constexpr static float cardHalfWidth = 50.0f;
-    constexpr static float cardHalfHeight = 74.0f;
-    constexpr static float cardMiddleHeight = 42.0f;
-    constexpr static float topAreaYPos = 560.0f;
-    constexpr static float halfScreenWidth = 640.0f;
-
-    std::array<float, Board::tableauSize> tableauX;
-    std::array<float, Board::stackMaxSize> tableauY;
-    std::array<float, Board::openCellsAndFoundSize> openCells;
-    std::array<float, Board::openCellsAndFoundSize> foundations;
 };
 
 struct Move
@@ -122,7 +61,7 @@ public:
     auto handleInputPause() -> void;
     auto handleInputPrintCards() -> void;
 
-    auto board() -> Board&;
+    auto board() -> FreecellBoard&;
     auto playerData() -> PlayerData*;
     auto matchData() -> MatchData*;
 
@@ -130,7 +69,6 @@ private:
     auto loadPlayerData() -> void;
     auto updatePlayerData(bool didWon, float time) -> void;
 
-    auto setBoardLayout() -> void;
     auto createOpenCellsAndFoundations() -> void;
 
     auto checkWin() -> bool;
@@ -165,11 +103,10 @@ private:
     PlayerData m_playerData{};
     MatchData m_matchData{};
 
-    BoardMap m_boardMap{};
+    FreecellBoardMap m_boardMap{};
     CardSelection m_cardSelected{};
 
     Dealer m_dealer;
-    std::array<CardBg, 4> m_openCellsBg;
-    std::array<CardBg, 4> m_foundationsBg;
-    Board m_board{};
+    std::array<CardBg, SPECIAL_AREAS_SIZE * 2> m_specialAreas;
+    FreecellBoard m_board{};
 };

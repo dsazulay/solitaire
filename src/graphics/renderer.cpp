@@ -54,8 +54,8 @@ auto Renderer::init() -> void
     setShaderUniforms();
 }
 
-auto Renderer::render(const std::span<CardEntity*> cards, const std::span<CardBg*> cardsBg,
-        RenderMode mode) -> void
+auto Renderer::render(const std::span<CardEntity*> cards,
+        const std::span<CardBg> cardBgs, RenderMode mode) -> void
 {
     clear();
 
@@ -67,9 +67,9 @@ auto Renderer::render(const std::span<CardEntity*> cards, const std::span<CardBg
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         glEnable(GL_BLEND);
-        for (auto card : cardsBg)
+        for (auto card : cardBgs)
         {
-            renderSprite(card->sprite, card->transform.model());
+            renderSprite(card.sprite, card.transform.model());
         }
         drawCall();
         glDisable(GL_BLEND);
@@ -90,9 +90,9 @@ auto Renderer::render(const std::span<CardEntity*> cards, const std::span<CardBg
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
         glEnable(GL_BLEND);
-        for (auto card : cardsBg)
+        for (auto card : cardBgs)
         {
-            renderSprite(card->sprite, card->transform.model());
+            renderSprite(card.sprite, card.transform.model());
         }
         drawCall();
         glDisable(GL_BLEND);

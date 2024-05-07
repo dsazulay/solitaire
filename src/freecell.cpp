@@ -12,13 +12,12 @@
 auto Freecell::init() -> void
 {
     loadPlayerData();
-    setBoardLayout();
     createOpenCellsAndFoundations();
     m_dealer.createFreecellDeck();
     m_dealer.shuffleDeck();
     m_dealer.fillTableau(m_board.tableau, m_boardMap.tableauX,
             m_boardMap.tableauY);
-    m_board.updateCards();
+    m_board.updateCardList();
     m_currentState = GameState::Playing;
     m_matchData.startTime = Timer::time;
     m_matchData.timePaused = 0.0f;
@@ -72,10 +71,10 @@ auto Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool i
     }
 
     // top area
-    if (yPos > BoardMap::topAreaYPos - BoardMap::cardHalfHeight && yPos < BoardMap::topAreaYPos + BoardMap::cardHalfHeight)
+    if (yPos > SPECIAL_AREAS_Y - CARD_HALF_HEIGHT && yPos < SPECIAL_AREAS_Y + CARD_HALF_HEIGHT)
     {
         // open cells
-        if (xPos < BoardMap::halfScreenWidth)
+        if (xPos < HALF_SCREEN_WIDTH)
         {
             int i = getIndexX(m_boardMap.openCells, xPos);
             if (i == -1)
@@ -83,7 +82,7 @@ auto Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool i
                 moveBackAndDeselectCard();
                 return;
             }
-            glm::vec2 dtsAreaPos{m_boardMap.openCells.at(i), BoardMap::topAreaYPos};
+            glm::vec2 dtsAreaPos{m_boardMap.openCells.at(i), SPECIAL_AREAS_Y};
             auto& stack = m_board.openCells.at(i);
             handleClick(stack, dtsAreaPos, i, static_cast<int>(stack.size()) - 1, &Freecell::openCellsIsLegalMove, isDragStart);
         }
@@ -95,7 +94,7 @@ auto Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool i
                 moveBackAndDeselectCard();
                 return;
             }
-            glm::vec2 dtsAreaPos{m_boardMap.foundations.at(i), BoardMap::topAreaYPos};
+            glm::vec2 dtsAreaPos{m_boardMap.foundations.at(i), SPECIAL_AREAS_Y};
             auto& stack = m_board.foundations.at(i);
             handleClick(stack, dtsAreaPos, i, static_cast<int>(stack.size()) - 1, &Freecell::foundationsIsLegalMove, isDragStart);
         }
@@ -140,10 +139,10 @@ auto Freecell::handleInputDoubleClick(double xPos, double yPos) -> void
         return;
     }
     // top area
-    if (yPos > BoardMap::topAreaYPos - BoardMap::cardHalfHeight && yPos < BoardMap::topAreaYPos + BoardMap::cardHalfHeight)
+    if (yPos > SPECIAL_AREAS_Y - CARD_HALF_HEIGHT && yPos < SPECIAL_AREAS_Y + CARD_HALF_HEIGHT)
     {
         // open cells
-        if (xPos < BoardMap::halfScreenWidth)
+        if (xPos < HALF_SCREEN_WIDTH)
         {
             int i = getIndexX(m_boardMap.openCells, xPos);
             if (i == -1)
@@ -266,6 +265,7 @@ auto Freecell::handleInputRestart() -> void
     m_dealer.emptyTable(m_board.tableau, m_board.openCells, m_board.foundations);
     m_dealer.fillTableau(m_board.tableau, m_boardMap.tableauX, m_boardMap.tableauY);
     m_dealer.turnCardsUp();
+    m_board.updateCardList();
     m_history.clearStacks();
     constexpr static float maxTime = 10000.0f;
     updatePlayerData(false, maxTime);
@@ -286,6 +286,7 @@ auto Freecell::handleInputNewGame() -> void
     m_dealer.shuffleDeck();
     m_dealer.fillTableau(m_board.tableau, m_boardMap.tableauX, m_boardMap.tableauY);
     m_dealer.turnCardsUp();
+    m_board.updateCardList();
     m_history.clearStacks();
     constexpr static float maxTime = 10000.0f;
     if (m_currentState == GameState::Playing)
@@ -309,6 +310,7 @@ auto Freecell::handleInputPause() -> void
         m_matchData.timePaused += Timer::time - m_matchData.timePausedStart;
         m_currentState = GameState::Playing;
         m_dealer.turnCardsUp();
+        m_board.updateCardList();
     }
     else if (m_currentState == GameState::Playing)
     {
@@ -331,7 +333,7 @@ auto Freecell::handleInputPrintCards() -> void
     fmt::print("\n");
 }
 
-auto Freecell::board() -> Board&
+auto Freecell::board() -> FreecellBoard&
 {
     return m_board;
 }
@@ -382,49 +384,23 @@ auto Freecell::updatePlayerData(bool didWon, float time) -> void
     serializer.save();
 }
 
-auto Freecell::setBoardLayout() -> void
-{
-    constexpr static float tableauInitPosX = 220.0f;
-    constexpr static float tableOffsetX = 120.0f;
-    constexpr static float tableauInitPosY = 380.0f;
-    constexpr static float tableauOffsetY = 30.0f;
 
-    for (int i = 0; i < Board::tableauSize; i++)
-    {
-        m_boardMap.tableauX[i] = tableauInitPosX + (float) i * tableOffsetX;
-    }
-
-    for (int i = 0; i < Board::stackMaxSize; i++)
-    {
-        m_boardMap.tableauY[i] = tableauInitPosY - (float) i * tableauOffsetY;
-    }
-
-    constexpr static float openCellsInitPosX = 140.0f;
-    constexpr static float openCellsFoundationsOffsetX = 130.0f;
-    constexpr static float foundationsInitPosX = openCellsInitPosX + 90.f + 4 * openCellsFoundationsOffsetX;
-
-    for (int i = 0; i < Board::openCellsAndFoundSize; i++)
-    {
-        auto offset = (float) i * openCellsFoundationsOffsetX;
-        m_boardMap.openCells[i] = openCellsInitPosX + offset;
-        m_boardMap.foundations[i] = foundationsInitPosX + offset;
-    }
-}
 
 auto Freecell::createOpenCellsAndFoundations() -> void
 {
     constexpr const glm::vec2 openCellsUV = { 0.125, 0.875 };
     constexpr const glm::vec2 foundationsUV = { 0.250f, 0.875 };
 
-    for (int i = 0; i < Board::openCellsAndFoundSize; i++)
+    for (int i = 0; i < SPECIAL_AREAS_SIZE; i++)
     {
-        glm::vec3 openCellsPos{m_boardMap.openCells[i], BoardMap::topAreaYPos, 0.0f};
-        glm::vec3 foundationsPos{m_boardMap.foundations[i], BoardMap::topAreaYPos, 0.0f};
-        m_openCellsBg[i] = CardBg(openCellsUV, openCellsPos);
-        m_foundationsBg[i] = CardBg(foundationsUV,foundationsPos);
-        m_board.openCellsAndFoundBg[i] = &m_openCellsBg[i];
-        m_board.openCellsAndFoundBg[4 + i] = &m_foundationsBg[i];
+        glm::vec3 openCellsPos{m_boardMap.openCells[i], SPECIAL_AREAS_Y, 0.0f};
+        glm::vec3 foundationsPos{m_boardMap.foundations[i], SPECIAL_AREAS_Y, 0.0f};
+        m_specialAreas[i] = CardBg(openCellsUV, openCellsPos);
+        m_specialAreas[i + SPECIAL_AREAS_SIZE] = CardBg(foundationsUV,
+                foundationsPos);
     }
+
+    m_board.cardBgs = m_specialAreas;
 }
 
 auto Freecell::select(CardStack* stack, int index, bool isDragStart) -> void
@@ -622,7 +598,7 @@ auto Freecell::getIndexX(std::span<float> area, double xPos) -> int
     for (int i = 0; i < static_cast<int>(area.size()); i++)
     {
         auto x = area[i];
-        if (xPos > x - BoardMap::cardHalfWidth && xPos < x + BoardMap::cardHalfWidth)
+        if (xPos > x - CARD_HALF_WIDTH && xPos < x + CARD_HALF_WIDTH)
             return i;
     }
 
@@ -634,7 +610,7 @@ auto Freecell::getIndexY(int stackSize, double yPos) -> int
     if (stackSize == 0)
     {
         auto y = m_boardMap.tableauY.front();
-        if (yPos < y + BoardMap::cardHalfHeight && yPos > y - BoardMap::cardHalfHeight)
+        if (yPos < y + CARD_HALF_HEIGHT && yPos > y - CARD_HALF_HEIGHT)
             return 0;
         else
             return -1;
@@ -643,12 +619,12 @@ auto Freecell::getIndexY(int stackSize, double yPos) -> int
     for (int i = 0; i < stackSize - 1; i++)
     {
         auto y = m_boardMap.tableauY.at(i);
-        if (yPos < y + BoardMap::cardHalfHeight && yPos > y + BoardMap::cardMiddleHeight)
+        if (yPos < y + CARD_HALF_HEIGHT && yPos > y + CARD_MIDDLE_HEIGHT)
             return i;
     }
 
     auto y = m_boardMap.tableauY.at(stackSize - 1);
-    if (yPos < y + BoardMap::cardHalfHeight && yPos > y - BoardMap::cardHalfHeight)
+    if (yPos < y + CARD_HALF_HEIGHT && yPos > y - CARD_HALF_HEIGHT)
         return stackSize - 1;
 
     return -1;
@@ -662,7 +638,7 @@ auto Freecell::winMoves(CardStack& src, std::span<CardStack> dst, std::span<floa
         {
             std::span<CardEntity*> cards(&src.at(src.size() - 1), 1);
             glm::vec3 srcCardPos = cards.back()->transform.pos();
-            glm::vec2 dstPos = glm::vec2{dstAreaPos[i], BoardMap::topAreaYPos};
+            glm::vec2 dstPos = glm::vec2{dstAreaPos[i], SPECIAL_AREAS_Y};
             MovingAnimation m(cards, cards.back()->transform.pos(), dstPos, [&, dst, i, srcCardPos, dstPos]()
             {
                 moveCard(src, dst[i], 1);
@@ -691,7 +667,7 @@ auto Freecell::tryMoveFromTo(CardStack& src, std::span<CardStack> dst, std::span
             // TODO: check if it's necessary to use on complete for animations
             std::span<CardEntity*> cards(&src.at(src.size() - 1), 1);
             glm::vec3 srcCardPos = cards.back()->transform.pos();
-            glm::vec2 dstPos = glm::vec2{dstAreaPos[i], BoardMap::topAreaYPos};
+            glm::vec2 dstPos = glm::vec2{dstAreaPos[i], SPECIAL_AREAS_Y};
             MovingAnimation m(cards, cards.back()->transform.pos(), dstPos, [&, dst, i, srcCardPos, dstPos]()
             {
                 moveCard(src, dst[i], 1);
@@ -770,5 +746,5 @@ auto Freecell::moveCard(CardStack& src, CardStack& dst, int n) -> void
     }
 
     // Update card order after moving card
-    m_board.updateCards();
+    m_board.updateCardList();
 }
