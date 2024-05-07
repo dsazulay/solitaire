@@ -14,6 +14,7 @@ public:
     auto board() -> ScoundrelBoard&;
 private:
     auto createBgCards() -> void;
+    auto fillRoom() -> void;
 
     int m_life;
     Dealer m_dealer;
