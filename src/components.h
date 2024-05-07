@@ -43,6 +43,12 @@ struct Transform
         updateModel();
     }
 
+    auto scale(glm::vec2 s) -> void
+    {
+        model_[0][0] = s.x;
+        model_[1][1] = s.y;
+    }
+
     auto model() -> glm::mat4
     {
         return model_;

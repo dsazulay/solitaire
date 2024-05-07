@@ -9,36 +9,43 @@
 
 #include "resource_manager.h"
 
-constexpr const char* unlitVertPath = "../../resources/unlit.vert";
-constexpr const char* unlitFragPath = "../../resources/unlit.frag";
-constexpr const char* bgVertPath = "../../resources/background.vert";
-constexpr const char* bgFragPath = "../../resources/background.frag";
-constexpr const char* wireframeFragPath = "../../resources/wireframe.frag";
-constexpr const char* cardsTexPath = "../../resources/cards.png";
-constexpr const char* cardModelPath = "../../resources/card.obj";
+constexpr const char* UNLITVERTPATH = "../../resources/unlit.vert";
+constexpr const char* UNLITFRAGPATH = "../../resources/unlit.frag";
+constexpr const char* BGVERTPATH = "../../resources/background.vert";
+constexpr const char* BGFRAGPATH = "../../resources/background.frag";
+constexpr const char* WIREFRAMEFRAGPATH = "../../resources/wireframe.frag";
+constexpr const char* CARDSTEXPATH = "../../resources/cards.png";
+constexpr const char* CARDMODELPATH = "../../resources/card.obj";
 
-constexpr const float width = 1280.0f;
-constexpr const float height = 720.0f;
+constexpr const float WIDTH = 1280.0;
+constexpr const float HEIGHT = 720.0;
+
+constexpr const glm::vec3 CLEAR_COLOR{ 0.22, 0.49, 0.3 };
+constexpr const glm::vec3 BG_POS{ 640.0, 360.0, -0.01 };
+constexpr const glm::vec2 BG_SCALE{ WIDTH, HEIGHT };
 
 auto Renderer::init() -> void
 {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    m_proj = glm::ortho(0.0f, width, 0.0f, height, -1.0f, 1.0f);
+    m_proj = glm::ortho(0.0f, WIDTH, 0.0f, HEIGHT, -1.0f, 1.0f);
     m_unlitShader = ResourceManager::loadShader(
-            unlitVertPath, unlitFragPath, "UnlitShader");
+            UNLITVERTPATH, UNLITFRAGPATH, "UnlitShader");
     m_wireframeShader = ResourceManager::loadShader(
-            unlitVertPath, wireframeFragPath, "WireframeShader");
+            UNLITVERTPATH, WIREFRAMEFRAGPATH, "WireframeShader");
     m_backgroundShader = ResourceManager::loadShader(
-            bgVertPath, bgFragPath, "BackgroundShader");
+            BGVERTPATH, BGFRAGPATH, "BackgroundShader");
     m_backgroundWireframeShader = ResourceManager::loadShader(
-            bgVertPath, wireframeFragPath, "BackgroundWireframeShader");
-    m_texture = ResourceManager::loadTexture(cardsTexPath, "CardTex");
+            BGVERTPATH, WIREFRAMEFRAGPATH, "BackgroundWireframeShader");
+    m_texture = ResourceManager::loadTexture(CARDSTEXPATH, "CardTex");
 
-    m_model = ResourceManager::loadModel(cardModelPath, "CardModel");
+    m_model = ResourceManager::loadModel(CARDMODELPATH, "CardModel");
     m_backgroundModel = ResourceManager::loadModel(
             NativeModel::Quad, "QuadModel");
+
+    m_backgroundTransform.pos(BG_POS);
+    m_backgroundTransform.scale(BG_SCALE);
 
     createUBO();
 
@@ -47,7 +54,7 @@ auto Renderer::init() -> void
     setShaderUniforms();
 }
 
-auto Renderer::render(std::span<CardEntity*> cards, std::span<CardBg*> cardsBg,
+auto Renderer::render(const std::span<CardEntity*> cards, const std::span<CardBg*> cardsBg,
         RenderMode mode) -> void
 {
     clear();
@@ -114,15 +121,12 @@ auto Renderer::renderBackground(RenderMode mode) -> void
         m_shader->use();
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(640.0f, 360.0f, -0.01f));
-        model = glm::scale(model, glm::vec3(1280, 720, 1));
-
-        m_shader->setMat4("u_model", model);
-        m_shader->setVec3("u_tint", glm::vec3(0.22f, 0.49f, 0.3f));
+        m_shader->setMat4("u_model", m_backgroundTransform.model());
+        m_shader->setVec3("u_tint", CLEAR_COLOR);
 
         glBindVertexArray(m_backgroundModel->mesh.getVao());
-        glDrawElements(GL_TRIANGLES, m_backgroundModel->indices.size(), GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, (int) m_backgroundModel->indices.size(),
+                GL_UNSIGNED_INT, nullptr);
         glBindVertexArray(0);
     }
 
@@ -132,15 +136,12 @@ auto Renderer::renderBackground(RenderMode mode) -> void
         m_shader->use();
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(640.0f, 360.0f, -0.01f));
-        model = glm::scale(model, glm::vec3(1280, 720, 1));
-
-        m_shader->setMat4("u_model", model);
-        m_shader->setVec3("u_tint", glm::vec3(0.22f, 0.49f, 0.3f));
+        m_shader->setMat4("u_model", m_backgroundTransform.model());
+        m_shader->setVec3("u_tint", CLEAR_COLOR);
 
         glBindVertexArray(m_backgroundModel->mesh.getVao());
-        glDrawElements(GL_TRIANGLES, m_backgroundModel->indices.size(), GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, (int) m_backgroundModel->indices.size(),
+                GL_UNSIGNED_INT, nullptr);
         glBindVertexArray(0);
     }
 }
@@ -158,8 +159,8 @@ auto Renderer::renderSprite(Sprite sprite, const glm::mat4& model) -> void
 void Renderer::drawCall()
 {
     glBindVertexArray(m_model->mesh.getVao());
-    glDrawElementsInstanced(GL_TRIANGLES, m_model->indices.size(),
-            GL_UNSIGNED_INT, nullptr, m_instanceCounter);
+    glDrawElementsInstanced(GL_TRIANGLES, (int) m_model->indices.size(),
+            GL_UNSIGNED_INT, nullptr, (int) m_instanceCounter);
     glBindVertexArray(0);
 }
 
@@ -198,6 +199,6 @@ auto Renderer::setShaderUniforms() -> void
 
 auto Renderer::clear() -> void
 {
-    glClearColor(0.22f, 0.49f, 0.3f, 1.0f);
+    glClearColor(CLEAR_COLOR.r, CLEAR_COLOR.g, CLEAR_COLOR.b, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }

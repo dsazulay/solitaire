@@ -19,7 +19,7 @@ class Renderer
 {
 public:
     auto init() -> void;
-    auto render(std::span<CardEntity*> cards, std::span<CardBg*> cardsBg,
+    auto render(const std::span<CardEntity*> cards, const std::span<CardBg*> cardsBg,
             RenderMode mode) -> void;
     auto reloadShaders() -> void;
 
@@ -44,6 +44,8 @@ private:
 
     Model* m_model;
     Model* m_backgroundModel;
+
+    Transform m_backgroundTransform;
 
     unsigned int m_instanceCounter;
 

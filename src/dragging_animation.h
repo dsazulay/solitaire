@@ -17,20 +17,20 @@ public:
     void start(std::span<CardEntity*> cards)
     {
         m_cards = cards;
-        for (int i = 0; i < m_cards.size(); ++i)
+        auto dragIter = m_dragOffset.begin();
+        for (auto c = m_cards.begin(); c != m_cards.end(); ++c, ++dragIter)
         {
-            m_dragOffset[i] = Window::mousePos - glm::vec2(
-                    m_cards[i]->transform.pos());
+            *dragIter = Window::mousePos - glm::vec2((*c)->transform.pos());
         }
         m_isDone = false;
     }
 
     void update()
     {
-        for (int i = 0; i < m_cards.size(); ++i)
+        auto dragIter = m_dragOffset.begin();
+        for (auto c = m_cards.begin(); c != m_cards.end(); ++c, ++dragIter)
         {
-            m_cards[i]->transform.pos(glm::vec3(
-                        Window::mousePos - m_dragOffset[i], Z_OFFSET));
+            (*c)->transform.pos(glm::vec3(Window::mousePos - *dragIter, Z_OFFSET));
         }
     }
 
