@@ -7,12 +7,13 @@
 #include <glm/vec2.hpp>
 
 #include "../history.h"
-#include "../gamedata.h"
 #include "../card.h"
 #include "../dragging_animation.h"
 #include "../moving_animation.h"
 #include "freecell_boardmanager.h"
+#include "freecell_gamelogic.h"
 #include "freecell_input.h"
+#include "freecell_datamanager.h"
 
 struct CardSelection
 {
@@ -49,6 +50,7 @@ class Freecell
 {
     using IsLegalMoveFunc = bool(Freecell::*)(CardEntity* card, const CardStack& stack);
 public:
+    Freecell();
     auto  init() -> void;
     auto  update() -> void;
 
@@ -66,17 +68,9 @@ public:
     auto matchData() -> MatchData*;
 
 private:
-    auto loadPlayerData() -> void;
-    auto updatePlayerData(bool didWon, float time) -> void;
-
     auto createOpenCellsAndFoundations() -> void;
 
-    auto checkWin() -> bool;
-    auto checkSequence(const CardStack& stack, int j) -> bool;
-    auto checkWinSequence(const CardStack& stack) -> bool;
-    auto isComplete() -> bool;
     auto playWinAnimation() -> void;
-    auto getMaxCardsToMove(bool movingToEmptySpace) -> int;
 
     auto openCellsIsLegalMove(CardEntity* card, const CardStack& stack) -> bool;
     auto foundationsIsLegalMove(CardEntity* card, const CardStack& stack) -> bool;
@@ -100,16 +94,15 @@ private:
     DraggingAnimation m_draggingAnimation;
 
     GameState m_currentState{};
-    PlayerData m_playerData{};
     MatchData m_matchData{};
 
-    //FreecellBoardMap m_boardMap{};
     CardSelection m_cardSelected{};
 
-    //Dealer m_dealer;
     std::array<CardBg, SPECIAL_AREAS_SIZE * 2> m_specialAreas;
-    //FreecellBoard m_board{};
 
+    FreecellDataManager m_dataManager;
     FreecellBoardManager m_boardManager;
-    FreecellInputHandler m_inputHandler;
+    FreecellInputHandler m_inputHandler{};
+    FreecellGameLogic m_gameLogic{};
 };
+

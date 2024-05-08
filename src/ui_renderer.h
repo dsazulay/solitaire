@@ -41,7 +41,7 @@ private:
     auto renderStatsWindow() -> void;
     auto renderTimeWindow() -> void;
     auto renderDebugWindow() -> void;
-    
+
     auto toggleWonWindow() -> void;
     auto toggleImguiDemoWindow() -> void;
 

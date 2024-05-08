@@ -1,17 +1,19 @@
 #include "freecell.h"
 
-#include <filesystem>
-
 #include "../event.h"
 #include "../dispatcher.h"
 #include "../utils/log.h"
-#include "../serializer.h"
 
+Freecell::Freecell()
+{
+    m_inputHandler.init(&m_boardManager);
+    m_gameLogic.init(&m_boardManager);
+}
 
 auto Freecell::init() -> void
 {
-    loadPlayerData();
     createOpenCellsAndFoundations();
+    m_dataManager.loadPlayerData();
     m_boardManager.createDeck();
     m_boardManager.shuffleDeck();
     m_boardManager.fillTable();
@@ -39,12 +41,12 @@ auto Freecell::update() -> void
     }
     else if (m_currentState == GameState::WinAnimation)
     {
-        if (!isComplete() && m_movingAnimation.size() == 0)
+        if (!m_gameLogic.isComplete() && m_movingAnimation.size() == 0)
             playWinAnimation();
-        else if(isComplete())
+        else if(m_gameLogic.isComplete())
         {
             m_currentState = GameState::Won;
-            updatePlayerData(true, m_matchData.currentTime);
+            m_dataManager.updatePlayerData(true, m_matchData.currentTime);
             GameWinEvent e;
             Dispatcher<GameWinEvent>::post(e);
         }
@@ -265,13 +267,10 @@ auto Freecell::handleInputRestart() -> void
         return;
     }
 
-    m_boardManager.emptyTable();
-    m_boardManager.fillTable();
-    m_boardManager.turnCardsUp();
-    m_boardManager.updateCardList();
+    m_inputHandler.restart();
+
     m_history.clearStacks();
-    constexpr static float maxTime = 10000.0f;
-    updatePlayerData(false, maxTime);
+    m_dataManager.updatePlayerData(false, 0.0);
     m_currentState = GameState::Playing;
     m_matchData.startTime = Timer::time;
     m_matchData.timePaused = 0.0f;
@@ -285,17 +284,14 @@ auto Freecell::handleInputNewGame() -> void
         return;
     }
 
-    m_boardManager.emptyTable();
-    m_boardManager.shuffleDeck();
-    m_boardManager.fillTable();
-    m_boardManager.turnCardsUp();
-    m_boardManager.updateCardList();
+    m_inputHandler.newGame();
+
     m_history.clearStacks();
-    constexpr static float maxTime = 10000.0f;
-    if (m_currentState == GameState::Playing)
-        updatePlayerData(false, maxTime);
-    else
-        m_currentState = GameState::Playing;
+    if (m_currentState != GameState::Won)
+    {
+        m_dataManager.updatePlayerData(false, 0.0);
+    }
+    m_currentState = GameState::Playing;
     m_matchData.startTime = Timer::time;
     m_matchData.timePaused = 0.0f;
 }
@@ -344,51 +340,13 @@ auto Freecell::board() -> FreecellBoard&
 
 auto Freecell::playerData() -> PlayerData*
 {
-    return &m_playerData;
+    return m_dataManager.playerData();
 }
 
 auto Freecell::matchData() -> MatchData*
 {
     return &m_matchData;
 }
-
-auto Freecell::loadPlayerData() -> void
-{
-    std::filesystem::path file{ "../../resources/gamedata.dat" };
-    if (std::filesystem::exists(file))
-    {
-        Serializer serializer(m_playerData, "../../resources/gamedata.dat");
-        serializer.load();
-        serializer.deserialize();
-        return;
-    }
-
-    // first time openning application
-    constexpr static float maxTime = 10000.0f;
-    m_playerData.gamesPlayed = 0;
-    m_playerData.gamesWon = 0;
-    m_playerData.bestTime = maxTime;
-
-    Serializer serializer(m_playerData, "../../resources/gamedata.dat");
-    serializer.serialize();
-    serializer.save();
-}
-
-auto Freecell::updatePlayerData(bool didWon, float time) -> void
-{
-    m_playerData.gamesPlayed++;
-    if (didWon)
-        m_playerData.gamesWon++;
-
-    if (time < m_playerData.bestTime)
-        m_playerData.bestTime = time;
-
-    Serializer serializer(m_playerData, "../../resources/gamedata.dat");
-    serializer.serialize();
-    serializer.save();
-}
-
-
 
 auto Freecell::createOpenCellsAndFoundations() -> void
 {
@@ -422,7 +380,7 @@ auto Freecell::select(CardStack* stack, int index, bool isDragStart) -> void
 
     if (static_cast<int>(stack->size()) - 1 != index)
     {
-        if (!checkSequence(*stack, index))
+        if (!m_gameLogic.checkSequence(*stack, index))
         {
             LOG_INFO("Cannot selected unsorted middle card");
             return;
@@ -499,7 +457,7 @@ auto Freecell::handleClick(CardStack& stack, glm::vec2 dstPos, int col, int inde
         Move m{srcStack, &stack, diff, srcPos, dstPos};
         m_history.recordMove(m);
 
-        if (checkWin())
+        if (m_gameLogic.checkWin())
         {
             LOG_INFO("You Won!");
             m_currentState = GameState::WinAnimation;
@@ -510,62 +468,6 @@ auto Freecell::handleClick(CardStack& stack, glm::vec2 dstPos, int col, int inde
     deselect();
 }
 
-auto Freecell::checkSequence(const CardStack& stack, int j) -> bool
-{
-    int currentCard = static_cast<int>(stack.size()) - 1;
-
-    for (int n = currentCard; n > j; n--)
-    {
-        bool diffColor = stack[n]->card.suit % 2 != stack[n - 1]->card.suit % 2;
-        bool nextNumber = stack[n]->card.number == stack[n - 1]->card.number - 1;
-
-        if (!(diffColor && nextNumber))
-            return false;
-    }
-
-    return true;
-}
-
-auto Freecell::checkWinSequence(const CardStack& stack) -> bool
-{
-    int currentCard = static_cast<int>(stack.size()) - 1;
-
-    for (int n = currentCard; n > 0; n--)
-    {
-        bool nextNumber = stack[n]->card.number <= stack[n - 1]->card.number;
-
-        if (!nextNumber)
-            return false;
-    }
-
-    return true;
-}
-
-auto Freecell::checkWin() -> bool
-{
-    auto& m_board = m_boardManager.board();
-    auto& m_boardMap = m_boardManager.boardMap();
-    for (const auto& stack : m_board.tableau)
-    {
-        if (!checkWinSequence(stack))
-            return false;
-    }
-
-    return true;
-}
-
-auto Freecell::isComplete() -> bool
-{
-    auto& m_board = m_boardManager.board();
-    constexpr static int winStackSize = 13;
-    for (CardStack& stack : m_board.foundations)
-    {
-        if (stack.size() != winStackSize)
-            return false;
-    }
-
-    return true;
-}
 
 auto Freecell::playWinAnimation() -> void
 {
@@ -586,24 +488,6 @@ auto Freecell::playWinAnimation() -> void
     }
 }
 
-auto Freecell::getMaxCardsToMove(bool movingToEmptySpace) -> int
-{
-    auto& m_board = m_boardManager.board();
-    // Initialize with one because you can always move one card
-    int emptyOpenCells = 1;
-    for (auto stack : m_board.openCells)
-    {
-        emptyOpenCells += static_cast<int>(stack.empty());
-    }
-
-    int emptyTableColumns = movingToEmptySpace ? -1 : 0;
-    for (auto stack : m_board.tableau)
-    {
-        emptyTableColumns += static_cast<int>(stack.empty());
-    }
-
-    return emptyTableColumns * emptyOpenCells + emptyOpenCells;
-}
 
 auto Freecell::getIndexX(std::span<float> area, double xPos) -> int
 {
@@ -670,13 +554,6 @@ auto Freecell::tryMoveFromTo(CardStack& src, std::span<CardStack> dst, std::span
     {
         if ((this->*isLegalMove)(src.back(), dst[i]))
         {
-            // std::span<Card*> cards(src.data() + src.size() - 1, 1);
-            // MovingAnimation m(cards, cards.back()->pos, dstAreaPos[i]);
-            // m_board.movingAnimation.push_back(m);
-
-            // moveCard(src, dst[i], 1);
-            // m_history.recordMove(&src, &dst[i], 1, cards.back()->pos, dstAreaPos[i]);
-
             // TODO: check if it's necessary to use on complete for animations
             std::span<CardEntity*> cards(&src.at(src.size() - 1), 1);
             glm::vec3 srcCardPos = cards.back()->transform.pos();
@@ -687,7 +564,7 @@ auto Freecell::tryMoveFromTo(CardStack& src, std::span<CardStack> dst, std::span
                 Move m{&src, &dst[i], 1, srcCardPos, dstPos};
                 m_history.recordMove(m);
 
-                if (checkWin())
+                if (m_gameLogic.checkWin())
                 {
                     LOG_INFO("You Won!");
                     m_currentState = GameState::WinAnimation;
@@ -734,7 +611,7 @@ auto Freecell::tableIsLegalMove(CardEntity* card, const CardStack& stack) -> boo
 {
     int cardSelectedRow = m_cardSelected.y;
     int diff = static_cast<int>(m_cardSelected.stack->size()) - cardSelectedRow;
-    if (getMaxCardsToMove(stack.empty()) < diff)
+    if (m_gameLogic.getMaxCardsToMove(stack.empty()) < diff)
         return false;
 
     if (stack.size() == 0)
