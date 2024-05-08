@@ -90,53 +90,9 @@ auto Dealer::turnCardsUp() -> void
     }
 }
 
-auto Dealer::fillTableau(std::span<CardStack> tableau,
-        const std::span<float> tableauXMap,
-        const std::span<float> tableauYMap) -> void
+auto Dealer::deck() -> std::vector<CardEntity>&
 {
-    constexpr const int reserveSize = 10;
-    constexpr const int fullStackSize = 7;
-
-    int tableauSize = static_cast<int>(tableau.size());
-    int tableauHalfSize = tableauSize / 2;
-    int index = 0;
-    for (int i = 0; i < tableauHalfSize; i++)
-    {
-        tableau[i].reserve(reserveSize);
-        for (int j = 0; j < fullStackSize; j++)
-        {
-            m_deck[index].transform.pos(glm::vec3(tableauXMap[i],
-                        tableauYMap[j], 0.0));
-            tableau[i].emplace_back(&m_deck[index]);
-            index++;
-        }
-    }
-
-    constexpr const int stackSize = 6;
-    for (int i = tableauHalfSize; i < tableauSize; i++)
-    {
-        tableau[i].reserve(reserveSize);
-        for (int j = 0; j < stackSize; j++)
-        {
-            m_deck[index].transform.pos(glm::vec3(tableauXMap[i],
-                        tableauYMap[j], 0.0));
-            tableau[i].emplace_back(&m_deck[index]);
-            index++;
-        }
-    }
-}
-
-auto Dealer::emptyTable(std::span<CardStack> tableau,
-        std::span<CardStack> openCells, std::span<CardStack> foundations) -> void
-{
-    for (auto& stack : tableau)
-        stack = CardStack();
-
-    for (auto& stack : openCells)
-        stack = CardStack();
-
-    for (auto& stack : foundations)
-        stack = CardStack();
+    return m_deck;
 }
 
 auto Dealer::fillDungeon(CardStack& dungeon, glm::vec2 pos) -> void

@@ -1,18 +1,18 @@
 #pragma once
 
 #include <vector>
-#include <array>
 #include <span>
+#include <array>
 
 #include <glm/vec2.hpp>
 
-#include "history.h"
-#include "gamedata.h"
-#include "card.h"
-#include "dealer.h"
-#include "dragging_animation.h"
-#include "moving_animation.h"
-#include "game_board.h"
+#include "../history.h"
+#include "../gamedata.h"
+#include "../card.h"
+#include "../dragging_animation.h"
+#include "../moving_animation.h"
+#include "freecell_boardmanager.h"
+#include "freecell_input.h"
 
 struct CardSelection
 {
@@ -103,10 +103,13 @@ private:
     PlayerData m_playerData{};
     MatchData m_matchData{};
 
-    FreecellBoardMap m_boardMap{};
+    //FreecellBoardMap m_boardMap{};
     CardSelection m_cardSelected{};
 
-    Dealer m_dealer;
+    //Dealer m_dealer;
     std::array<CardBg, SPECIAL_AREAS_SIZE * 2> m_specialAreas;
-    FreecellBoard m_board{};
+    //FreecellBoard m_board{};
+
+    FreecellBoardManager m_boardManager;
+    FreecellInputHandler m_inputHandler;
 };

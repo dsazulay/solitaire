@@ -2,22 +2,20 @@
 
 #include <filesystem>
 
-#include "card.h"
-#include "event.h"
-#include "dispatcher.h"
-#include "utils/log.h"
-#include "serializer.h"
+#include "../event.h"
+#include "../dispatcher.h"
+#include "../utils/log.h"
+#include "../serializer.h"
 
 
 auto Freecell::init() -> void
 {
     loadPlayerData();
     createOpenCellsAndFoundations();
-    m_dealer.createFreecellDeck();
-    m_dealer.shuffleDeck();
-    m_dealer.fillTableau(m_board.tableau, m_boardMap.tableauX,
-            m_boardMap.tableauY);
-    m_board.updateCardList();
+    m_boardManager.createDeck();
+    m_boardManager.shuffleDeck();
+    m_boardManager.fillTable();
+    m_boardManager.updateCardList();
     m_currentState = GameState::Playing;
     m_matchData.startTime = Timer::time;
     m_matchData.timePaused = 0.0f;
@@ -59,6 +57,9 @@ auto Freecell::update() -> void
 
 auto Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool isDragStart) -> void
 {
+    auto& m_board = m_boardManager.board();
+    auto& m_boardMap = m_boardManager.boardMap();
+
     if (m_currentState != GameState::Playing)
     {
         return;
@@ -128,6 +129,8 @@ auto Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool i
 
 auto Freecell::handleInputDoubleClick(double xPos, double yPos) -> void
 {
+    auto& m_board = m_boardManager.board();
+    auto& m_boardMap = m_boardManager.boardMap();
     if (m_currentState != GameState::Playing)
     {
         return;
@@ -262,10 +265,10 @@ auto Freecell::handleInputRestart() -> void
         return;
     }
 
-    m_dealer.emptyTable(m_board.tableau, m_board.openCells, m_board.foundations);
-    m_dealer.fillTableau(m_board.tableau, m_boardMap.tableauX, m_boardMap.tableauY);
-    m_dealer.turnCardsUp();
-    m_board.updateCardList();
+    m_boardManager.emptyTable();
+    m_boardManager.fillTable();
+    m_boardManager.turnCardsUp();
+    m_boardManager.updateCardList();
     m_history.clearStacks();
     constexpr static float maxTime = 10000.0f;
     updatePlayerData(false, maxTime);
@@ -282,11 +285,11 @@ auto Freecell::handleInputNewGame() -> void
         return;
     }
 
-    m_dealer.emptyTable(m_board.tableau, m_board.openCells, m_board.foundations);
-    m_dealer.shuffleDeck();
-    m_dealer.fillTableau(m_board.tableau, m_boardMap.tableauX, m_boardMap.tableauY);
-    m_dealer.turnCardsUp();
-    m_board.updateCardList();
+    m_boardManager.emptyTable();
+    m_boardManager.shuffleDeck();
+    m_boardManager.fillTable();
+    m_boardManager.turnCardsUp();
+    m_boardManager.updateCardList();
     m_history.clearStacks();
     constexpr static float maxTime = 10000.0f;
     if (m_currentState == GameState::Playing)
@@ -309,19 +312,20 @@ auto Freecell::handleInputPause() -> void
     {
         m_matchData.timePaused += Timer::time - m_matchData.timePausedStart;
         m_currentState = GameState::Playing;
-        m_dealer.turnCardsUp();
-        m_board.updateCardList();
+        m_boardManager.turnCardsUp();
+        m_boardManager.updateCardList();
     }
     else if (m_currentState == GameState::Playing)
     {
         m_matchData.timePausedStart = Timer::time;
         m_currentState = GameState::Pause;
-        m_dealer.turnCardsDown();
+        m_boardManager.turnCardsDown();
     }
 }
 
 auto Freecell::handleInputPrintCards() -> void
 {
+    auto& m_board = m_boardManager.board();
     for (auto& stack : m_board.tableau)
     {
         for (auto c : stack)
@@ -335,7 +339,7 @@ auto Freecell::handleInputPrintCards() -> void
 
 auto Freecell::board() -> FreecellBoard&
 {
-    return m_board;
+    return m_boardManager.board();
 }
 
 auto Freecell::playerData() -> PlayerData*
@@ -388,6 +392,8 @@ auto Freecell::updatePlayerData(bool didWon, float time) -> void
 
 auto Freecell::createOpenCellsAndFoundations() -> void
 {
+    auto& m_board = m_boardManager.board();
+    auto& m_boardMap = m_boardManager.boardMap();
     constexpr const glm::vec2 openCellsUV = { 0.125, 0.875 };
     constexpr const glm::vec2 foundationsUV = { 0.250f, 0.875 };
 
@@ -537,6 +543,8 @@ auto Freecell::checkWinSequence(const CardStack& stack) -> bool
 
 auto Freecell::checkWin() -> bool
 {
+    auto& m_board = m_boardManager.board();
+    auto& m_boardMap = m_boardManager.boardMap();
     for (const auto& stack : m_board.tableau)
     {
         if (!checkWinSequence(stack))
@@ -548,6 +556,7 @@ auto Freecell::checkWin() -> bool
 
 auto Freecell::isComplete() -> bool
 {
+    auto& m_board = m_boardManager.board();
     constexpr static int winStackSize = 13;
     for (CardStack& stack : m_board.foundations)
     {
@@ -560,6 +569,8 @@ auto Freecell::isComplete() -> bool
 
 auto Freecell::playWinAnimation() -> void
 {
+    auto& m_board = m_boardManager.board();
+    auto& m_boardMap = m_boardManager.boardMap();
     for (CardStack& stack : m_board.openCells)
     {
         if (stack.empty())
@@ -577,6 +588,7 @@ auto Freecell::playWinAnimation() -> void
 
 auto Freecell::getMaxCardsToMove(bool movingToEmptySpace) -> int
 {
+    auto& m_board = m_boardManager.board();
     // Initialize with one because you can always move one card
     int emptyOpenCells = 1;
     for (auto stack : m_board.openCells)
@@ -607,6 +619,7 @@ auto Freecell::getIndexX(std::span<float> area, double xPos) -> int
 
 auto Freecell::getIndexY(int stackSize, double yPos) -> int
 {
+    auto& m_boardMap = m_boardManager.boardMap();
     if (stackSize == 0)
     {
         auto y = m_boardMap.tableauY.front();
@@ -746,5 +759,5 @@ auto Freecell::moveCard(CardStack& src, CardStack& dst, int n) -> void
     }
 
     // Update card order after moving card
-    m_board.updateCardList();
+    m_boardManager.updateCardList();
 }

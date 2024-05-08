@@ -85,13 +85,13 @@ auto Solitaire::mainLoop() -> void
         }
         Timer::update();
 
-        //m_freecell.update();
-        //m_renderer.render(m_freecell.board().cards,
-        //        m_freecell.board().cardBgs,
-        //        (RenderMode) m_uiRenderer->renderMode());
-        m_renderer.render(m_scoundrel.board().cards,
-                m_scoundrel.board().cardBgs,
+        m_freecell.update();
+        m_renderer.render(m_freecell.board().cards,
+                m_freecell.board().cardBgs,
                 (RenderMode) m_uiRenderer->renderMode());
+        //m_renderer.render(m_scoundrel.board().cards,
+        //        m_scoundrel.board().cardBgs,
+        //        (RenderMode) m_uiRenderer->renderMode());
         m_uiRenderer->render();
 
         m_window.swapBuffers();

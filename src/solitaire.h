@@ -6,7 +6,7 @@
 #include "window.h"
 #include "graphics/renderer.h"
 #include "ui_renderer.h"
-#include "freecell.h"
+#include "freecell/freecell.h"
 #include "scoundrel/scoundrel.h"
 #include "event.h"
 

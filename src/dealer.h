@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <span>
 #include <random>
 #include <glm/vec2.hpp>
 #include "card.h"
@@ -15,12 +14,7 @@ public:
     auto shuffleDeck() -> void;
     auto turnCardsDown() -> void;
     auto turnCardsUp() -> void;
-
-    // freecell
-    auto fillTableau(std::span<CardStack> tableau, std::span<float> tableauXMap,
-            std::span<float> tableauYMap) -> void;
-    auto emptyTable(std::span<CardStack> tableau, std::span<CardStack> openCells,
-            std::span<CardStack> foundations) -> void;
+    auto deck() -> std::vector<CardEntity>&;
 
     // scoundrel
     auto fillDungeon(CardStack& dungeon, glm::vec2 pos) -> void;
