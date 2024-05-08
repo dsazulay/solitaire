@@ -2,6 +2,7 @@
 
 #include "../game_board.h"
 #include "../dealer.h"
+#include <optional>
 
 constexpr const int FREECELL_TABLEAU_SIZE = 8;
 constexpr const int FREECELL_MAX_STACK_SIZE = 14;
@@ -19,6 +20,21 @@ constexpr const float CARD_HALF_WIDTH = 50.0f;
 constexpr const float CARD_HALF_HEIGHT = 74.0f;
 constexpr const float CARD_MIDDLE_HEIGHT = 42.0f;
 constexpr const float HALF_SCREEN_WIDTH = 640.0f;
+
+enum class FreecellArea
+{
+    Tableau,
+    OpenCells,
+    Foundations,
+};
+
+struct CardClicked
+{
+    CardStack* stack;
+    glm::vec2 pos;
+    int index;
+    FreecellArea area;
+};
 
 struct FreecellBoard
 {
@@ -70,12 +86,17 @@ public:
 
     auto turnCardsUp() -> void;
     auto turnCardsDown() -> void;
+    auto getArea(double x, double y) -> FreecellArea;
+    auto getStackAndPos(double x, double y) -> std::optional<CardClicked>;
 
     // tmp stuff
     auto board() -> FreecellBoard&;
     auto boardMap() -> FreecellBoardMap&;
 
 private:
+    auto getIndexX(std::span<float> area, double xPos) -> int;
+    auto getIndexY(int stackSize, double yPos) -> int;
+
     Dealer m_dealer;
     FreecellBoard m_board;
     FreecellBoardMap m_boardMap;

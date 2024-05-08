@@ -59,13 +59,8 @@ auto Freecell::update() -> void
 
 auto Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool isDragStart) -> void
 {
-    auto& m_board = m_boardManager.board();
-    auto& m_boardMap = m_boardManager.boardMap();
-
     if (m_currentState != GameState::Playing)
-    {
         return;
-    }
 
     if (m_movingAnimation.size() > 0)
     {
@@ -73,60 +68,28 @@ auto Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool i
         return;
     }
 
-    // top area
-    if (yPos > SPECIAL_AREAS_Y - CARD_HALF_HEIGHT && yPos < SPECIAL_AREAS_Y + CARD_HALF_HEIGHT)
+    auto cardClicked = m_boardManager.getStackAndPos(xPos, yPos);
+    if (!cardClicked.has_value())
     {
-        // open cells
-        if (xPos < HALF_SCREEN_WIDTH)
-        {
-            int i = getIndexX(m_boardMap.openCells, xPos);
-            if (i == -1)
-            {
-                moveBackAndDeselectCard();
-                return;
-            }
-            glm::vec2 dtsAreaPos{m_boardMap.openCells.at(i), SPECIAL_AREAS_Y};
-            auto& stack = m_board.openCells.at(i);
-            handleClick(stack, dtsAreaPos, i, static_cast<int>(stack.size()) - 1, &Freecell::openCellsIsLegalMove, isDragStart);
-        }
-        else
-        {
-            int i = getIndexX(m_boardMap.foundations, xPos);
-            if (i == -1)
-            {
-                moveBackAndDeselectCard();
-                return;
-            }
-            glm::vec2 dtsAreaPos{m_boardMap.foundations.at(i), SPECIAL_AREAS_Y};
-            auto& stack = m_board.foundations.at(i);
-            handleClick(stack, dtsAreaPos, i, static_cast<int>(stack.size()) - 1, &Freecell::foundationsIsLegalMove, isDragStart);
-        }
+        moveBackAndDeselectCard();
+        return;
     }
-    else
+
+    IsLegalMoveFunc checkMoveFunc = &Freecell::openCellsIsLegalMove;
+    switch (cardClicked->area)
     {
-        int i = getIndexX(m_boardMap.tableauX, xPos);
-        if (i == -1)
-        {
-            moveBackAndDeselectCard();
-            return;
-        }
-
-        auto& stack = m_board.tableau.at(i);
-        int stackSize = static_cast<int>(stack.size());
-        int j = getIndexY(stackSize, yPos);
-        if (j == -1)
-        {
-            moveBackAndDeselectCard();
-            return;
-        }
-
-        auto y = m_boardMap.tableauY.at(j + 1);
-        if (stackSize == 0)
-            y = m_boardMap.tableauY.at(j);
-
-        glm::vec2 dtsAreaPos{m_boardMap.tableauX.at(i), y};
-        handleClick(stack, dtsAreaPos, i, j, &Freecell::tableIsLegalMove, isDragStart);
+    case FreecellArea::OpenCells:
+        checkMoveFunc = &Freecell::openCellsIsLegalMove;
+        break;
+    case FreecellArea::Foundations:
+        checkMoveFunc = &Freecell::foundationsIsLegalMove;
+        break;
+    case FreecellArea::Tableau:
+        checkMoveFunc = &Freecell::tableIsLegalMove;
+        break;
     }
+    handleClick(*cardClicked->stack, cardClicked->pos, -1, cardClicked->index,
+                checkMoveFunc, isDragStart);
 }
 
 auto Freecell::handleInputDoubleClick(double xPos, double yPos) -> void
