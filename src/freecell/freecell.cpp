@@ -6,7 +6,6 @@
 
 Freecell::Freecell()
 {
-    m_inputHandler.init(&m_boardManager);
     m_gameLogic.init(&m_boardManager);
 }
 
@@ -107,21 +106,20 @@ auto Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool i
         return;
     }
 
-    IsLegalMoveFunc checkMoveFunc = &Freecell::openCellsIsLegalMove;
+    IsLegalMoveFunc checkMoveFunc = &FreecellGameLogic::openCellsIsLegalMove;
     switch (cardClicked->area)
     {
     case FreecellArea::OpenCells:
-        checkMoveFunc = &Freecell::openCellsIsLegalMove;
+        checkMoveFunc = &FreecellGameLogic::openCellsIsLegalMove;
         break;
     case FreecellArea::Foundations:
-        checkMoveFunc = &Freecell::foundationsIsLegalMove;
+        checkMoveFunc = &FreecellGameLogic::foundationsIsLegalMove;
         break;
     case FreecellArea::Tableau:
-        checkMoveFunc = &Freecell::tableIsLegalMove;
+        checkMoveFunc = &FreecellGameLogic::tableauIsLegalMove;
         break;
     }
-    handleClick(*cardClicked->stack, cardClicked->pos, -1, cardClicked->index,
-                checkMoveFunc, isDragStart);
+    handleClick(*cardClicked->stack, cardClicked->pos, checkMoveFunc);
 }
 
 auto Freecell::handleInputDoubleClick(double xPos, double yPos) -> void
@@ -157,7 +155,7 @@ auto Freecell::handleInputDoubleClick(double xPos, double yPos) -> void
 
     if (cardClicked->area == FreecellArea::OpenCells)
     {
-        tryMoveFromTo(*cardClicked->stack, m_board.foundations, m_boardMap.foundations, &Freecell::foundationsIsLegalMove);
+        tryMoveFromTo(*cardClicked->stack, m_board.foundations, m_boardMap.foundations, &FreecellGameLogic::foundationsIsLegalMove);
         return;
     }
 
@@ -167,9 +165,9 @@ auto Freecell::handleInputDoubleClick(double xPos, double yPos) -> void
         return;
     }
 
-    if (!tryMoveFromTo(*cardClicked->stack, m_board.foundations, m_boardMap.foundations, &Freecell::foundationsIsLegalMove))
+    if (!tryMoveFromTo(*cardClicked->stack, m_board.foundations, m_boardMap.foundations, &FreecellGameLogic::foundationsIsLegalMove))
     {
-        tryMoveFromTo(*cardClicked->stack, m_board.openCells, m_boardMap.openCells, &Freecell::openCellsIsLegalMove);
+        tryMoveFromTo(*cardClicked->stack, m_board.openCells, m_boardMap.openCells, &FreecellGameLogic::openCellsIsLegalMove);
     }
 }
 
@@ -240,8 +238,10 @@ auto Freecell::handleInputRestart() -> void
         LOG_WARN("Can't input while card is moving!");
         return;
     }
-
-    m_inputHandler.restart();
+    m_boardManager.emptyTable();
+    m_boardManager.fillTable();
+    m_boardManager.turnCardsUp();
+    m_boardManager.updateCardList();
 
     m_history.clearStacks();
     m_dataManager.updatePlayerData(false, 0.0);
@@ -258,7 +258,11 @@ auto Freecell::handleInputNewGame() -> void
         return;
     }
 
-    m_inputHandler.newGame();
+    m_boardManager.emptyTable();
+    m_boardManager.shuffleDeck();
+    m_boardManager.fillTable();
+    m_boardManager.turnCardsUp();
+    m_boardManager.updateCardList();
 
     m_history.clearStacks();
     if (m_currentState != GameState::Won)
@@ -356,12 +360,13 @@ auto Freecell::moveBackAndDeselectCard() -> void
         m_draggingAnimation.stop();
 }
 
-auto Freecell::handleClick(CardStack& stack, glm::vec2 dstPos, int col, int index, IsLegalMoveFunc isLegalMove, bool isDragStart) -> void
+auto Freecell::handleClick(CardStack& stack, glm::vec2 dstPos,
+        IsLegalMoveFunc isLegalMove) -> void
 {
     auto cardSelected = m_boardManager.getCardSelected().value();
     auto card = cardSelected.stack->at(cardSelected.index);
 
-    if (!(this->*isLegalMove)(card, stack))
+    if (!(&m_gameLogic->*isLegalMove)(card, stack))
     {
         LOG_INFO("Invalid move");
 
@@ -412,14 +417,14 @@ auto Freecell::playWinAnimation() -> void
     {
         if (stack.empty())
             continue;
-        winMoves(stack, m_board.foundations, m_boardMap.foundations, &Freecell::foundationsIsLegalMove);
+        winMoves(stack, m_board.foundations, m_boardMap.foundations, &FreecellGameLogic::foundationsIsLegalMove);
     }
 
     for (CardStack& stack : m_board.tableau)
     {
         if (stack.empty())
             continue;
-        winMoves(stack, m_board.foundations, m_boardMap.foundations, &Freecell::foundationsIsLegalMove);
+        winMoves(stack, m_board.foundations, m_boardMap.foundations, &FreecellGameLogic::foundationsIsLegalMove);
     }
 }
 
@@ -427,7 +432,7 @@ auto Freecell::winMoves(CardStack& src, std::span<CardStack> dst, std::span<floa
 {
     for (int i = 0; i < 4; i++)
     {
-        if ((this->*isLegalMove)(src.back(), dst[i]))
+        if ((&m_gameLogic->*isLegalMove)(src.back(), dst[i]))
         {
             std::span<CardEntity*> cards(&src.at(src.size() - 1), 1);
             glm::vec3 srcCardPos = cards.back()->transform.pos();
@@ -448,7 +453,7 @@ auto Freecell::tryMoveFromTo(CardStack& src, std::span<CardStack> dst, std::span
 {
     for (int i = 0; i < 4; i++)
     {
-        if ((this->*isLegalMove)(src.back(), dst[i]))
+        if ((&m_gameLogic->*isLegalMove)(src.back(), dst[i]))
         {
             // TODO: check if it's necessary to use on complete for animations
             std::span<CardEntity*> cards(&src.at(src.size() - 1), 1);
@@ -480,54 +485,4 @@ auto Freecell::tryMoveFromTo(CardStack& src, std::span<CardStack> dst, std::span
 
     return false;
 }
-
-auto Freecell::openCellsIsLegalMove(CardEntity* card, const CardStack& stack) -> bool
-{
-    auto cardClicked = m_boardManager.getCardSelected();
-    if (cardClicked.has_value())
-    {
-        auto stacksize = static_cast<int>(cardClicked->stack->size());
-        if (cardClicked->index != stacksize - 1)
-            return false;
-    }
-
-    return stack.size() == 0;
-}
-
-auto Freecell::foundationsIsLegalMove(CardEntity* card, const CardStack& stack) -> bool
-{
-    auto cardClicked = m_boardManager.getCardSelected();
-    if (cardClicked.has_value())
-    {
-        auto stacksize = static_cast<int>(cardClicked->stack->size());
-        if (cardClicked->index != stacksize - 1)
-            return false;
-    }
-
-    if (stack.size() == 0)
-        return card->card.number == 0;
-
-    return stack.back()->card.number == card->card.number - 1
-        && stack.back()->card.suit == card->card.suit;
-}
-
-auto Freecell::tableIsLegalMove(CardEntity* card, const CardStack& stack) -> bool
-{
-    // Note: check if we alway gonna have a selected card here
-    auto cardClicked = m_boardManager.getCardSelected().value();
-
-    int cardSelectedRow = cardClicked.index;
-    int diff = static_cast<int>(cardClicked.stack->size()) - cardSelectedRow;
-    if (m_gameLogic.getMaxCardsToMove(stack.empty()) < diff)
-        return false;
-
-    if (stack.size() == 0)
-        return true;
-
-    bool diffColor =  stack.back()->card.suit % 2 != card->card.suit % 2;
-    bool nextNumber = stack.back()->card.number - 1 == card->card.number;
-
-    return diffColor && nextNumber;
-}
-
 

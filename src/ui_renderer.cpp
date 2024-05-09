@@ -139,7 +139,7 @@ auto UiRenderer::renderTopBar() -> void
         ImGui::TableSetupColumn("one", ImGuiTableColumnFlags_WidthFixed, 140.0f); // Default to 100.0f
         ImGui::TableSetupColumn("two", ImGuiTableColumnFlags_WidthStretch);       // Default to auto
         ImGui::TableSetupColumn("three", ImGuiTableColumnFlags_WidthFixed, 140.0f); // Default to 100.0f
-        
+
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x - 110) * 0.5);
@@ -192,7 +192,7 @@ auto UiRenderer::renderWonWindow() -> void
     const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 400, main_viewport->WorkPos.y + 180));
     ImGui::SetNextWindowSize(ImVec2(480, 360));
-    
+
     pushPopupWindowStyle();
     ImGui::Begin("Won window", &m_shouldRenderWonWindow, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
     ImGui::Text("You won!"); ImGui::SameLine(ImGui::GetContentRegionAvail().x + 30);
@@ -220,7 +220,7 @@ auto UiRenderer::renderWonWindow() -> void
         ImGui::Text("Games Won"); ImGui::SameLine();
         ImGui::TableNextColumn();
         ImGui::Text("%d", m_playerData->gamesWon);
-       
+
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
         ImGui::Separator();
@@ -281,7 +281,7 @@ auto UiRenderer::renderStatsWindow() -> void
         ImGui::Text("Percentage Won"); ImGui::SameLine();
         ImGui::TableNextColumn();
         ImGui::Text("%d%%", (int)((float)m_playerData->gamesWon / m_playerData->gamesPlayed * 100));
-       
+
         ImGui::Unindent(30.0f);
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
@@ -297,7 +297,7 @@ auto UiRenderer::renderStatsWindow() -> void
         ImGui::Text("%d:%d", (int)m_playerData->bestTime / 60, (int)m_playerData->bestTime % 60);
         ImGui::EndTable();
     }
-    
+
     popPopupWindowStyle();
     ImGui::End();
 }
@@ -309,7 +309,7 @@ auto UiRenderer::renderTimeWindow() -> void
     const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 30, main_viewport->WorkPos.y + 670));
     ImGui::SetNextWindowSize(ImVec2(110, 30));
-    
+
     ImGui::Begin("Time", &isOpen, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
     auto text = fmt::format("TIME: {0:0{1}}:{2:0{3}}", (int)m_matchData->currentTime / 60, 2, (int)m_matchData->currentTime % 60, 2);
     ImGui::SetCursorPosX((ImGui::GetWindowWidth() - ImGui::CalcTextSize(text.c_str()).x) * 0.5f);

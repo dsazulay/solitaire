@@ -13,6 +13,10 @@ public:
     auto isComplete() -> bool;
     auto getMaxCardsToMove(bool movingToEmptySpace) -> int;
 
+    auto openCellsIsLegalMove(CardEntity* card, const CardStack& stack) -> bool;
+    auto foundationsIsLegalMove(CardEntity* card, const CardStack& stack) -> bool;
+    auto tableauIsLegalMove(CardEntity* card, const CardStack& stack) -> bool;
+
 private:
     FreecellBoardManager* boardManager;
 };

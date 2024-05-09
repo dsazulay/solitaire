@@ -82,3 +82,56 @@ auto FreecellGameLogic::getMaxCardsToMove(bool movingToEmptySpace) -> int
 
     return emptyTableColumns * emptyOpenCells + emptyOpenCells;
 }
+
+auto FreecellGameLogic::openCellsIsLegalMove(CardEntity* card,
+        const CardStack& stack) -> bool
+{
+    auto cardClicked = boardManager->getCardSelected();
+    if (cardClicked.has_value())
+    {
+        auto stacksize = static_cast<int>(cardClicked->stack->size());
+        if (cardClicked->index != stacksize - 1)
+            return false;
+    }
+
+    return stack.size() == 0;
+}
+
+auto FreecellGameLogic::foundationsIsLegalMove(CardEntity* card,
+        const CardStack& stack) -> bool
+{
+    auto cardClicked = boardManager->getCardSelected();
+    if (cardClicked.has_value())
+    {
+        auto stacksize = static_cast<int>(cardClicked->stack->size());
+        if (cardClicked->index != stacksize - 1)
+            return false;
+    }
+
+    if (stack.size() == 0)
+        return card->card.number == 0;
+
+    return stack.back()->card.number == card->card.number - 1
+        && stack.back()->card.suit == card->card.suit;
+}
+
+auto FreecellGameLogic::tableauIsLegalMove(CardEntity* card,
+        const CardStack& stack) -> bool
+{
+    // Note: check if we alway gonna have a selected card here
+    auto cardClicked = boardManager->getCardSelected().value();
+
+    int cardSelectedRow = cardClicked.index;
+    int diff = static_cast<int>(cardClicked.stack->size()) - cardSelectedRow;
+    if (getMaxCardsToMove(stack.empty()) < diff)
+        return false;
+
+    if (stack.size() == 0)
+        return true;
+
+    bool diffColor =  stack.back()->card.suit % 2 != card->card.suit % 2;
+    bool nextNumber = stack.back()->card.number - 1 == card->card.number;
+
+    return diffColor && nextNumber;
+}
+

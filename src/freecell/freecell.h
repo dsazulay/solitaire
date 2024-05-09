@@ -12,16 +12,7 @@
 #include "../moving_animation.h"
 #include "freecell_boardmanager.h"
 #include "freecell_gamelogic.h"
-#include "freecell_input.h"
 #include "freecell_datamanager.h"
-
-struct CardSelection
-{
-    int y{};
-    CardEntity* card{};
-    CardStack* stack{};
-    glm::vec2 pos{};
-};
 
 enum class GameState
 {
@@ -48,7 +39,7 @@ struct Move
 
 class Freecell
 {
-    using IsLegalMoveFunc = bool(Freecell::*)(CardEntity* card, const CardStack& stack);
+    using IsLegalMoveFunc = bool(FreecellGameLogic::*)(CardEntity* card, const CardStack& stack);
 public:
     Freecell();
     auto  init() -> void;
@@ -72,11 +63,8 @@ private:
 
     auto playWinAnimation() -> void;
 
-    auto openCellsIsLegalMove(CardEntity* card, const CardStack& stack) -> bool;
-    auto foundationsIsLegalMove(CardEntity* card, const CardStack& stack) -> bool;
-    auto tableIsLegalMove(CardEntity* card, const CardStack& stack) -> bool;
-
-    auto handleClick(CardStack& stack, glm::vec2 dstPos, int col, int index, IsLegalMoveFunc isLegalMove, bool isDragStart) -> void;
+    auto handleClick(CardStack& stack, glm::vec2 dstPos,
+            IsLegalMoveFunc isLegalMove) -> void;
 
     auto moveBackAndDeselectCard() -> void;
 
@@ -94,7 +82,6 @@ private:
 
     FreecellDataManager m_dataManager;
     FreecellBoardManager m_boardManager;
-    FreecellInputHandler m_inputHandler{};
     FreecellGameLogic m_gameLogic{};
 };
 
