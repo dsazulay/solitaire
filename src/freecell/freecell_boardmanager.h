@@ -32,6 +32,7 @@ struct CardClicked
 {
     CardStack* stack;
     glm::vec2 pos;
+    glm::vec2 selectionPos;
     int index;
     FreecellArea area;
 };
@@ -86,8 +87,15 @@ public:
 
     auto turnCardsUp() -> void;
     auto turnCardsDown() -> void;
+
+    auto moveCard(CardStack& src, CardStack& dst, int n) -> void;
+
     auto getArea(double x, double y) -> FreecellArea;
     auto getStackAndPos(double x, double y) -> std::optional<CardClicked>;
+
+    auto selectCard(CardClicked c) -> void;
+    auto deselectCard() -> void;
+    auto getCardSelected() -> std::optional<CardClicked>;
 
     // tmp stuff
     auto board() -> FreecellBoard&;
@@ -100,5 +108,6 @@ private:
     Dealer m_dealer;
     FreecellBoard m_board;
     FreecellBoardMap m_boardMap;
+    std::optional<CardClicked> m_cardSelected;
 };
 

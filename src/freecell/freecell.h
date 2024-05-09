@@ -78,16 +78,10 @@ private:
 
     auto handleClick(CardStack& stack, glm::vec2 dstPos, int col, int index, IsLegalMoveFunc isLegalMove, bool isDragStart) -> void;
 
-    auto select(CardStack* stack, int index, bool isDragStart) -> void;
-    auto deselect() -> void;
     auto moveBackAndDeselectCard() -> void;
-
-    auto getIndexX(std::span<float> area, double xPos) -> int;
-    auto getIndexY(int stackSize, double yPos) -> int;
 
     auto winMoves(CardStack& src, std::span<CardStack> dst, std::span<float> dstAreaPos, IsLegalMoveFunc isLegalMove) -> void;
     auto tryMoveFromTo(CardStack& src, std::span<CardStack> dst, std::span<float> dstAreaPos, IsLegalMoveFunc isLegalMove) -> bool;
-    auto moveCard(CardStack& src, CardStack& dst, int n) -> void;
 
     History<Move> m_history;
     std::vector<MovingAnimation> m_movingAnimation;
@@ -95,8 +89,6 @@ private:
 
     GameState m_currentState{};
     MatchData m_matchData{};
-
-    CardSelection m_cardSelected{};
 
     std::array<CardBg, SPECIAL_AREAS_SIZE * 2> m_specialAreas;
 

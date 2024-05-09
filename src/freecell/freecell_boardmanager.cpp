@@ -94,6 +94,19 @@ auto FreecellBoardManager::turnCardsDown() -> void
     m_dealer.turnCardsDown();
 }
 
+auto FreecellBoardManager::moveCard(CardStack& src, CardStack& dst, int n) -> void
+{
+    auto it = src.begin() + static_cast<int>(src.size()) - n;
+    for (; it < src.end(); ++it)
+        dst.push_back(*it);
+
+    for (int i = 0; i < n; i++)
+        src.pop_back();
+
+    // Update card order after moving card
+    updateCardList();
+}
+
 auto FreecellBoardManager::getArea(double x, double y) -> FreecellArea
 {
     // top area
@@ -120,12 +133,16 @@ auto FreecellBoardManager::getStackAndPos(double x, double y) ->
         if (index == -1)
             return std::nullopt;
 
-        CardClicked cardClicked{};
-        cardClicked.stack = &m_board.openCells.at(index);
-        cardClicked.pos = { m_boardMap.openCells.at(index), SPECIAL_AREAS_Y };
-        cardClicked.index = static_cast<int>(cardClicked.stack->size()) - 1;
-        cardClicked.area = FreecellArea::OpenCells;
-        return std::optional<CardClicked>{ cardClicked };
+        auto* stack = &m_board.openCells.at(index);
+        std::optional<CardClicked> cardClicked{{
+            stack,
+            { m_boardMap.openCells.at(index), SPECIAL_AREAS_Y },
+            { 0.0, 0.0 },
+            static_cast<int>(stack->size()) - 1,
+            FreecellArea::OpenCells
+        }};
+
+        return cardClicked;
     }
 
     if (area == FreecellArea::Foundations)
@@ -134,12 +151,15 @@ auto FreecellBoardManager::getStackAndPos(double x, double y) ->
         if (index == -1)
             return std::nullopt;
 
-        CardClicked cardClicked{};
-        cardClicked.stack = &m_board.foundations.at(index);
-        cardClicked.pos = { m_boardMap.foundations.at(index), SPECIAL_AREAS_Y };
-        cardClicked.index = static_cast<int>(cardClicked.stack->size()) - 1;
-        cardClicked.area = FreecellArea::Foundations;
-        return std::optional<CardClicked>{ cardClicked };
+        auto* stack = &m_board.foundations.at(index);
+        std::optional<CardClicked> cardClicked{{
+            stack,
+            { m_boardMap.foundations.at(index), SPECIAL_AREAS_Y },
+            { 0.0, 0.0 },
+            static_cast<int>(stack->size()) - 1,
+            FreecellArea::Foundations
+        }};
+        return  cardClicked;
     }
 
     if (area == FreecellArea::Tableau)
@@ -148,8 +168,8 @@ auto FreecellBoardManager::getStackAndPos(double x, double y) ->
         if (index == -1)
             return std::nullopt;
 
-        auto& stack = m_board.tableau.at(index);
-        int stackSize = static_cast<int>(stack.size());
+        auto* stack = &m_board.tableau.at(index);
+        int stackSize = static_cast<int>(stack->size());
         int yIndex = getIndexY(stackSize, y);
         if (yIndex == -1)
             return std::nullopt;
@@ -158,12 +178,14 @@ auto FreecellBoardManager::getStackAndPos(double x, double y) ->
         if (stackSize == 0)
             yPos = m_boardMap.tableauY.at(yIndex);
 
-        CardClicked cardClicked{};
-        cardClicked.stack = &stack;
-        cardClicked.pos = { m_boardMap.tableauX.at(index), yPos };
-        cardClicked.index = yIndex;
-        cardClicked.area = FreecellArea::Tableau;
-        return std::optional<CardClicked>{ cardClicked };
+        std::optional<CardClicked> cardClicked{{
+            stack,
+            { m_boardMap.tableauX.at(index), yPos },
+            { 0.0, 0.0 },
+            yIndex,
+            FreecellArea::Tableau
+        }};
+        return cardClicked;
     }
 
     return std::nullopt;
@@ -206,6 +228,21 @@ auto FreecellBoardManager::getIndexY(int stackSize, double yPos) -> int
     return -1;
 }
 
+auto FreecellBoardManager::selectCard(CardClicked c) -> void
+{
+    c.selectionPos = c.stack->at(c.index)->transform.pos();
+    m_cardSelected = c;
+}
+
+auto FreecellBoardManager::deselectCard() -> void
+{
+    m_cardSelected = std::nullopt;
+}
+
+auto FreecellBoardManager::getCardSelected() -> std::optional<CardClicked>
+{
+    return m_cardSelected;
+}
 
 auto FreecellBoardManager::board() -> FreecellBoard&
 {
