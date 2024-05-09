@@ -9,8 +9,9 @@ Freecell::Freecell()
     m_gameLogic.init(&m_boardManager);
 }
 
-auto Freecell::init() -> void
+auto Freecell::init(AnimationEngine* engine) -> void
 {
+    animationEngine = engine;
     createOpenCellsAndFoundations();
     m_dataManager.loadPlayerData();
     m_boardManager.createDeck();
@@ -24,24 +25,17 @@ auto Freecell::init() -> void
 
 auto Freecell::update() -> void
 {
-    auto it = m_movingAnimation.begin();
-    if (it != m_movingAnimation.end())
-    {
-        it->update();
-        if (it->isDone())
-            m_movingAnimation.erase(it);
-    }
-    if (!m_draggingAnimation.isDone())
-        m_draggingAnimation.update(); 
-
     if (m_currentState == GameState::Playing)
     {
         m_matchData.currentTime = Timer::time - m_matchData.startTime - m_matchData.timePaused;
     }
     else if (m_currentState == GameState::WinAnimation)
     {
-        if (!m_gameLogic.isComplete() && m_movingAnimation.size() == 0)
+        if (!m_gameLogic.isComplete() &&
+                animationEngine->getMovingAnimationQuantity() == 0)
+        {
             playWinAnimation();
+        }
         else if(m_gameLogic.isComplete())
         {
             m_currentState = GameState::Won;
@@ -61,12 +55,11 @@ auto Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool i
     if (m_currentState != GameState::Playing)
         return;
 
-    if (m_movingAnimation.size() > 0)
+    if (animationEngine->getMovingAnimationQuantity() > 0)
     {
         LOG_WARN("Can't input while card is moving!");
         return;
     }
-
     auto cardClicked = m_boardManager.getStackAndPos(xPos, yPos);
     if (!cardClicked.has_value())
     {
@@ -100,7 +93,7 @@ auto Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool i
         }
         std::span<CardEntity*> cards(&cardClicked->stack->at(cardClicked->index),
                 stackSize - cardClicked->index);
-        m_draggingAnimation.start(cards);
+        animationEngine->addDraggingAnimation(DraggingAnimation{ cards });
 
         m_boardManager.selectCard(cardClicked.value());
         return;
@@ -130,13 +123,11 @@ auto Freecell::handleInputDoubleClick(double xPos, double yPos) -> void
     {
         return;
     }
-
-    if (m_movingAnimation.size() > 0 || !m_draggingAnimation.isDone())
+    if (animationEngine->isAnyAnimationPlaying())
     {
         LOG_WARN("Can't input while card is moving!");
         return;
     }
-
     auto cardClicked = m_boardManager.getStackAndPos(xPos, yPos);
     if (!cardClicked.has_value())
         return;
@@ -177,13 +168,11 @@ auto Freecell::handleInputUndo() -> void
     {
         return;
     }
-
-    if (m_movingAnimation.size() > 0 || !m_draggingAnimation.isDone())
+    if (animationEngine->isAnyAnimationPlaying())
     {
         LOG_WARN("Can't input while card is moving!");
         return;
     }
-
     if (m_history.isUndoStackEmpty())
     {
         LOG_WARN("No moves to undo");
@@ -198,7 +187,7 @@ auto Freecell::handleInputUndo() -> void
         m_boardManager.moveCard(*move.dstStack, *move.srcStack, move.cardQuantity);
         m_history.undo();
     });
-    m_movingAnimation.push_back(m);
+    animationEngine->addMovingAnimation(m);
 }
 
 auto Freecell::handleInputRedo() -> void
@@ -207,13 +196,11 @@ auto Freecell::handleInputRedo() -> void
     {
         return;
     }
-
-    if (m_movingAnimation.size() > 0 || !m_draggingAnimation.isDone())
+    if (animationEngine->isAnyAnimationPlaying())
     {
         LOG_WARN("Can't input while card is moving!");
         return;
     }
-
     if (m_history.isRedoStackEmpty())
     {
         LOG_WARN("No moves to redo");
@@ -228,12 +215,12 @@ auto Freecell::handleInputRedo() -> void
         m_boardManager.moveCard(*move.dstStack, *move.srcStack, move.cardQuantity);
         m_history.redo();
     });
-    m_movingAnimation.push_back(m);
+    animationEngine->addMovingAnimation(m);
 }
 
 auto Freecell::handleInputRestart() -> void
 {
-    if (m_movingAnimation.size() > 0 || !m_draggingAnimation.isDone())
+    if (animationEngine->isAnyAnimationPlaying())
     {
         LOG_WARN("Can't input while card is moving!");
         return;
@@ -252,12 +239,11 @@ auto Freecell::handleInputRestart() -> void
 
 auto Freecell::handleInputNewGame() -> void
 {
-    if (m_movingAnimation.size() > 0 || !m_draggingAnimation.isDone())
+    if (animationEngine->isAnyAnimationPlaying())
     {
         LOG_WARN("Can't input while card is moving!");
         return;
     }
-
     m_boardManager.emptyTable();
     m_boardManager.shuffleDeck();
     m_boardManager.fillTable();
@@ -276,7 +262,8 @@ auto Freecell::handleInputNewGame() -> void
 
 auto Freecell::handleInputPause() -> void
 {
-    if (m_movingAnimation.size() > 0 || !m_draggingAnimation.isDone())
+
+    if (animationEngine->isAnyAnimationPlaying())
     {
         LOG_WARN("Can't input while card is moving!");
         return;
@@ -353,11 +340,10 @@ auto Freecell::moveBackAndDeselectCard() -> void
             card.stack->size() - card.index);
     MovingAnimation m(cards, card.stack->at(card.index)->transform.pos(),
             card.selectionPos);
-    m_movingAnimation.push_back(m);
+    animationEngine->addMovingAnimation(m);
 
     m_boardManager.deselectCard();
-    if (!m_draggingAnimation.isDone())
-        m_draggingAnimation.stop();
+    animationEngine->stopDraggingAnimation();
 }
 
 auto Freecell::handleClick(CardStack& stack, glm::vec2 dstPos,
@@ -373,8 +359,7 @@ auto Freecell::handleClick(CardStack& stack, glm::vec2 dstPos,
         if (glm::vec2(card->transform.pos()) == cardSelected.selectionPos)
         {
             m_boardManager.deselectCard();
-            if (!m_draggingAnimation.isDone())
-                m_draggingAnimation.stop();
+            animationEngine->stopDraggingAnimation();
             return;
         }
 
@@ -401,11 +386,10 @@ auto Freecell::handleClick(CardStack& stack, glm::vec2 dstPos,
             m_currentState = GameState::WinAnimation;
         }
     });
-    m_movingAnimation.push_back(m);
+    animationEngine->addMovingAnimation(m);
 
     m_boardManager.deselectCard();
-    if (!m_draggingAnimation.isDone())
-        m_draggingAnimation.stop();
+    animationEngine->stopDraggingAnimation();
 }
 
 
@@ -444,7 +428,7 @@ auto Freecell::winMoves(CardStack& src, std::span<CardStack> dst, std::span<floa
                 Move m{&src, &dst[i], 1, srcCardPos, dstPos};
                 m_history.recordMove(m);
             });
-            m_movingAnimation.push_back(m);
+            animationEngine->addMovingAnimation(m);
         }
     }
 }
@@ -471,7 +455,7 @@ auto Freecell::tryMoveFromTo(CardStack& src, std::span<CardStack> dst, std::span
                     m_currentState = GameState::WinAnimation;
                 }
             });
-            m_movingAnimation.push_back(m);
+            animationEngine->addMovingAnimation(m);
 
             return true;
         }
@@ -480,8 +464,7 @@ auto Freecell::tryMoveFromTo(CardStack& src, std::span<CardStack> dst, std::span
     LOG_INFO("No valid move for open cells or foundations");
 
     m_boardManager.deselectCard();
-    if (!m_draggingAnimation.isDone())
-        m_draggingAnimation.stop();
+    animationEngine->stopDraggingAnimation();
 
     return false;
 }

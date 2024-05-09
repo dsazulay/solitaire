@@ -5,6 +5,7 @@
 
 #include "window.h"
 #include "graphics/renderer.h"
+#include "animation/animation_engine.h"
 #include "ui_renderer.h"
 #include "freecell/freecell.h"
 #include "scoundrel/scoundrel.h"
@@ -48,5 +49,6 @@ private:
     std::unique_ptr<UiRenderer> m_uiRenderer;
     Freecell m_freecell;
     Scoundrel m_scoundrel;
+    AnimationEngine m_animationEngine;
 };
 

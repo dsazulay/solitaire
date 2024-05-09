@@ -8,8 +8,8 @@
 #include <glm/vec3.hpp>
 #include <glm/gtx/compatibility.hpp>
 
-#include "card.h"
-#include "timer.h"
+#include "../card.h"
+#include "../timer.h"
 
 class MovingAnimation
 {

@@ -36,7 +36,7 @@ auto Solitaire::init() -> void
     m_uiRenderer = std::make_unique<UiRenderer>(m_window.getGlfwWindow());
 
     // Game init
-    m_freecell.init();
+    m_freecell.init(&m_animationEngine);
     m_scoundrel.init();
     m_uiRenderer->setPlayerAndMatchData(m_freecell.playerData(), m_freecell.matchData());
 
@@ -86,6 +86,7 @@ auto Solitaire::mainLoop() -> void
         Timer::update();
 
         m_freecell.update();
+        m_animationEngine.update();
         m_renderer.render(m_freecell.board().cards,
                 m_freecell.board().cardBgs,
                 (RenderMode) m_uiRenderer->renderMode());
