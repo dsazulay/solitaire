@@ -1,8 +1,9 @@
 #pragma once
 
+#include <optional>
+#include <span>
 #include "../game_board.h"
 #include "../dealer.h"
-#include <optional>
 
 constexpr const int FREECELL_TABLEAU_SIZE = 8;
 constexpr const int FREECELL_MAX_STACK_SIZE = 14;
@@ -16,8 +17,6 @@ constexpr const float OPENCELLS_INIT_POS_X = 140.0f;
 constexpr const float SPECIAL_AREAS_OFFSET_X = 130.0f;
 constexpr const float FOUNDATIONS_INIT_POS_X = OPENCELLS_INIT_POS_X +
     90.f + 4 * SPECIAL_AREAS_OFFSET_X;
-constexpr const float CARD_HALF_WIDTH = 50.0f;
-constexpr const float CARD_HALF_HEIGHT = 74.0f;
 constexpr const float CARD_MIDDLE_HEIGHT = 42.0f;
 constexpr const float HALF_SCREEN_WIDTH = 640.0f;
 
@@ -76,7 +75,7 @@ struct FreecellBoardMap
     }
 };
 
-class FreecellBoardManager : BoardManager
+class FreecellBoardManager : public BoardManager
 {
 public:
     auto createDeck() -> void override;

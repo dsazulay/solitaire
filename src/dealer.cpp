@@ -95,16 +95,6 @@ auto Dealer::deck() -> std::vector<CardEntity>&
     return m_deck;
 }
 
-auto Dealer::fillDungeon(CardStack& dungeon, glm::vec2 pos) -> void
-{
-    dungeon.reserve(m_deck.size());
-    for (auto& card : m_deck)
-    {
-        card.transform.pos(glm::vec3{ pos, 0.0 });
-        dungeon.emplace_back(&card);
-    }
-}
-
 auto Dealer::swapCard(CardEntity& a, CardEntity& b) -> void
 {
     auto tmp = a;

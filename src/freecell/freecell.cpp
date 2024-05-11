@@ -50,7 +50,7 @@ auto Freecell::update() -> void
     }
 }
 
-auto Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool isDragStart) -> void
+auto Freecell::handleClick(double xPos, double yPos, bool isDraging, bool isDragStart) -> void
 {
     if (m_currentState != GameState::Playing)
         return;
@@ -115,7 +115,7 @@ auto Freecell::handleInputClick(double xPos, double yPos, bool isDraging, bool i
     handleClick(*cardClicked->stack, cardClicked->pos, checkMoveFunc);
 }
 
-auto Freecell::handleInputDoubleClick(double xPos, double yPos) -> void
+auto Freecell::handleDoubleClick(double xPos, double yPos) -> void
 {
     auto& m_board = m_boardManager.board();
     auto& m_boardMap = m_boardManager.boardMap();
@@ -162,7 +162,7 @@ auto Freecell::handleInputDoubleClick(double xPos, double yPos) -> void
     }
 }
 
-auto Freecell::handleInputUndo() -> void
+auto Freecell::handleUndo() -> void
 {
     if (m_currentState != GameState::Playing)
     {
@@ -190,7 +190,7 @@ auto Freecell::handleInputUndo() -> void
     animationEngine->addMovingAnimation(m);
 }
 
-auto Freecell::handleInputRedo() -> void
+auto Freecell::handleRedo() -> void
 {
     if (m_currentState != GameState::Playing)
     {
@@ -218,7 +218,7 @@ auto Freecell::handleInputRedo() -> void
     animationEngine->addMovingAnimation(m);
 }
 
-auto Freecell::handleInputRestart() -> void
+auto Freecell::handleRestart() -> void
 {
     if (animationEngine->isAnyAnimationPlaying())
     {
@@ -237,7 +237,7 @@ auto Freecell::handleInputRestart() -> void
     m_matchData.timePaused = 0.0f;
 }
 
-auto Freecell::handleInputNewGame() -> void
+auto Freecell::handleNewGame() -> void
 {
     if (animationEngine->isAnyAnimationPlaying())
     {
@@ -260,7 +260,7 @@ auto Freecell::handleInputNewGame() -> void
     m_matchData.timePaused = 0.0f;
 }
 
-auto Freecell::handleInputPause() -> void
+auto Freecell::handlePause() -> void
 {
 
     if (animationEngine->isAnyAnimationPlaying())
@@ -284,7 +284,7 @@ auto Freecell::handleInputPause() -> void
     }
 }
 
-auto Freecell::handleInputPrintCards() -> void
+auto Freecell::handlePrintCards() -> void
 {
     auto& m_board = m_boardManager.board();
     for (auto& stack : m_board.tableau)

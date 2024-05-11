@@ -39,6 +39,7 @@ auto Solitaire::init() -> void
     m_freecell.init(&m_animationEngine);
     m_scoundrel.init();
     m_uiRenderer->setPlayerAndMatchData(m_freecell.playerData(), m_freecell.matchData());
+    gameInputHandler = &m_scoundrel;
 
     Dispatcher<MouseClickEvent>::subscribe(
         [&] (const auto& arg) { Solitaire::onMouseClick(arg); });
@@ -85,14 +86,14 @@ auto Solitaire::mainLoop() -> void
         }
         Timer::update();
 
-        m_freecell.update();
+        //m_freecell.update();
         m_animationEngine.update();
-        m_renderer.render(m_freecell.board().cards,
-                m_freecell.board().cardBgs,
-                (RenderMode) m_uiRenderer->renderMode());
-        //m_renderer.render(m_scoundrel.board().cards,
-        //        m_scoundrel.board().cardBgs,
+        //m_renderer.render(m_freecell.board().cards,
+        //        m_freecell.board().cardBgs,
         //        (RenderMode) m_uiRenderer->renderMode());
+        m_renderer.render(m_scoundrel.board().cards,
+                m_scoundrel.board().cardBgs,
+                (RenderMode) m_uiRenderer->renderMode());
         m_uiRenderer->render();
 
         m_window.swapBuffers();
@@ -113,35 +114,35 @@ auto Solitaire::sleepToTargetFps(std::chrono::time_point<std::chrono::steady_clo
 
 auto Solitaire::onMouseClick(const MouseClickEvent& e) -> void
 {
-    m_freecell.handleInputClick(e.xPos(), e.yPos(), false, false);
+    gameInputHandler->handleClick(e.xPos(), e.yPos(), false, false);
 }
 
 auto Solitaire::onMouseDoubleClick(const MouseDoubleClickEvent& e) -> void
 {
-    m_freecell.handleInputDoubleClick(e.xPos(), e.yPos());
+    gameInputHandler->handleDoubleClick(e.xPos(), e.yPos());
 }
 
 auto Solitaire::onMouseDrag(const MouseDragEvent& e) -> void
 {
-    m_freecell.handleInputClick(e.xPos(), e.yPos(), true, e.isStart());
+    gameInputHandler->handleClick(e.xPos(), e.yPos(), true, e.isStart());
 }
 
 auto Solitaire::onKeyboardPress(const KeyboardPressEvent& e) -> void
 {
     if (e.key() == KeyCode::U)
-        m_freecell.handleInputUndo();
+        gameInputHandler->handleUndo();
     else if (e.key() == KeyCode::R)
-        m_freecell.handleInputRedo();
+        gameInputHandler->handleRedo();
     else if (e.key() == KeyCode::E)
-        m_freecell.handleInputRestart();
+        gameInputHandler->handleRestart();
     else if (e.key() == KeyCode::N)
-        m_freecell.handleInputNewGame();
+        gameInputHandler->handleNewGame();
     else if (e.key() == KeyCode::S)
         m_uiRenderer->toggleStatsWindow();
     else if (e.key() == KeyCode::D)
         m_uiRenderer->toggleDebugWindow();
     else if (e.key() == KeyCode::P)
-        m_freecell.handleInputPause();
+        gameInputHandler->handlePause();
     else if (e.key() == KeyCode::C)
     {
         ResourceManager::recompileShaders();
@@ -159,16 +160,16 @@ auto Solitaire::onUiGameEvent(const UiGameEvent& e) -> void
     switch (e.event())
     {
         case Event::GameEvent::NewGame:
-            m_freecell.handleInputNewGame();
+            gameInputHandler->handleNewGame();
             break;
         case Event::GameEvent::Restart:
-            m_freecell.handleInputRestart();
+            gameInputHandler->handleRestart();
             break;
         case Event::GameEvent::Undo:
-            m_freecell.handleInputUndo();
+            gameInputHandler->handleUndo();
             break;
         case Event::GameEvent::Redo:
-            m_freecell.handleInputRedo();
+            gameInputHandler->handleRedo();
             break;
     }
 }
@@ -181,6 +182,6 @@ auto Solitaire::onUiRecompileShaderEvent(const UiRecompileShaderEvent& e) -> voi
 
 auto Solitaire::onUiPrintCardEvent(const UiPrintCardEvent& e) -> void
 {
-    m_freecell.handleInputPrintCards();
+    gameInputHandler->handlePrintCards();
 }
 

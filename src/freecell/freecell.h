@@ -6,6 +6,7 @@
 
 #include "../history.h"
 #include "../card.h"
+#include "../iinput_handler.h"
 #include "../animation/animation_engine.h"
 #include "freecell_boardmanager.h"
 #include "freecell_gamelogic.h"
@@ -34,7 +35,7 @@ struct Move
     }
 };
 
-class Freecell
+class Freecell : public IInputHandler
 {
     using IsLegalMoveFunc = bool(FreecellGameLogic::*)(CardEntity* card, const CardStack& stack);
 public:
@@ -42,15 +43,15 @@ public:
     auto  init(AnimationEngine* engine) -> void;
     auto  update() -> void;
 
-    auto handleInputClick(double xPos, double yPos, bool isDraging,
-            bool isDragStart) -> void;
-    auto handleInputDoubleClick(double xPos, double yPos) -> void;
-    auto handleInputUndo() -> void;
-    auto handleInputRedo() -> void;
-    auto handleInputRestart() -> void;
-    auto handleInputNewGame() -> void;
-    auto handleInputPause() -> void;
-    auto handleInputPrintCards() -> void;
+    auto handleClick(double xPos, double yPos, bool isDragging,
+            bool isDragStart) -> void override;
+    auto handleDoubleClick(double xpos, double ypos) -> void override;
+    auto handleUndo() -> void override;
+    auto handleRedo() -> void override;
+    auto handleRestart() -> void override;
+    auto handleNewGame() -> void override;
+    auto handlePause() -> void override;
+    auto handlePrintCards() -> void override;
 
     auto board() -> FreecellBoard&;
     auto playerData() -> PlayerData*;
@@ -76,6 +77,6 @@ private:
     FreecellBoardManager m_boardManager;
     FreecellGameLogic m_gameLogic{};
     History<Move> m_history;
-    AnimationEngine* animationEngine;
+    AnimationEngine* animationEngine{};
 };
 

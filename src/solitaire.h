@@ -50,5 +50,6 @@ private:
     Freecell m_freecell;
     Scoundrel m_scoundrel;
     AnimationEngine m_animationEngine;
+    IInputHandler* gameInputHandler;
 };
 

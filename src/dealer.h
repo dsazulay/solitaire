@@ -16,9 +16,6 @@ public:
     auto turnCardsUp() -> void;
     auto deck() -> std::vector<CardEntity>&;
 
-    // scoundrel
-    auto fillDungeon(CardStack& dungeon, glm::vec2 pos) -> void;
-
 private:
     auto swapCard(CardEntity& a, CardEntity& b) -> void;
     auto swapUVs(glm::vec2& a, glm::vec2& b) -> void;
