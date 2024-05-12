@@ -16,7 +16,7 @@ constexpr const glm::vec2 HANDS_POS{790.0, 240.0};
 constexpr const glm::vec2 ROOM_POS{400.0, 400.0};
 constexpr const glm::vec2 WPN_POS{400.0, 240.0};
 constexpr const float ROOM_OFFSET = 130.0;
-constexpr const float WPN_OFFSET = 30.0;
+constexpr const float WPN_OFFSET = 25.0;
 
 enum class ScoundrelArea
 {
@@ -34,16 +34,20 @@ struct CardClickedScoundrel
     CardStack* stack;
     glm::vec2 pos;
     glm::vec2 selectionPos;
+    ScoundrelArea area;
 };
 
 struct ScoundrelBoard
 {
     CardStack cards;
     std::span<CardBg> cardBgs;
+
     CardStack dungeon;
     CardStack discard;
-    std::array<CardStack, ROOM_SIZE> room;
     CardStack weapon;
+    CardStack potion;
+    CardStack hands;
+    std::array<CardStack, ROOM_SIZE> room;
 };
 
 struct ScoundrelBoardMap

@@ -28,6 +28,14 @@ auto ScoundrelBoardManager::updateCardList() -> void
     {
         m_board.cards.push_back(card);
     }
+    if (m_board.potion.size() > 0)
+    {
+        m_board.cards.push_back(m_board.potion.back());
+    }
+    if (m_board.hands.size() > 0)
+    {
+        m_board.cards.push_back(m_board.hands.back());
+    }
 }
 
 auto ScoundrelBoardManager::emptyTable() -> void
@@ -142,15 +150,12 @@ auto ScoundrelBoardManager::getStackAndPos(double x, double y) ->
         if (index == -1)
             return std::nullopt;
 
-        LOG_WARN("ROOM {}", index);
-
         auto* stack = &m_board.room.at(index);
         std::optional<CardClickedScoundrel> cardClicked{{
-            /*stack,
-            { m_boardMap.openCells.at(index), SPECIAL_AREAS_Y },
+            stack,
+            m_boardMap.room.at(index),
             { 0.0, 0.0 },
-            static_cast<int>(stack->size()) - 1,
-            ScoundrelArea::OpenCells*/
+            ScoundrelArea::Room
         }};
 
         return cardClicked;
@@ -158,26 +163,44 @@ auto ScoundrelBoardManager::getStackAndPos(double x, double y) ->
 
     if (area == ScoundrelArea::Potion)
     {
-        LOG_WARN("POTION");
         std::optional<CardClickedScoundrel> cardClicked{{
-            /*stack,
-            { m_boardMap.foundations.at(index), SPECIAL_AREAS_Y },
+            &m_board.potion,
+            m_boardMap.potion,
             { 0.0, 0.0 },
-            static_cast<int>(stack->size()) - 1,
-            ScoundrelArea::Foundations*/
+            ScoundrelArea::Potion
         }};
         return  cardClicked;
     }
 
     if (area == ScoundrelArea::Hands)
     {
-        LOG_WARN("HANDS");
         std::optional<CardClickedScoundrel> cardClicked{{
-            /*stack,
-            { m_boardMap.tableauX.at(index), yPos },
+            &m_board.hands,
+            m_boardMap.hands,
             { 0.0, 0.0 },
-            yIndex,
-            ScoundrelArea::Tableau*/
+            ScoundrelArea::Hands
+        }};
+        return cardClicked;
+    }
+
+    if (area == ScoundrelArea::Weapon)
+    {
+        std::optional<CardClickedScoundrel> cardClicked{{
+            &m_board.weapon,
+            m_boardMap.weapon.at(m_board.weapon.size()),
+            { 0.0, 0.0 },
+            ScoundrelArea::Weapon
+        }};
+        return cardClicked;
+    }
+
+    if (area == ScoundrelArea::Dungeon)
+    {
+        std::optional<CardClickedScoundrel> cardClicked{{
+            &m_board.dungeon,
+            m_boardMap.dungeon,
+            { 0.0, 0.0 },
+            ScoundrelArea::Dungeon
         }};
         return cardClicked;
     }
@@ -224,7 +247,7 @@ auto ScoundrelBoardManager::getIndexY(int stackSize, double yPos) -> int
 
 auto ScoundrelBoardManager::selectCard(CardClickedScoundrel c) -> void
 {
-//    c.selectionPos = c.stack->at(c.index)->transform.pos();
+    c.selectionPos = c.stack->back()->transform.pos();
     m_cardSelected = c;
 }
 
@@ -233,7 +256,8 @@ auto ScoundrelBoardManager::deselectCard() -> void
     m_cardSelected = std::nullopt;
 }
 
-auto ScoundrelBoardManager::getCardSelected() -> std::optional<CardClickedScoundrel>
+auto ScoundrelBoardManager::getCardSelected() ->
+        std::optional<CardClickedScoundrel>
 {
     return m_cardSelected;
 }

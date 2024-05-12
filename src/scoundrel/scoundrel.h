@@ -2,14 +2,14 @@
 
 #include <array>
 
-#include "../game_board.h"
 #include "../iinput_handler.h"
 #include "scoundrel_boardmanager.h"
+#include "../animation/animation_engine.h"
 
 class Scoundrel : public IInputHandler
 {
 public:
-    auto init() -> void;
+    auto init(AnimationEngine* engine) -> void;
     auto update() -> void;
 
     auto board() -> ScoundrelBoard&;
@@ -21,7 +21,12 @@ public:
 private:
     auto createBgCards() -> void;
 
+    auto executeMove(CardClickedScoundrel& selected,
+                     CardClickedScoundrel& dst) -> void;
+    auto moveBackAndDeselectCard() -> void;
+
     int m_life;
     std::array<CardBg, CARD_BG_SIZE> m_cardBg;
     ScoundrelBoardManager m_boardManager;
+    AnimationEngine* animationEngine;
 };

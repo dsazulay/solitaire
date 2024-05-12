@@ -37,7 +37,7 @@ auto Solitaire::init() -> void
 
     // Game init
     m_freecell.init(&m_animationEngine);
-    m_scoundrel.init();
+    m_scoundrel.init(&m_animationEngine);
     m_uiRenderer->setPlayerAndMatchData(m_freecell.playerData(), m_freecell.matchData());
     gameInputHandler = &m_scoundrel;
 
