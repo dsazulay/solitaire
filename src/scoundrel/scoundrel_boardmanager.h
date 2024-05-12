@@ -85,7 +85,11 @@ public:
     auto fillTable() -> void override;
     auto updateCardList() -> void override;
 
+    auto getNumberOfAvailableRooms() -> int;
     auto fillRoom() -> void;
+    auto clearTableForNextFloor() -> void;
+    auto discardWeapon() -> void;
+    auto run() -> void;
 
     auto moveCard(CardStack& src, CardStack& dst, int n) -> void;
 
@@ -109,3 +113,4 @@ private:
     ScoundrelBoardMap m_boardMap;
     std::optional<CardClickedScoundrel> m_cardSelected;
 };
+

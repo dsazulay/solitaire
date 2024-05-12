@@ -60,29 +60,63 @@ auto ScoundrelBoardManager::fillTable() -> void
 
 auto ScoundrelBoardManager::fillRoom() -> void
 {
-    int startIndex = 2;
+    int startIndex = 3;
     // move remaining card to last position
     // TODO: use iterators until last pos - 1
     for (auto& stack : m_board.room)
     {
-        if (stack.size() > 0 && stack != m_board.room[3])
+        if (stack.size() > 0)
         {
+            startIndex = 2;
+
+            if (stack == m_board.room[3])
+                break;
             stack.back()->transform.pos(glm::vec3{ m_boardMap.room[3], 0.0 });
             m_board.room[3].push_back(stack.back());
             stack.pop_back();
             break;
         }
-
-        // if we get here, it means there's no card in the room
-        startIndex = 3;
     }
 
     for (int i = startIndex; i >= 0; --i)
     {
         m_board.room[i].push_back(m_board.dungeon.back());
         m_board.dungeon.pop_back();
-        m_board.room[i].back()->transform.pos(glm::vec3{ m_boardMap.room[i], 0.0 });
+        m_board.room[i].back()->transform.pos(
+            glm::vec3{ m_boardMap.room[i], 0.0 });
     }
+}
+
+auto ScoundrelBoardManager::getNumberOfAvailableRooms() -> int
+{
+    int n = 0;
+    for (auto r : m_board.room)
+    {
+        if (r.size() > 0)
+            ++n;
+    }
+    return n;
+}
+
+auto ScoundrelBoardManager::clearTableForNextFloor() -> void
+{
+    for (auto c : m_board.potion)
+        c->transform.pos(m_boardMap.discard);
+    moveCard(m_board.potion, m_board.discard, m_board.potion.size());
+
+    for (auto c : m_board.hands)
+        c->transform.pos(m_boardMap.discard);
+    moveCard(m_board.hands, m_board.discard, m_board.hands.size());
+}
+
+auto ScoundrelBoardManager::discardWeapon() -> void
+{
+    moveCard(m_board.weapon, m_board.discard, m_board.weapon.size());
+}
+
+auto ScoundrelBoardManager::run() -> void
+{
+    // TODO: implement me
 }
 
 auto ScoundrelBoardManager::moveCard(CardStack& src, CardStack& dst, int n) -> void

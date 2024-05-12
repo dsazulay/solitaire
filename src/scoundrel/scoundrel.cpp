@@ -79,6 +79,19 @@ auto Scoundrel::handleClick(double xpos, double ypos, bool isDragging,
             return;
         }
 
+        if (cardClicked.area == ScoundrelArea::Dungeon)
+        {
+            if (m_boardManager.getNumberOfAvailableRooms() > 1)
+            {
+                LOG_INFO("You need to have cleared at least 3 rooms");
+                return;
+            }
+            m_boardManager.clearTableForNextFloor();
+            m_boardManager.fillRoom();
+            m_boardManager.updateCardList();
+            return;
+        }
+
         if (cardClicked.area != ScoundrelArea::Room)
         {
             LOG_INFO("Cannot select this");

@@ -32,6 +32,12 @@ struct Transform
         updateModel();
     }
 
+    auto pos(glm::vec2 p) -> void
+    {
+        pos_ = glm::vec3{ p, 0.0 };
+        updateModel();
+    }
+
     auto pos() -> glm::vec3
     {
         return pos_;
