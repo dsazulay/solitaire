@@ -78,16 +78,22 @@ auto ScoundrelBoardManager::fillRoom() -> void
         }
     }
 
-    for (int i = startIndex; i >= 0; --i)
+    for (int i = startIndex; i >= 0 && m_board.dungeon.size() > 0; --i)
     {
         m_board.room[i].push_back(m_board.dungeon.back());
         m_board.dungeon.pop_back();
         m_board.room[i].back()->transform.pos(
             glm::vec3{ m_boardMap.room[i], 0.0 });
     }
+
+    if (m_board.dungeon.size() == 0)
+    {
+        std::span<CardBg> d{ m_board.cardBgs.begin() + 1, 3 };
+        m_board.cardBgs = d;
+    }
 }
 
-auto ScoundrelBoardManager::getNumberOfAvailableRooms() -> int
+auto ScoundrelBoardManager::getNumberOfAvailableCards() -> int
 {
     int n = 0;
     for (auto r : m_board.room)
@@ -175,7 +181,12 @@ auto ScoundrelBoardManager::getArea(double x, double y) -> ScoundrelArea
             return ScoundrelArea::Potion;
         }
 
-        return ScoundrelArea::Weapon;
+        if (x > WPN_POS.x - CARD_HALF_WIDTH &&
+            x < WPN_POS.x + CARD_HALF_WIDTH +
+            (m_board.weapon.size() - 1) * WPN_OFFSET)
+        {
+            return ScoundrelArea::Weapon;
+        }
     }
 
     return ScoundrelArea::None;

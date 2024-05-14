@@ -26,6 +26,7 @@ private:
     auto moveBackAndDeselectCard() -> void;
 
     int m_life;
+    bool m_runnedLastRoom;
     std::array<CardBg, CARD_BG_SIZE> m_cardBg;
     ScoundrelBoardManager m_boardManager;
     AnimationEngine* animationEngine;

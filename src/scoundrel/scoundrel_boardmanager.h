@@ -16,7 +16,7 @@ constexpr const glm::vec2 HANDS_POS{790.0, 240.0};
 constexpr const glm::vec2 ROOM_POS{400.0, 400.0};
 constexpr const glm::vec2 WPN_POS{400.0, 240.0};
 constexpr const float ROOM_OFFSET = 130.0;
-constexpr const float WPN_OFFSET = 25.0;
+constexpr const float WPN_OFFSET = 20.0;
 
 enum class ScoundrelArea
 {
@@ -85,7 +85,7 @@ public:
     auto fillTable() -> void override;
     auto updateCardList() -> void override;
 
-    auto getNumberOfAvailableRooms() -> int;
+    auto getNumberOfAvailableCards() -> int;
     auto fillRoom() -> void;
     auto clearTableForNextFloor() -> void;
     auto discardWeapon() -> void;

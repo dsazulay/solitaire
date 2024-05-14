@@ -13,6 +13,7 @@ auto Scoundrel::init(AnimationEngine* engine) -> void
     m_boardManager.fillRoom();
     m_boardManager.updateCardList();
     m_life = MAX_LIFE;
+    m_runnedLastRoom = false;
 }
 
 auto Scoundrel::createBgCards() -> void
@@ -81,14 +82,15 @@ auto Scoundrel::handleClick(double xpos, double ypos, bool isDragging,
 
         if (cardClicked.area == ScoundrelArea::Dungeon)
         {
-            if (m_boardManager.getNumberOfAvailableRooms() > 1)
+            if (m_boardManager.getNumberOfAvailableCards() > 1)
             {
-                LOG_INFO("You need to have cleared at least 3 rooms");
+                LOG_INFO("You need to have cleared at least 3 cards");
                 return;
             }
             m_boardManager.clearTableForNextFloor();
             m_boardManager.fillRoom();
             m_boardManager.updateCardList();
+            m_runnedLastRoom = false;
             return;
         }
 
@@ -122,12 +124,12 @@ auto Scoundrel::handleClick(double xpos, double ypos, bool isDragging,
         }
         if (cardClicked.stack->size() > 0)
         {
-            LOG_INFO("Can't move more than one card on the same room");
-            moveBackAndDeselectCard();
-            return;
+            LOG_INFO("Your life won't change");
+            m_life -= cardSelected.stack->back()->card.number + 1;
         }
         m_life = glm::min(20, m_life + cardSelected.stack->back()->card.number + 1);
         executeMove(cardSelected, cardClicked);
+        LOG_INFO("{}", m_life);
         return;
     }
     if (cardClicked.area == ScoundrelArea::Hands)
@@ -201,11 +203,12 @@ auto Scoundrel::handleDoubleClick(double xpos, double ypos) -> void
 
     if (areaClicked->area == ScoundrelArea::Dungeon)
     {
-        if (m_boardManager.getNumberOfAvailableRooms() == 4)
+        if (m_boardManager.getNumberOfAvailableCards() == 4 && !m_runnedLastRoom)
         {
             m_boardManager.run();
             m_boardManager.fillRoom();
             m_boardManager.updateCardList();
+            m_runnedLastRoom = true;
             return;
         }
         LOG_INFO("Can only run when all 4 rooms are available");
