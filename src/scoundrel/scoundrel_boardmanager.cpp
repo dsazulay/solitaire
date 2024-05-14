@@ -111,12 +111,20 @@ auto ScoundrelBoardManager::clearTableForNextFloor() -> void
 
 auto ScoundrelBoardManager::discardWeapon() -> void
 {
+    for (auto c : m_board.weapon)
+        c->transform.pos(m_boardMap.discard);
     moveCard(m_board.weapon, m_board.discard, m_board.weapon.size());
 }
 
 auto ScoundrelBoardManager::run() -> void
 {
-    // TODO: implement me
+    for (int i = ROOM_SIZE - 1; i >= 0; --i)
+    {
+        m_board.room[i].back()->transform.pos(m_boardMap.dungeon);
+        m_board.dungeon.insert(m_board.dungeon.begin(),
+                               m_board.room[i].back());
+        m_board.room[i].pop_back();
+    }
 }
 
 auto ScoundrelBoardManager::moveCard(CardStack& src, CardStack& dst, int n) -> void
@@ -256,26 +264,6 @@ auto ScoundrelBoardManager::getIndexX(std::span<glm::vec2> area, double xPos) ->
 
 auto ScoundrelBoardManager::getIndexY(int stackSize, double yPos) -> int
 {
-  /*  if (stackSize == 0)
-    {
-        auto y = m_boardMap.tableauY.front();
-        if (yPos < y + CARD_HALF_HEIGHT && yPos > y - CARD_HALF_HEIGHT)
-            return 0;
-        else
-            return -1;
-    }
-
-    for (int i = 0; i < stackSize - 1; i++)
-    {
-        auto y = m_boardMap.tableauY.at(i);
-        if (yPos < y + CARD_HALF_HEIGHT && yPos > y + CARD_MIDDLE_HEIGHT)
-            return i;
-    }
-
-    auto y = m_boardMap.tableauY.at(stackSize - 1);
-    if (yPos < y + CARD_HALF_HEIGHT && yPos > y - CARD_HALF_HEIGHT)
-        return stackSize - 1;
-*/
     return -1;
 }
 

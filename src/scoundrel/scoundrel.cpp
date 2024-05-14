@@ -189,7 +189,35 @@ auto Scoundrel::handleClick(double xpos, double ypos, bool isDragging,
 
 auto Scoundrel::handleDoubleClick(double xpos, double ypos) -> void
 {
-    LOG_ERROR("Scoundrel double click");
+    if (animationEngine->getMovingAnimationQuantity() > 0)
+    {
+        LOG_WARN("Can't input while card is moving!");
+        return;
+    }
+
+    auto areaClicked = m_boardManager.getStackAndPos(xpos, ypos);
+    if (!areaClicked.has_value())
+        return;
+
+    if (areaClicked->area == ScoundrelArea::Dungeon)
+    {
+        if (m_boardManager.getNumberOfAvailableRooms() == 4)
+        {
+            m_boardManager.run();
+            m_boardManager.fillRoom();
+            m_boardManager.updateCardList();
+            return;
+        }
+        LOG_INFO("Can only run when all 4 rooms are available");
+        return;
+    }
+
+    if (areaClicked->area == ScoundrelArea::Weapon)
+    {
+        m_boardManager.discardWeapon();
+        m_boardManager.updateCardList();
+    }
+
 }
 
 auto Scoundrel::handleNewGame() -> void
