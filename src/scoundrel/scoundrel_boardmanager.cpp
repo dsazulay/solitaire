@@ -1,4 +1,5 @@
 #include "scoundrel_boardmanager.h"
+#include <doctest.h>
 
 auto ScoundrelBoardManager::createDeck() -> void
 {
@@ -305,4 +306,15 @@ auto ScoundrelBoardManager::boardMap() -> ScoundrelBoardMap&
     return m_boardMap;
 }
 
+TEST_CASE("Testing moveCard")
+{
+    ScoundrelBoardManager bm;
+    CardEntity card;
+    CardStack a;
+    CardStack b;
+    a.push_back(&card);
+    bm.moveCard(a, b, 1);
+    CHECK(a.size() == 0);
+    CHECK(b.size() == 1);
+}
 

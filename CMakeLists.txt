@@ -71,6 +71,11 @@ message(STATUS "Installing tiny_obj_loader")
 add_subdirectory(external/tiny_obj_loader)
 set_property(TARGET tiny_obj_loader PROPERTY FOLDER "Dependencies")
 
+# doctest
+message(STATUS "Installing doctest")
+add_subdirectory(external/doctest)
+set_property(TARGET doctest PROPERTY FOLDER "Dependencies")
+
 # =============================================================
 
 # Sources
@@ -98,13 +103,15 @@ add_executable(Solitaire "${FILE_SOURCES}")
 
 # Finish Dependencies
 
-target_link_libraries(Solitaire Glad ImGui glfw glm_static fmt stb_image tiny_obj_loader)
+target_link_libraries(Solitaire Glad ImGui glfw glm_static fmt stb_image
+                      tiny_obj_loader doctest)
 
 # =============================================================
 
 # Finish Settings
 
-target_compile_options(Solitaire PRIVATE -Wall -Wextra)
+target_compile_options(Solitaire PRIVATE -Wall -Wextra -Wshadow
+                       -Wnon-virtual-dtor -pedantic)
 
 # Change output dir to bin
 set_target_properties(Solitaire PROPERTIES
