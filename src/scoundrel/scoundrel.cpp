@@ -13,6 +13,7 @@ auto Scoundrel::init(AnimationEngine* engine) -> void
     m_boardManager.fillRoom();
     m_boardManager.updateCardList();
     m_life = MAX_LIFE;
+    m_currentState = GameState::Playing;
     m_runnedLastRoom = false;
 }
 
@@ -52,6 +53,9 @@ auto Scoundrel::board() -> ScoundrelBoard&
 auto Scoundrel::handleClick(double xpos, double ypos, bool isDragging,
             bool isDragStart) -> void
 {
+    if (m_currentState != GameState::Playing)
+        return;
+
     if (animationEngine->getMovingAnimationQuantity() > 0)
     {
         LOG_WARN("Can't input while card is moving!");
@@ -127,7 +131,8 @@ auto Scoundrel::handleClick(double xpos, double ypos, bool isDragging,
             LOG_INFO("Your life won't change");
             m_life -= cardSelected.stack->back()->card.number + 1;
         }
-        m_life = glm::min(20, m_life + cardSelected.stack->back()->card.number + 1);
+        m_life = glm::min(MAX_LIFE,
+                          m_life + cardSelected.stack->back()->card.number + 1);
         executeMove(cardSelected, cardClicked);
         LOG_INFO("{}", m_life);
         return;
@@ -143,6 +148,11 @@ auto Scoundrel::handleClick(double xpos, double ypos, bool isDragging,
         m_life -= cardSelected.stack->back()->card.number + 1;
         executeMove(cardSelected, cardClicked);
         LOG_INFO("{}", m_life);
+        if (m_life <= 0)
+        {
+            m_currentState = GameState::Won;
+            LOG_INFO("You died!");
+        }
         return;
     }
     if (cardClicked.area == ScoundrelArea::Weapon)
@@ -186,6 +196,11 @@ auto Scoundrel::handleClick(double xpos, double ypos, bool isDragging,
         m_life += glm::min(0, weaponValue - monsterPower);
         executeMove(cardSelected, cardClicked);
         LOG_INFO("{}", m_life);
+        if (m_life <= 0)
+        {
+            m_currentState = GameState::Won;
+            LOG_INFO("You died!");
+        }
     }
 }
 
@@ -220,7 +235,6 @@ auto Scoundrel::handleDoubleClick(double xpos, double ypos) -> void
         m_boardManager.discardWeapon();
         m_boardManager.updateCardList();
     }
-
 }
 
 auto Scoundrel::handleNewGame() -> void

@@ -3,6 +3,14 @@
 constexpr const float CARD_HALF_WIDTH = 50.0f;
 constexpr const float CARD_HALF_HEIGHT = 74.0f;
 
+enum class GameState
+{
+    Playing,
+    WinAnimation,
+    Won,
+    Pause
+};
+
 class BoardManager
 {
 public:

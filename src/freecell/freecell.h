@@ -12,14 +12,6 @@
 #include "freecell_gamelogic.h"
 #include "freecell_datamanager.h"
 
-enum class GameState
-{
-    Playing,
-    WinAnimation,
-    Won,
-    Pause
-};
-
 struct Move
 {
     CardStack* srcStack;

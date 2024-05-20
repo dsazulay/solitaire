@@ -25,6 +25,7 @@ private:
                      CardClickedScoundrel& dst) -> void;
     auto moveBackAndDeselectCard() -> void;
 
+    GameState m_currentState;
     int m_life;
     bool m_runnedLastRoom;
     std::array<CardBg, CARD_BG_SIZE> m_cardBg;
