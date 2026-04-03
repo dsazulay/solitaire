@@ -1,7 +1,5 @@
 #pragma once
 
-#include <array>
-
 #include "../iinput_handler.h"
 #include "../game_common/igame_handler.h"
 #include "scoundrel_boardmanager.h"
@@ -22,8 +20,6 @@ public:
     auto cardBgs() -> std::span<CardBg> override;
 
 private:
-    auto createBgCards() -> void;
-
     auto executeMove(CardClickedScoundrel& selected,
                      CardClickedScoundrel& dst) -> void;
     auto moveBackAndDeselectCard() -> void;
@@ -31,7 +27,6 @@ private:
     GameState m_currentState;
     int m_life;
     bool m_runnedLastRoom;
-    std::array<CardBg, CARD_BG_SIZE> m_cardBg;
     ScoundrelBoardManager m_boardManager;
     AnimationEngine* animationEngine;
 };

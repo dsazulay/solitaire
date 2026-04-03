@@ -6,7 +6,7 @@ constexpr const int MAX_LIFE = 20;
 auto Scoundrel::init(AnimationEngine* engine) -> void
 {
     animationEngine = engine;
-    createBgCards();
+    m_boardManager.createBgCards();
     m_boardManager.createDeck();
     m_boardManager.shuffleDeck();
     m_boardManager.fillTable();
@@ -20,22 +20,6 @@ auto Scoundrel::init(AnimationEngine* engine) -> void
 auto Scoundrel::update() -> void
 {
 
-}
-
-auto Scoundrel::createBgCards() -> void
-{
-    auto& m_boardMap = m_boardManager.boardMap();
-    constexpr const glm::vec2 cardbackUV = { 0.0, 0.875f };
-    constexpr const glm::vec2 weaponUV = { 0.625, 0.875f };
-    constexpr const glm::vec2 potionUV = { 0.500, 0.875f };
-    constexpr const glm::vec2 handsUV = { 0.375, 0.875f };
-
-    m_cardBg[0] = CardBg(cardbackUV, glm::vec3{ m_boardMap.dungeon, 0.0 });
-    m_cardBg[1] = CardBg(weaponUV, glm::vec3{ m_boardMap.weapon[0], 0.0 });
-    m_cardBg[2] = CardBg(potionUV, glm::vec3{ m_boardMap.potion, 0.0 });
-    m_cardBg[3] = CardBg(handsUV, glm::vec3{ m_boardMap.hands, 0.0 });
-
-    m_boardManager.board().cardBgs = m_cardBg;
 }
 
 auto Scoundrel::moveBackAndDeselectCard() -> void
@@ -239,7 +223,15 @@ auto Scoundrel::handleDoubleClick(double xpos, double ypos) -> void
 
 auto Scoundrel::handleNewGame() -> void
 {
-    LOG_ERROR("scoundrel new game");
+    m_boardManager.resetBgCards();
+    m_boardManager.emptyTable();
+    m_boardManager.shuffleDeck();
+    m_boardManager.fillTable();
+    m_boardManager.fillRoom();
+    m_boardManager.updateCardList();
+    m_life = MAX_LIFE;
+    m_currentState = GameState::Playing;
+    m_runnedLastRoom = false;
 }
 
 auto Scoundrel::cards() -> std::span<CardEntity*>

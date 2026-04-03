@@ -44,6 +44,8 @@ auto ScoundrelBoardManager::emptyTable() -> void
     m_board.dungeon = CardStack();
     m_board.discard = CardStack();
     m_board.weapon = CardStack();
+    m_board.potion = CardStack();
+    m_board.hands = CardStack();
 
     for (auto& stack : m_board.room)
         stack = CardStack();
@@ -92,6 +94,26 @@ auto ScoundrelBoardManager::fillRoom() -> void
         std::span<CardBg> d{ m_board.cardBgs.begin() + 1, 3 };
         m_board.cardBgs = d;
     }
+}
+
+auto ScoundrelBoardManager::createBgCards() -> void
+{
+    constexpr const glm::vec2 cardbackUV = { 0.0, 0.875f };
+    constexpr const glm::vec2 weaponUV = { 0.625, 0.875f };
+    constexpr const glm::vec2 potionUV = { 0.500, 0.875f };
+    constexpr const glm::vec2 handsUV = { 0.375, 0.875f };
+
+    m_cardBg[0] = CardBg(cardbackUV, glm::vec3{ m_boardMap.dungeon, 0.0 });
+    m_cardBg[1] = CardBg(weaponUV, glm::vec3{ m_boardMap.weapon[0], 0.0 });
+    m_cardBg[2] = CardBg(potionUV, glm::vec3{ m_boardMap.potion, 0.0 });
+    m_cardBg[3] = CardBg(handsUV, glm::vec3{ m_boardMap.hands, 0.0 });
+
+    m_board.cardBgs = m_cardBg;
+}
+
+auto ScoundrelBoardManager::resetBgCards() -> void
+{
+    m_board.cardBgs = m_cardBg;
 }
 
 auto ScoundrelBoardManager::getNumberOfAvailableCards() -> int

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <span>
+#include <array>
 #include <glm/vec2.hpp>
 #include "../card.h"
 #include "../game_board.h"
@@ -85,6 +86,8 @@ public:
     auto fillTable() -> void override;
     auto updateCardList() -> void override;
 
+    auto createBgCards() -> void;
+    auto resetBgCards() -> void;
     auto getNumberOfAvailableCards() -> int;
     auto fillRoom() -> void;
     auto clearTableForNextFloor() -> void;
@@ -112,5 +115,6 @@ private:
     ScoundrelBoard m_board;
     ScoundrelBoardMap m_boardMap;
     std::optional<CardClickedScoundrel> m_cardSelected;
+    std::array<CardBg, CARD_BG_SIZE> m_cardBg;
 };
 
