@@ -53,5 +53,7 @@ private:
     AnimationEngine m_animationEngine;
     IInputHandler* gameInputHandler;
     IGameHandler* gameHandler;
+
+    ParticleSystem m_ps;
 };
 

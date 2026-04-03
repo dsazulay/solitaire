@@ -14,6 +14,7 @@ public:
     auto setInt(const std::string& name, const int value) const -> void;
     auto setVec2(const std::string& name, const float x, const float y) const -> void;
     auto setVec3(const std::string& name, const glm::vec3& v) const -> void;
+    auto setVec4(const std::string& name, const glm::vec4& v) const -> void;
     auto setMat4(const std::string& name, const glm::mat4 &mat) const -> void;
 
     std::string vertFilePath;

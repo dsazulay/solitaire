@@ -6,6 +6,7 @@
 #include "shader.h"
 #include "texture.h"
 #include "model.h"
+#include "particle.h"
 #include "../card.h"
 
 enum class RenderMode
@@ -19,8 +20,8 @@ class Renderer
 {
 public:
     auto init() -> void;
-    auto render(const std::span<CardEntity*> cards,
-            const std::span<CardBg> cardBgs, RenderMode mode) -> void;
+    auto render(const std::span<CardEntity*> cards, const std::span<CardBg> cardBgs,
+            const std::span<Particle>, RenderMode mode) -> void;
     auto reloadShaders() -> void;
 
 private:
@@ -30,6 +31,7 @@ private:
     auto setShaderUniforms() -> void;
     auto renderBackground(RenderMode mode) -> void;
     auto renderSprite(Sprite sprite, const glm::mat4& model) -> void;
+    auto renderParticles(std::span<Particle> particles) -> void;
     auto drawCall() -> void;
     auto clear() -> void;
 
@@ -39,6 +41,7 @@ private:
     Shader* m_wireframeShader;
     Shader* m_backgroundShader;
     Shader* m_backgroundWireframeShader;
+    Shader* m_particleShader;
 
     Texture* m_texture;
 
@@ -46,6 +49,7 @@ private:
     Model* m_backgroundModel;
 
     Transform m_backgroundTransform;
+    Transform m_psTransform;
 
     unsigned int m_instanceCounter;
 

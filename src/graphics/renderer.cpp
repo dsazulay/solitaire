@@ -14,6 +14,8 @@ constexpr const char* UNLITFRAGPATH = "resources/unlit.frag";
 constexpr const char* BGVERTPATH = "resources/background.vert";
 constexpr const char* BGFRAGPATH = "resources/background.frag";
 constexpr const char* WIREFRAMEFRAGPATH = "resources/wireframe.frag";
+constexpr const char* PARTICLE_VERT_PATH = "resources/particle.vert";
+constexpr const char* PARTICLE_FRAG_PATH = "resources/particle.frag";
 constexpr const char* CARDSTEXPATH = "resources/cards.png";
 constexpr const char* CARDMODELPATH = "resources/card.obj";
 
@@ -38,6 +40,8 @@ auto Renderer::init() -> void
             BGVERTPATH, BGFRAGPATH, "BackgroundShader");
     m_backgroundWireframeShader = ResourceManager::loadShader(
             BGVERTPATH, WIREFRAMEFRAGPATH, "BackgroundWireframeShader");
+    m_particleShader = ResourceManager::loadShader(
+            PARTICLE_VERT_PATH, PARTICLE_FRAG_PATH, "ParticleShader");
     m_texture = ResourceManager::loadTexture(CARDSTEXPATH, "CardTex");
 
     m_model = ResourceManager::loadModel(CARDMODELPATH, "CardModel");
@@ -47,6 +51,9 @@ auto Renderer::init() -> void
     m_backgroundTransform.pos(BG_POS);
     m_backgroundTransform.scale(BG_SCALE);
 
+    m_psTransform.pos(glm::vec3{ 640, 360, 0.0 });
+    m_psTransform.scale(glm::vec2{ 10, 10 });
+
     createUBO();
 
     setCameraUBO();
@@ -54,8 +61,8 @@ auto Renderer::init() -> void
     setShaderUniforms();
 }
 
-auto Renderer::render(const std::span<CardEntity*> cards,
-        const std::span<CardBg> cardBgs, RenderMode mode) -> void
+auto Renderer::render(const std::span<CardEntity*> cards, const std::span<CardBg> cardBgs,
+        const std::span<Particle> particles, RenderMode mode) -> void
 {
     clear();
 
@@ -106,6 +113,7 @@ auto Renderer::render(const std::span<CardEntity*> cards,
     }
 
     renderBackground(mode);
+    renderParticles(particles);
 }
 
 auto Renderer::reloadShaders() -> void
@@ -154,6 +162,27 @@ auto Renderer::renderSprite(Sprite sprite, const glm::mat4& model) -> void
             sprite.uv.x, sprite.uv.y);
 
     m_instanceCounter++;
+}
+
+auto Renderer::renderParticles(const std::span<Particle> particles) -> void
+{
+    unsigned int instanceCounter = 0;
+    m_shader = m_particleShader;
+    m_shader->use();
+    for (const Particle& p: particles)
+    {
+        if (p.life> 0.0f)
+        {
+            m_shader->setMat4("u_model", m_psTransform.model());
+            m_shader->setVec2("u_offset[" + std::to_string(instanceCounter) + "]", p.pos.x, p.pos.y);
+            m_shader->setVec4("u_color[" + std::to_string(instanceCounter) + "]", p.color);
+            instanceCounter++;
+        }
+    }
+    glBindVertexArray(m_backgroundModel->mesh.getVao());
+    glDrawElementsInstanced(GL_TRIANGLES, (int) m_backgroundModel->indices.size(),
+            GL_UNSIGNED_INT, nullptr, (int) instanceCounter);
+    glBindVertexArray(0);
 }
 
 void Renderer::drawCall()

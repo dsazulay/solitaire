@@ -43,6 +43,8 @@ auto Solitaire::init() -> void
     gameInputHandler = &m_freecell;
     gameHandler= &m_freecell;
 
+    //m_ps.init(10);
+
     Dispatcher<MouseClickEvent>::subscribe(
         [&] (const auto& arg) { Solitaire::onMouseClick(arg); });
     Dispatcher<MouseDoubleClickEvent>::subscribe(
@@ -90,8 +92,10 @@ auto Solitaire::mainLoop() -> void
 
         gameHandler->update();
         m_animationEngine.update();
+        m_ps.update(Timer::deltaTime, 1, -3);
         m_renderer.render(gameHandler->cards(),
                 gameHandler->cardBgs(),
+                m_ps.particles(),
                 (RenderMode) m_uiRenderer->renderMode());
         m_uiRenderer->render();
 
