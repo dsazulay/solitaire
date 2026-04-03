@@ -3,12 +3,14 @@
 #include <filesystem>
 #include "../serializer.h"
 
+constexpr const char* DATA_PATH = "resources/gamedata.dat";
+
 auto FreecellDataManager::loadPlayerData() -> void
 {
-    std::filesystem::path file{ "../../resources/gamedata.dat" };
+    std::filesystem::path file{ DATA_PATH };
     if (std::filesystem::exists(file))
     {
-        Serializer serializer(m_playerData, "../../resources/gamedata.dat");
+        Serializer serializer(m_playerData, DATA_PATH);
         serializer.load();
         serializer.deserialize();
         return;
@@ -20,7 +22,7 @@ auto FreecellDataManager::loadPlayerData() -> void
     m_playerData.gamesWon = 0;
     m_playerData.bestTime = maxTime;
 
-    Serializer serializer(m_playerData, "../../resources/gamedata.dat");
+    Serializer serializer(m_playerData, DATA_PATH);
     serializer.serialize();
     serializer.save();
 }
@@ -37,7 +39,7 @@ auto FreecellDataManager::updatePlayerData(bool didWon, float time) -> void
         }
     }
 
-    Serializer serializer(m_playerData, "../../resources/gamedata.dat");
+    Serializer serializer(m_playerData, DATA_PATH);
     serializer.serialize();
     serializer.save();
 }

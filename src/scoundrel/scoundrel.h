@@ -3,20 +3,23 @@
 #include <array>
 
 #include "../iinput_handler.h"
+#include "../game_common/igame_handler.h"
 #include "scoundrel_boardmanager.h"
 #include "../animation/animation_engine.h"
 
-class Scoundrel : public IInputHandler
+class Scoundrel : public IInputHandler, public IGameHandler
 {
 public:
     auto init(AnimationEngine* engine) -> void;
-    auto update() -> void;
+    auto update() -> void override;
 
-    auto board() -> ScoundrelBoard&;
     auto handleClick(double xpos, double ypos, bool isDragging,
             bool isDragStart) -> void override;
     auto handleDoubleClick(double xpos, double ypos) -> void override;
     auto handleNewGame() -> void override;
+
+    auto cards() -> std::span<CardEntity*> override;
+    auto cardBgs() -> std::span<CardBg> override;
 
 private:
     auto createBgCards() -> void;

@@ -17,6 +17,11 @@ auto Scoundrel::init(AnimationEngine* engine) -> void
     m_runnedLastRoom = false;
 }
 
+auto Scoundrel::update() -> void
+{
+
+}
+
 auto Scoundrel::createBgCards() -> void
 {
     auto& m_boardMap = m_boardManager.boardMap();
@@ -43,11 +48,6 @@ auto Scoundrel::moveBackAndDeselectCard() -> void
 
     m_boardManager.deselectCard();
     animationEngine->stopDraggingAnimation();
-}
-
-auto Scoundrel::board() -> ScoundrelBoard&
-{
-    return m_boardManager.board();
 }
 
 auto Scoundrel::handleClick(double xpos, double ypos, bool isDragging,
@@ -240,6 +240,16 @@ auto Scoundrel::handleDoubleClick(double xpos, double ypos) -> void
 auto Scoundrel::handleNewGame() -> void
 {
     LOG_ERROR("scoundrel new game");
+}
+
+auto Scoundrel::cards() -> std::span<CardEntity*>
+{
+    return m_boardManager.board().cards;
+}
+
+auto Scoundrel::cardBgs() -> std::span<CardBg>
+{
+    return m_boardManager.board().cardBgs;
 }
 
 auto Scoundrel::executeMove(CardClickedScoundrel& selected,

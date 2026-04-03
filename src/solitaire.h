@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 
+#include "game_common/igame_handler.h"
 #include "window.h"
 #include "graphics/renderer.h"
 #include "animation/animation_engine.h"
@@ -51,5 +52,6 @@ private:
     Scoundrel m_scoundrel;
     AnimationEngine m_animationEngine;
     IInputHandler* gameInputHandler;
+    IGameHandler* gameHandler;
 };
 

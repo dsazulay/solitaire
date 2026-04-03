@@ -6,6 +6,7 @@
 
 #include "../history.h"
 #include "../card.h"
+#include "../game_common/igame_handler.h"
 #include "../iinput_handler.h"
 #include "../animation/animation_engine.h"
 #include "freecell_boardmanager.h"
@@ -27,13 +28,13 @@ struct Move
     }
 };
 
-class Freecell : public IInputHandler
+class Freecell : public IInputHandler, public IGameHandler
 {
     using IsLegalMoveFunc = bool(FreecellGameLogic::*)(CardEntity* card, const CardStack& stack);
 public:
     Freecell();
     auto  init(AnimationEngine* engine) -> void;
-    auto  update() -> void;
+    auto  update() -> void override;
 
     auto handleClick(double xPos, double yPos, bool isDragging,
             bool isDragStart) -> void override;
@@ -45,7 +46,9 @@ public:
     auto handlePause() -> void override;
     auto handlePrintCards() -> void override;
 
-    auto board() -> FreecellBoard&;
+    auto cards() -> std::span<CardEntity*> override;
+    auto cardBgs() -> std::span<CardBg> override;
+
     auto playerData() -> PlayerData*;
     auto matchData() -> MatchData*;
 

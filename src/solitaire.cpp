@@ -1,5 +1,6 @@
 #include "solitaire.h"
 
+#include <cstddef>
 #include <thread>
 #include <chrono>
 
@@ -40,6 +41,7 @@ auto Solitaire::init() -> void
     m_scoundrel.init(&m_animationEngine);
     m_uiRenderer->setPlayerAndMatchData(m_freecell.playerData(), m_freecell.matchData());
     gameInputHandler = &m_freecell;
+    gameHandler= &m_freecell;
 
     Dispatcher<MouseClickEvent>::subscribe(
         [&] (const auto& arg) { Solitaire::onMouseClick(arg); });
@@ -86,14 +88,11 @@ auto Solitaire::mainLoop() -> void
         }
         Timer::update();
 
-        m_freecell.update();
+        gameHandler->update();
         m_animationEngine.update();
-        m_renderer.render(m_freecell.board().cards,
-                m_freecell.board().cardBgs,
+        m_renderer.render(gameHandler->cards(),
+                gameHandler->cardBgs(),
                 (RenderMode) m_uiRenderer->renderMode());
-        //m_renderer.render(m_scoundrel.board().cards,
-        //        m_scoundrel.board().cardBgs,
-        //        (RenderMode) m_uiRenderer->renderMode());
         m_uiRenderer->render();
 
         m_window.swapBuffers();
@@ -147,6 +146,20 @@ auto Solitaire::onKeyboardPress(const KeyboardPressEvent& e) -> void
     {
         ResourceManager::recompileShaders();
         m_renderer.reloadShaders();
+    }
+    else if (e.key() == KeyCode::G)
+    {
+        if (dynamic_cast<Freecell*>(gameInputHandler) != nullptr)
+        {
+            gameInputHandler = &m_scoundrel;
+            gameHandler = &m_scoundrel;
+        }
+        else
+        {
+            gameInputHandler = &m_freecell;
+            gameHandler = &m_freecell;
+        }
+        gameInputHandler->handleNewGame();
     }
 }
 

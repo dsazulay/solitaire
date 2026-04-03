@@ -9,13 +9,13 @@
 
 #include "resource_manager.h"
 
-constexpr const char* UNLITVERTPATH = "../../resources/unlit.vert";
-constexpr const char* UNLITFRAGPATH = "../../resources/unlit.frag";
-constexpr const char* BGVERTPATH = "../../resources/background.vert";
-constexpr const char* BGFRAGPATH = "../../resources/background.frag";
-constexpr const char* WIREFRAMEFRAGPATH = "../../resources/wireframe.frag";
-constexpr const char* CARDSTEXPATH = "../../resources/cards.png";
-constexpr const char* CARDMODELPATH = "../../resources/card.obj";
+constexpr const char* UNLITVERTPATH = "resources/unlit.vert";
+constexpr const char* UNLITFRAGPATH = "resources/unlit.frag";
+constexpr const char* BGVERTPATH = "resources/background.vert";
+constexpr const char* BGFRAGPATH = "resources/background.frag";
+constexpr const char* WIREFRAMEFRAGPATH = "resources/wireframe.frag";
+constexpr const char* CARDSTEXPATH = "resources/cards.png";
+constexpr const char* CARDMODELPATH = "resources/card.obj";
 
 constexpr const float WIDTH = 1280.0;
 constexpr const float HEIGHT = 720.0;

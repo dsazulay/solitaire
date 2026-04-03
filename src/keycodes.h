@@ -6,6 +6,7 @@ enum class KeyCode
     C = 67,
     D = 68,
     E = 69,
+    G = 71,
     N = 78,
     P = 80,
     R = 82,

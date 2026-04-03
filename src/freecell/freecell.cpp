@@ -298,9 +298,14 @@ auto Freecell::handlePrintCards() -> void
     fmt::print("\n");
 }
 
-auto Freecell::board() -> FreecellBoard&
+auto Freecell::cards() -> std::span<CardEntity*>
 {
-    return m_boardManager.board();
+    return m_boardManager.board().cards;
+}
+
+auto Freecell::cardBgs() -> std::span<CardBg>
+{
+    return m_boardManager.board().cardBgs;
 }
 
 auto Freecell::playerData() -> PlayerData*
