@@ -6,6 +6,7 @@
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/compatibility.hpp>
 
 #include "../card.h"

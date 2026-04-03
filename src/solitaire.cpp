@@ -39,7 +39,7 @@ auto Solitaire::init() -> void
     m_freecell.init(&m_animationEngine);
     m_scoundrel.init(&m_animationEngine);
     m_uiRenderer->setPlayerAndMatchData(m_freecell.playerData(), m_freecell.matchData());
-    gameInputHandler = &m_scoundrel;
+    gameInputHandler = &m_freecell;
 
     Dispatcher<MouseClickEvent>::subscribe(
         [&] (const auto& arg) { Solitaire::onMouseClick(arg); });
@@ -86,14 +86,14 @@ auto Solitaire::mainLoop() -> void
         }
         Timer::update();
 
-        //m_freecell.update();
+        m_freecell.update();
         m_animationEngine.update();
-        //m_renderer.render(m_freecell.board().cards,
-        //        m_freecell.board().cardBgs,
-        //        (RenderMode) m_uiRenderer->renderMode());
-        m_renderer.render(m_scoundrel.board().cards,
-                m_scoundrel.board().cardBgs,
+        m_renderer.render(m_freecell.board().cards,
+                m_freecell.board().cardBgs,
                 (RenderMode) m_uiRenderer->renderMode());
+        //m_renderer.render(m_scoundrel.board().cards,
+        //        m_scoundrel.board().cardBgs,
+        //        (RenderMode) m_uiRenderer->renderMode());
         m_uiRenderer->render();
 
         m_window.swapBuffers();

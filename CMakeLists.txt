@@ -1,6 +1,8 @@
 # Project Info
 
 cmake_minimum_required(VERSION 3.6 FATAL_ERROR)
+include(FetchContent)
+
 cmake_policy(VERSION 3.6)
 project(Solitaire
         VERSION 1.0.0.0
@@ -32,34 +34,45 @@ endif()
 
 # Dependencies
 
-# GLFW
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "GLFW lib only" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "GLFW lib only" FORCE)
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "GLFW lib only" FORCE)
-message(STATUS "Installing glfw via submodule")
-add_subdirectory(external/glfw)
-set_property(TARGET glfw PROPERTY FOLDER "Dependencies")
+# glfw
+FetchContent_Declare(
+    glfw
+    GIT_REPOSITORY https://github.com/glfw/glfw.git
+    GIT_TAG 3.4
+    GIT_SHALLOW TRUE
+    FIND_PACKAGE_ARGS NAMES glfw3
+)
+FetchContent_MakeAvailable(glfw)
+
+# glm
+FetchContent_Declare(
+    glm
+    GIT_REPOSITORY https://github.com/g-truc/glm.git
+    GIT_TAG 1.0.2
+    GIT_SHALLOW TRUE
+    FIND_PACKAGE_ARGS
+)
+FetchContent_MakeAvailable(glm)
+
+# fmt 
+FetchContent_Declare(
+    fmt
+    GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+    GIT_TAG 12.1.0
+    GIT_SHALLOW TRUE
+    FIND_PACKAGE_ARGS
+)
+FetchContent_MakeAvailable(fmt)
 
 # Glad
 message(STATUS "Installing glad")
 add_subdirectory(external/glad)
 set_property(TARGET Glad PROPERTY FOLDER "Dependencies")
 
-# glm
-message(STATUS "Installing glm via submodule")
-set(BUILD_STATIC_LIBS ON)
-add_subdirectory(external/glm)
-set_property(TARGET glm_static PROPERTY FOLDER "Dependencies")
-
 # ImGui
 message(STATUS "Installing imgui")
 add_subdirectory(external/imgui)
 set_property(TARGET ImGui PROPERTY FOLDER "Dependencies")
-
-# fmt
-message(STATUS "Installing fmt via submodule")
-add_subdirectory(external/fmt)
-set_property(TARGET fmt PROPERTY FOLDER "Dependencies")
 
 # stb_image
 message(STATUS "Installing stb_image")
@@ -103,7 +116,7 @@ add_executable(Solitaire "${FILE_SOURCES}")
 
 # Finish Dependencies
 
-target_link_libraries(Solitaire Glad ImGui glfw glm_static fmt stb_image
+target_link_libraries(Solitaire Glad ImGui glfw glm fmt stb_image
                       tiny_obj_loader doctest)
 
 # =============================================================
