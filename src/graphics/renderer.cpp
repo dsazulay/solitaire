@@ -52,7 +52,7 @@ auto Renderer::init() -> void
     m_backgroundTransform.scale(BG_SCALE);
 
     m_psTransform.pos(glm::vec3{ 640, 360, 0.0 });
-    m_psTransform.scale(glm::vec2{ 10, 10 });
+    m_psTransform.scale(glm::vec2{ 4, 4 });
 
     createUBO();
 
@@ -179,10 +179,12 @@ auto Renderer::renderParticles(const std::span<Particle> particles) -> void
             instanceCounter++;
         }
     }
+    glEnable(GL_BLEND);
     glBindVertexArray(m_backgroundModel->mesh.getVao());
     glDrawElementsInstanced(GL_TRIANGLES, (int) m_backgroundModel->indices.size(),
             GL_UNSIGNED_INT, nullptr, (int) instanceCounter);
     glBindVertexArray(0);
+    glDisable(GL_BLEND);
 }
 
 void Renderer::drawCall()

@@ -1,34 +1,52 @@
 #include "particle.h"
+#include "../timer.h"
 
-auto ParticleSystem::init(unsigned int amount) -> void
+auto ParticleSystem::init(std::default_random_engine* engine, ParticleConfig config) -> void
 {
-    m_amount = amount;
-    m_particles.reserve(amount);
-    for (unsigned int i = 0; i < amount; ++i)
+    randomEngine = engine;
+    m_config = config;
+
+    m_particles.reserve(m_config.amount);
+    for (unsigned int i = 0; i < m_config.amount; ++i)
     {
         m_particles.push_back(Particle());
+    }
+
+    if (m_config.spawnRate == 0)
+    {
+        for (unsigned int i = 0; i < m_config.amount; ++i)
+        {
+            respawn(m_particles[i]);
+        }
+    }
+    else
+    {
+        m_spawnInterval = 1.0f / m_config.spawnRate;
+        m_spawnTime = 1.0f;
     }
     m_lastUsedParticle = 0;
 }
 
-auto ParticleSystem::update(float dt, unsigned int newParticles, float velocity) -> void
+auto ParticleSystem::update() -> void
 {
-    for (unsigned int i = 0; i < newParticles; ++i)
+    m_spawnTime += Timer::deltaTime;
+    if (m_config.spawnRate > 0 && m_spawnTime >= m_spawnInterval)
     {
         int index = firstUnused();
         if (index != -1)
         {
-            respawn(m_particles[index], velocity);
+            respawn(m_particles[index]);
+            m_spawnTime = 0.0f;
         }
     }
-    for (unsigned int i = 0; i < m_amount; ++i)
+    for (unsigned int i = 0; i < m_config.amount; ++i)
     {
         Particle& p = m_particles[i];
-        p.life -= dt;
+        p.life -= Timer::deltaTime;
         if (p.life > 0.0f)
         {
-            p.pos -= p.velocity * dt;
-            p.color.a -= dt * 2.5f;
+            p.pos -= p.velocity * Timer::deltaTime;
+            //p.color.a -= dt * 2.5f;
         }
     }
 }
@@ -40,7 +58,7 @@ auto ParticleSystem::particles() -> std::span<Particle>
 
 auto ParticleSystem::firstUnused() -> int
 {
-    for (unsigned int i = m_lastUsedParticle; i < m_amount; ++i)
+    for (unsigned int i = m_lastUsedParticle; i < m_config.amount; ++i)
     {
         if (m_particles[i].life <= 0.0f)
         {
@@ -56,18 +74,25 @@ auto ParticleSystem::firstUnused() -> int
             return i;
         }
     }
-    // overried first (oldest) particle;
+    // overried first (oldest) particle
     //m_lastUsedParticle = 0;
     return -1;
 }
 
-auto ParticleSystem::respawn(Particle& p, float velocity) -> void
+auto ParticleSystem::respawn(Particle& p) -> void
 {
-    float random = ((rand() % 100) - 50) / 50.0f;
-    float color = 0.5f + ((rand() % 100) / 100.0f);
-    p.pos = glm::vec3(random, 0.0, 0.0);
-    p.velocity = glm::vec3((((rand() % 10) - 5) / 10.f), velocity * ((rand() % 10) / 10.f), 0.0);
-    p.color = glm::vec4(color, color, color, 1.0f);
-    p.life = 2.0f + 2.0f * ((rand() % 10) / 10.0f);
+    std::uniform_real_distribution<float> uniformDist(-1.0f, 1.0f);
+
+    p.pos = glm::vec3(uniformDist(*randomEngine), 0.0, 0.0);
+
+    p.velocity.x = uniformDist(*randomEngine) * 10.0f;
+    p.velocity.y = uniformDist(*randomEngine) * 10.0f;
+
+    p.color.r = uniformDist(*randomEngine) * 0.5f + 0.5f;
+    p.color.g = uniformDist(*randomEngine) * 0.5f + 0.5f;
+    p.color.b = uniformDist(*randomEngine) * 0.5f + 0.5f;
+    p.color.a = 1.0f;
+    
+    p.life = uniformDist(*randomEngine) + 3.0f;
 
 }

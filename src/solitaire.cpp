@@ -4,12 +4,13 @@
 #include <thread>
 #include <chrono>
 
+#include "graphics/particle.h"
 #include "timer.h"
 #include "keycodes.h"
 #include "graphics/resource_manager.h"
 #include "dispatcher.h"
 
-Solitaire::Solitaire()
+Solitaire::Solitaire() : m_randomEngine(m_r())
 {
     constexpr const int defaultWindowWidth = 1280;
     constexpr const int defaultWindowHeight = 720;
@@ -43,7 +44,8 @@ auto Solitaire::init() -> void
     gameInputHandler = &m_freecell;
     gameHandler= &m_freecell;
 
-    //m_ps.init(10);
+    m_ps.push_back(ParticleSystem());
+    m_ps.back().init(&m_randomEngine, { .amount = 200, .spawnRate = 0 });
 
     Dispatcher<MouseClickEvent>::subscribe(
         [&] (const auto& arg) { Solitaire::onMouseClick(arg); });
@@ -92,10 +94,13 @@ auto Solitaire::mainLoop() -> void
 
         gameHandler->update();
         m_animationEngine.update();
-        m_ps.update(Timer::deltaTime, 1, -3);
+        for (ParticleSystem& p : m_ps)
+        {
+            p.update();
+        }
         m_renderer.render(gameHandler->cards(),
                 gameHandler->cardBgs(),
-                m_ps.particles(),
+                m_ps.back().particles(),
                 (RenderMode) m_uiRenderer->renderMode());
         m_uiRenderer->render();
 
