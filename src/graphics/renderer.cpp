@@ -7,6 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 
+#include "particle.h"
 #include "resource_manager.h"
 
 constexpr const char* UNLITVERTPATH = "resources/unlit.vert";
@@ -62,7 +63,7 @@ auto Renderer::init() -> void
 }
 
 auto Renderer::render(const std::span<CardEntity*> cards, const std::span<CardBg> cardBgs,
-        const std::span<Particle> particles, RenderMode mode) -> void
+        const std::span<ParticleSystem> particles, RenderMode mode) -> void
 {
     clear();
 
@@ -113,7 +114,10 @@ auto Renderer::render(const std::span<CardEntity*> cards, const std::span<CardBg
     }
 
     renderBackground(mode);
-    renderParticles(particles);
+    for (auto ps: particles)
+    {
+        renderParticles(ps.particles());
+    }
 }
 
 auto Renderer::reloadShaders() -> void

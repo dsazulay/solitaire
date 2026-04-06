@@ -21,7 +21,7 @@ class Renderer
 public:
     auto init() -> void;
     auto render(const std::span<CardEntity*> cards, const std::span<CardBg> cardBgs,
-            const std::span<Particle>, RenderMode mode) -> void;
+            const std::span<ParticleSystem> partciles, RenderMode mode) -> void;
     auto reloadShaders() -> void;
 
 private:

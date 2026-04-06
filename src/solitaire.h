@@ -43,6 +43,7 @@ private:
     auto onUiGameEvent(const UiGameEvent& e) -> void;
     auto onUiRecompileShaderEvent(const UiRecompileShaderEvent& e) -> void;
     auto onUiPrintCardEvent(const UiPrintCardEvent& e) -> void;
+    auto onUiRestartParticlesEvent(const UiRestartParticlesEvent& e) -> void;
 
     AppConfig m_appConfig;
     Window m_window;

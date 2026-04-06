@@ -4,6 +4,7 @@
 #include <thread>
 #include <chrono>
 
+#include "event.h"
 #include "graphics/particle.h"
 #include "timer.h"
 #include "keycodes.h"
@@ -45,7 +46,7 @@ auto Solitaire::init() -> void
     gameHandler= &m_freecell;
 
     m_ps.push_back(ParticleSystem());
-    m_ps.back().init(&m_randomEngine, { .amount = 200, .spawnRate = 0 });
+    m_ps.back().init(&m_randomEngine, { .amount = 100, .spawnRate = 0 });
 
     Dispatcher<MouseClickEvent>::subscribe(
         [&] (const auto& arg) { Solitaire::onMouseClick(arg); });
@@ -63,6 +64,8 @@ auto Solitaire::init() -> void
         [&] (const auto& arg) { Solitaire::onUiRecompileShaderEvent(arg); });
     Dispatcher<UiPrintCardEvent>::subscribe(
         [&] (const auto& arg) { Solitaire::onUiPrintCardEvent(arg); });
+    Dispatcher<UiRestartParticlesEvent>::subscribe(
+        [&] (const auto& arg) { Solitaire::onUiRestartParticlesEvent(arg); });
 
     // VSync not working on macos ventura
     //glfwSwapInterval(1); // Enable vsync
@@ -100,7 +103,7 @@ auto Solitaire::mainLoop() -> void
         }
         m_renderer.render(gameHandler->cards(),
                 gameHandler->cardBgs(),
-                m_ps.back().particles(),
+                m_ps,
                 (RenderMode) m_uiRenderer->renderMode());
         m_uiRenderer->render();
 
@@ -207,3 +210,10 @@ auto Solitaire::onUiPrintCardEvent(const UiPrintCardEvent& e) -> void
     gameInputHandler->handlePrintCards();
 }
 
+auto Solitaire::onUiRestartParticlesEvent(const UiRestartParticlesEvent& e) -> void
+{
+    for (ParticleSystem& ps : m_ps)
+    {
+        ps.start();
+    }
+}

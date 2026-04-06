@@ -19,6 +19,8 @@ struct ParticleConfig
     glm::vec3 startVelocity{};
     glm::vec4 startColor{};
     float startLife{};
+    glm::vec3 endVelocity{};
+    glm::vec4 endColor{};
     unsigned int amount{};
     unsigned int spawnRate{};
 };
@@ -27,10 +29,10 @@ class ParticleSystem
 {
 public:
     auto init(std::default_random_engine* engine, ParticleConfig config) -> void;
+    auto start() -> void;
     auto update() -> void;
 
     auto particles() -> std::span<Particle>;
-
 private:
     auto firstUnused() -> int;
     auto respawn(Particle& p) -> void;

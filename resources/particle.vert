@@ -12,8 +12,8 @@ layout (std140) uniform Matrices
 };
 
 uniform mat4 u_model;
-uniform vec2 u_offset[60];
-uniform vec4 u_color[60];
+uniform vec2 u_offset[300];
+uniform vec4 u_color[300];
 
 void main()
 {

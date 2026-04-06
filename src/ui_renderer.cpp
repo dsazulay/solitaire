@@ -347,6 +347,11 @@ auto UiRenderer::renderDebugWindow() -> void
         UiPrintCardEvent e;
         Dispatcher<UiPrintCardEvent>::post(e);
     }
+    if (ImGui::Button("Restart particles"))
+    {
+        UiRestartParticlesEvent e;
+        Dispatcher<UiRestartParticlesEvent>::post(e);
+    }
 
     ImGui::End();
 }

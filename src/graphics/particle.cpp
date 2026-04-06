@@ -1,5 +1,7 @@
 #include "particle.h"
 #include "../timer.h"
+#include "glm/common.hpp"
+#include "../utils/log.h"
 
 auto ParticleSystem::init(std::default_random_engine* engine, ParticleConfig config) -> void
 {
@@ -12,6 +14,11 @@ auto ParticleSystem::init(std::default_random_engine* engine, ParticleConfig con
         m_particles.push_back(Particle());
     }
 
+    start();
+}
+
+auto ParticleSystem::start() -> void
+{
     if (m_config.spawnRate == 0)
     {
         for (unsigned int i = 0; i < m_config.amount; ++i)
@@ -45,8 +52,9 @@ auto ParticleSystem::update() -> void
         p.life -= Timer::deltaTime;
         if (p.life > 0.0f)
         {
-            p.pos -= p.velocity * Timer::deltaTime;
-            //p.color.a -= dt * 2.5f;
+            glm::vec3 velocity = glm::mix(m_config.endVelocity, p.velocity, p.life);
+            p.pos += velocity * Timer::deltaTime;
+            p.color.a = glm::min(p.life, 1.f);
         }
     }
 }
@@ -85,14 +93,16 @@ auto ParticleSystem::respawn(Particle& p) -> void
 
     p.pos = glm::vec3(uniformDist(*randomEngine), 0.0, 0.0);
 
-    p.velocity.x = uniformDist(*randomEngine) * 10.0f;
-    p.velocity.y = uniformDist(*randomEngine) * 10.0f;
+    p.velocity.x = uniformDist(*randomEngine) * 15.0f;
+    p.velocity.y = uniformDist(*randomEngine) * 15.0f;
 
     p.color.r = uniformDist(*randomEngine) * 0.5f + 0.5f;
     p.color.g = uniformDist(*randomEngine) * 0.5f + 0.5f;
     p.color.b = uniformDist(*randomEngine) * 0.5f + 0.5f;
     p.color.a = 1.0f;
-    
-    p.life = uniformDist(*randomEngine) + 3.0f;
+
+    p.life = uniformDist(*randomEngine) + 2.0f;
+
+    m_config.endVelocity = glm::vec3{ 0.f };
 
 }
