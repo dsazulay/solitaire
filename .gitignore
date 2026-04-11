@@ -11,3 +11,6 @@ cmake-build-debug/
 # editors and IDEs
 .idea
 .vscode
+
+# imgui
+imgui.ini
