@@ -37,13 +37,8 @@ auto Solitaire::init() -> void
             m_appConfig.windowHeight, m_appConfig.windowName.c_str());
     //m_renderer.init();
 
-    uint32_t glfwExtentionCount;
-    const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtentionCount);
-    m_vulkanRenderer.init(glfwExtensions, glfwExtentionCount, m_window.getGlfwWindow());
+    m_vulkanRenderer.init(m_window.getGlfwWindow());
 
-    constexpr const char* CARDMODELPATH = "resources/card.obj";
-    Model* model = ResourceManager::loadModel(CARDMODELPATH, "CardModel");
-    m_vulkanRenderer.loadMeshData(model->vertices, model->indices);
 
     //m_uiRenderer = std::make_unique<UiRenderer>(m_window.getGlfwWindow());
 

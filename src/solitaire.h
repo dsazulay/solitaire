@@ -5,8 +5,7 @@
 
 #include "game_common/igame_handler.h"
 #include "window.h"
-//#include "graphics/renderer.h"
-#include "graphics/renderer_vulkan.h"
+#include "graphics/vulkan_renderer.h"
 #include "animation/animation_engine.h"
 //#include "ui_renderer.h"
 #include "freecell/freecell.h"
@@ -48,8 +47,7 @@ private:
 
     AppConfig m_appConfig;
     Window m_window;
-    //Renderer m_renderer;
-    RendererVulkan m_vulkanRenderer;
+    VulkanRenderer m_vulkanRenderer;
     //std::unique_ptr<UiRenderer> m_uiRenderer;
     Freecell m_freecell;
     Scoundrel m_scoundrel;

@@ -2,13 +2,14 @@
 
 #include <vulkan/vulkan.h>
 #include <vma/vk_mem_alloc.h>
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <vector>
 #include <array>
 #include <slang/slang-com-ptr.h>
 #include <GLFW/glfw3.h>
 
-#include "mesh.h"
+#include "model.h"
 
 constexpr uint32_t maxFramesInFlight{ 2 };
 
@@ -37,14 +38,15 @@ struct Texture
 	VkSampler sampler{ VK_NULL_HANDLE };
 };
 
-class RendererVulkan
+class VulkanEngine
 {
 public:
-    auto init(const char** requiredExt, const uint32_t requiredExtCount, GLFWwindow* window) -> void;
+    auto init(GLFWwindow* window) -> void;
     auto render() -> void;
     auto terminate() -> void;
 
     auto loadMeshData(std::vector<Vertex>& vertices, std::vector<uint16_t>& indices) -> void;
+    auto setUniformData(glm::mat4 proj, glm::mat4 model) -> void;
 private:
     VkInstance m_instance{ VK_NULL_HANDLE };
     VkPhysicalDevice m_physicalDevice{ VK_NULL_HANDLE };

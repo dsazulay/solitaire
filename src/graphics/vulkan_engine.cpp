@@ -1,4 +1,5 @@
-#include "renderer_vulkan.h"
+#include "vulkan_engine.h"
+#include "GLFW/glfw3.h"
 
 
 #define VOLK_IMPLEMENTATION
@@ -38,7 +39,7 @@ static inline void chkSwapchain(VkResult result)
     }
 }
 
-auto RendererVulkan::init(const char** requiredExt, const uint32_t requiredExtCount, GLFWwindow* window) -> void
+auto VulkanEngine::init(GLFWwindow* window) -> void
 {
     m_window = window;
     volkInitialize();
@@ -48,10 +49,11 @@ auto RendererVulkan::init(const char** requiredExt, const uint32_t requiredExtCo
         .pApplicationName = "Solitaire",
         .apiVersion = VK_API_VERSION_1_3,
     };
-    uint32_t instanceExtensionsCount{ requiredExtCount };
-    char const* const* instanceExtensions{
-        requiredExt
-    };
+
+    uint32_t instanceExtensionsCount;
+    char const* const* instanceExtensions = glfwGetRequiredInstanceExtensions(
+            &instanceExtensionsCount);
+
     VkInstanceCreateInfo instanceCI{
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
         .pApplicationInfo = &appInfo,
@@ -144,7 +146,7 @@ auto RendererVulkan::init(const char** requiredExt, const uint32_t requiredExtCo
 
     // Window and surface
     chk(glfwCreateWindowSurface(m_instance, window, nullptr, &m_surface));
-    glfwGetWindowSize(window, &m_windowSize.x, &m_windowSize.y);
+    glfwGetFramebufferSize(window, &m_windowSize.x, &m_windowSize.y);
     VkSurfaceCapabilitiesKHR surfaceCaps{};
     chk(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_physicalDevice, m_surface, &surfaceCaps));
     VkExtent2D swapchainExtent{ surfaceCaps.currentExtent };
@@ -243,7 +245,7 @@ auto RendererVulkan::init(const char** requiredExt, const uint32_t requiredExtCo
     chk(vkCreateImageView(m_device, &depthViewCI, nullptr, &m_depthImageView));
 
 
-    // Shader data buffers
+    // Uniform buffers
     for (auto i = 0; i < maxFramesInFlight; ++i)
     {
         VkBufferCreateInfo uBufferCI{
@@ -536,7 +538,7 @@ auto RendererVulkan::init(const char** requiredExt, const uint32_t requiredExtCo
     Slang::ComPtr<slang::ISession> slangSession;
     slangGlobalSession->createSession(slangSessionDesc, slangSession.writeRef());
     Slang::ComPtr<slang::IModule> slangModule{
-        slangSession->loadModuleFromSource("triangle", "assets/shader.slang", nullptr, nullptr)
+        slangSession->loadModuleFromSource("triangle", "assets/background.slang", nullptr, nullptr)
     };
     Slang::ComPtr<ISlangBlob> spirv;
     slangModule->getTargetCode(0, spirv.writeRef());
@@ -663,7 +665,13 @@ auto RendererVulkan::init(const char** requiredExt, const uint32_t requiredExtCo
     chk(vkCreateGraphicsPipelines(m_device, VK_NULL_HANDLE, 1, &pipelineCI, nullptr, &m_pipeline));
 }
 
-auto RendererVulkan::render() -> void
+auto VulkanEngine::setUniformData(glm::mat4 proj, glm::mat4 model) -> void
+{
+    m_shaderData.projection = proj;
+    m_shaderData.model[0] = model;
+}
+
+auto VulkanEngine::render() -> void
 {
     // Sync
     chk(vkWaitForFences(m_device, 1, &m_fences[m_frameIndex], true, UINT64_MAX));
@@ -671,12 +679,12 @@ auto RendererVulkan::render() -> void
     chkSwapchain(vkAcquireNextImageKHR(m_device, m_swapchain, UINT64_MAX, m_presentSemaphores[m_frameIndex], VK_NULL_HANDLE, &m_imageIndex));
 
     // Update shader data
-    m_shaderData.projection = glm::perspective(glm::radians(45.0f), (float)m_windowSize.x / (float)m_windowSize.y, 0.1f, 32.0f);
+    //m_shaderData.projection = glm::perspective(glm::radians(45.0f), (float)m_windowSize.x / (float)m_windowSize.y, 0.1f, 32.0f);
     m_shaderData.view = glm::translate(glm::mat4(1.0f), camPos);
     for (auto i = 0; i < 3; ++i)
     {
-        auto instancePos = glm::vec3((float)(i - 1) * 3.0f, 0.0f, 0.0f);
-        m_shaderData.model[i] = glm::translate(glm::mat4(1.0f), instancePos) * glm::mat4_cast(glm::quat(objectRotations[i]));
+        //auto instancePos = glm::vec3((float)(i - 1) * 3.0f, 0.0f, 0.0f);
+        //m_shaderData.model[i] = glm::translate(glm::mat4(1.0f), instancePos) * glm::mat4_cast(glm::quat(objectRotations[i]));
     }
     memcpy(m_shaderDataBuffers[m_frameIndex].allocationInfo.pMappedData, &m_shaderData, sizeof(ShaderData));
 
@@ -776,7 +784,7 @@ auto RendererVulkan::render() -> void
     vkCmdBindVertexBuffers(cb, 0, 1, &m_vBuffer, &vOffset);
     vkCmdBindIndexBuffer(cb, m_vBuffer, m_vBufSize, VK_INDEX_TYPE_UINT16);
     vkCmdPushConstants(cb, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(VkDeviceAddress), &m_shaderDataBuffers[m_frameIndex].deviceAddress);
-    vkCmdDrawIndexed(cb, m_indexCount, 3, 0, 0, 0);
+    vkCmdDrawIndexed(cb, m_indexCount, 1, 0, 0, 0);
     vkCmdEndRendering(cb);
     VkImageMemoryBarrier2 barrierPresent{
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
@@ -826,7 +834,7 @@ auto RendererVulkan::render() -> void
     chkSwapchain(vkQueuePresentKHR(m_queue, &presentInfo));
 
     if (updateSwapchain) {
-        glfwGetWindowSize(m_window, &m_windowSize.x, &m_windowSize.y);
+        glfwGetFramebufferSize(m_window, &m_windowSize.x, &m_windowSize.y);
         updateSwapchain = false;
         chk(vkDeviceWaitIdle(m_device));
 	    VkSurfaceCapabilitiesKHR surfaceCaps{};
@@ -943,7 +951,7 @@ auto RendererVulkan::render() -> void
     }
 }
 
-auto RendererVulkan::terminate() -> void
+auto VulkanEngine::terminate() -> void
 {
     chk(vkDeviceWaitIdle(m_device));
     for (auto i = 0; i < maxFramesInFlight; ++i)
@@ -982,7 +990,7 @@ auto RendererVulkan::terminate() -> void
     vkDestroyInstance(m_instance, nullptr);
 }
 
-auto RendererVulkan::loadMeshData(std::vector<Vertex>& vertices, std::vector<uint16_t>& indices) -> void
+auto VulkanEngine::loadMeshData(std::vector<Vertex>& vertices, std::vector<uint16_t>& indices) -> void
 {
     m_vBufSize = sizeof(Vertex) * vertices.size();
     VkDeviceSize iBufSize{ sizeof(uint16_t) * indices.size() };

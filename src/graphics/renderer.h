@@ -3,9 +3,9 @@
 #include <span>
 #include <glm/vec2.hpp>
 
+#include "model.h"
 #include "shader.h"
 #include "texture.h"
-#include "model.h"
 #include "particle.h"
 #include "../card.h"
 

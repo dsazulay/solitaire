@@ -136,8 +136,6 @@ auto ResourceManager::loadModel(const char* modelFile, std::string name) -> Mode
 
     models[name] = model;
     Model* ptr = &models[name];
-    //ptr->mesh.init(&ptr->vertices[0], static_cast<long>(ptr->vertices.size()),
-            //&ptr->indices[0], static_cast<long>(ptr->indices.size()));
 
     return ptr;
 }
@@ -170,8 +168,6 @@ auto ResourceManager::loadModel(NativeModel type, std::string name) -> Model*
 
     models[name] = model;
     Model* ptr = &models[name];
-    //ptr->mesh.init(&ptr->vertices[0], static_cast<long>(ptr->vertices.size()),
-      //      &ptr->indices[0], static_cast<long>(ptr->indices.size()));
 
     return ptr;
 }
