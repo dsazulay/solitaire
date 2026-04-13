@@ -14,7 +14,7 @@
 #include "../utils/log.h"
 
 std::map<std::string, Shader> ResourceManager::shaders;
-std::map<std::string, Texture> ResourceManager::textures;
+//std::map<std::string, Texture> ResourceManager::textures;
 std::map<std::string, Model> ResourceManager::models;
 
 auto ResourceManager::loadShader(const char *vertShaderFile, const char *fragShaderFile, std::string name) -> Shader*
@@ -79,7 +79,7 @@ auto ResourceManager::recompileShaders() -> void
         }
     }
 }
-
+/*
 auto ResourceManager::loadTexture(const char* textureFile, std::string name) -> Texture*
 {
     stbi_set_flip_vertically_on_load(true);
@@ -93,7 +93,7 @@ auto ResourceManager::loadTexture(const char* textureFile, std::string name) -> 
 
     stbi_image_free(data);
     return &textures[name];
-}
+}*/
 
 auto ResourceManager::loadModel(const char* modelFile, std::string name) -> Model*
 {
@@ -136,8 +136,8 @@ auto ResourceManager::loadModel(const char* modelFile, std::string name) -> Mode
 
     models[name] = model;
     Model* ptr = &models[name];
-    ptr->mesh.init(&ptr->vertices[0], static_cast<long>(ptr->vertices.size()),
-            &ptr->indices[0], static_cast<long>(ptr->indices.size()));
+    //ptr->mesh.init(&ptr->vertices[0], static_cast<long>(ptr->vertices.size()),
+            //&ptr->indices[0], static_cast<long>(ptr->indices.size()));
 
     return ptr;
 }
@@ -170,8 +170,8 @@ auto ResourceManager::loadModel(NativeModel type, std::string name) -> Model*
 
     models[name] = model;
     Model* ptr = &models[name];
-    ptr->mesh.init(&ptr->vertices[0], static_cast<long>(ptr->vertices.size()),
-            &ptr->indices[0], static_cast<long>(ptr->indices.size()));
+    //ptr->mesh.init(&ptr->vertices[0], static_cast<long>(ptr->vertices.size()),
+      //      &ptr->indices[0], static_cast<long>(ptr->indices.size()));
 
     return ptr;
 }

@@ -5,10 +5,10 @@
 #include <chrono>
 
 #include "event.h"
-#include "graphics/particle.h"
+//#include "graphics/particle.h"
+#include "graphics/resource_manager.h"
 #include "timer.h"
 #include "keycodes.h"
-#include "graphics/resource_manager.h"
 #include "dispatcher.h"
 
 Solitaire::Solitaire() : m_randomEngine(m_r())
@@ -35,18 +35,27 @@ auto Solitaire::init() -> void
 {
     m_window.createWindow(m_appConfig.windowWidth,
             m_appConfig.windowHeight, m_appConfig.windowName.c_str());
-    m_renderer.init();
-    m_uiRenderer = std::make_unique<UiRenderer>(m_window.getGlfwWindow());
+    //m_renderer.init();
+
+    uint32_t glfwExtentionCount;
+    const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtentionCount);
+    m_vulkanRenderer.init(glfwExtensions, glfwExtentionCount, m_window.getGlfwWindow());
+
+    constexpr const char* CARDMODELPATH = "resources/card.obj";
+    Model* model = ResourceManager::loadModel(CARDMODELPATH, "CardModel");
+    m_vulkanRenderer.loadMeshData(model->vertices, model->indices);
+
+    //m_uiRenderer = std::make_unique<UiRenderer>(m_window.getGlfwWindow());
 
     // Game init
     m_freecell.init(&m_animationEngine);
     m_scoundrel.init(&m_animationEngine);
-    m_uiRenderer->setPlayerAndMatchData(m_freecell.playerData(), m_freecell.matchData());
+    //m_uiRenderer->setPlayerAndMatchData(m_freecell.playerData(), m_freecell.matchData());
     gameInputHandler = &m_freecell;
     gameHandler= &m_freecell;
 
-    m_ps.push_back(ParticleSystem());
-    m_ps.back().init(&m_randomEngine, { .amount = 100, .spawnRate = 0 });
+    //m_ps.push_back(ParticleSystem());
+    //m_ps.back().init(&m_randomEngine, { .amount = 100, .spawnRate = 0 });
 
     Dispatcher<MouseClickEvent>::subscribe(
         [&] (const auto& arg) { Solitaire::onMouseClick(arg); });
@@ -97,15 +106,16 @@ auto Solitaire::mainLoop() -> void
 
         gameHandler->update();
         m_animationEngine.update();
-        for (ParticleSystem& p : m_ps)
+        //for (ParticleSystem& p : m_ps)
         {
-            p.update();
+         //   p.update();
         }
-        m_renderer.render(gameHandler->cards(),
-                gameHandler->cardBgs(),
-                m_ps,
-                (RenderMode) m_uiRenderer->renderMode());
-        m_uiRenderer->render();
+        //m_renderer.render(gameHandler->cards(),
+                //gameHandler->cardBgs(),
+                //m_ps,
+                //(RenderMode) m_uiRenderer->renderMode());
+        //m_uiRenderer->render();
+        m_vulkanRenderer.render();
 
         m_window.swapBuffers();
         m_window.pollEvents();
@@ -148,16 +158,16 @@ auto Solitaire::onKeyboardPress(const KeyboardPressEvent& e) -> void
         gameInputHandler->handleRestart();
     else if (e.key() == KeyCode::N)
         gameInputHandler->handleNewGame();
-    else if (e.key() == KeyCode::S)
-        m_uiRenderer->toggleStatsWindow();
-    else if (e.key() == KeyCode::D)
-        m_uiRenderer->toggleDebugWindow();
+    //else if (e.key() == KeyCode::S)
+        //m_uiRenderer->toggleStatsWindow();
+    //else if (e.key() == KeyCode::D)
+        //m_uiRenderer->toggleDebugWindow();
     else if (e.key() == KeyCode::P)
         gameInputHandler->handlePause();
     else if (e.key() == KeyCode::C)
     {
-        ResourceManager::recompileShaders();
-        m_renderer.reloadShaders();
+        //ResourceManager::recompileShaders();
+        //m_renderer.reloadShaders();
     }
     else if (e.key() == KeyCode::G)
     {
@@ -177,7 +187,7 @@ auto Solitaire::onKeyboardPress(const KeyboardPressEvent& e) -> void
 
 auto Solitaire::onGameWin(const GameWinEvent& e) -> void
 {
-    m_uiRenderer->showWonWindow();
+    //m_uiRenderer->showWonWindow();
 }
 
 auto Solitaire::onUiGameEvent(const UiGameEvent& e) -> void
@@ -201,8 +211,8 @@ auto Solitaire::onUiGameEvent(const UiGameEvent& e) -> void
 
 auto Solitaire::onUiRecompileShaderEvent(const UiRecompileShaderEvent& e) -> void
 {
-    ResourceManager::recompileShaders();
-    m_renderer.reloadShaders();
+    //ResourceManager::recompileShaders();
+    //m_renderer.reloadShaders();
 }
 
 auto Solitaire::onUiPrintCardEvent(const UiPrintCardEvent& e) -> void
@@ -212,8 +222,8 @@ auto Solitaire::onUiPrintCardEvent(const UiPrintCardEvent& e) -> void
 
 auto Solitaire::onUiRestartParticlesEvent(const UiRestartParticlesEvent& e) -> void
 {
-    for (ParticleSystem& ps : m_ps)
+    //for (ParticleSystem& ps : m_ps)
     {
-        ps.start();
+     //   ps.start();
     }
 }

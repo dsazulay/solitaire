@@ -7,6 +7,6 @@ class Model
 {
 public:
     std::vector<Vertex> vertices;
-    std::vector<int> indices;
-    Mesh mesh;
+    std::vector<uint16_t> indices;
+    //Mesh mesh;
 };

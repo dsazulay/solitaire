@@ -43,7 +43,7 @@ auto Renderer::init() -> void
             BGVERTPATH, WIREFRAMEFRAGPATH, "BackgroundWireframeShader");
     m_particleShader = ResourceManager::loadShader(
             PARTICLE_VERT_PATH, PARTICLE_FRAG_PATH, "ParticleShader");
-    m_texture = ResourceManager::loadTexture(CARDSTEXPATH, "CardTex");
+    //m_texture = ResourceManager::loadTexture(CARDSTEXPATH, "CardTex");
 
     m_model = ResourceManager::loadModel(CARDMODELPATH, "CardModel");
     m_backgroundModel = ResourceManager::loadModel(
@@ -136,7 +136,7 @@ auto Renderer::renderBackground(RenderMode mode) -> void
         m_shader->setMat4("u_model", m_backgroundTransform.model());
         m_shader->setVec3("u_tint", CLEAR_COLOR);
 
-        glBindVertexArray(m_backgroundModel->mesh.getVao());
+        //glBindVertexArray(m_backgroundModel->mesh.getVao());
         glDrawElements(GL_TRIANGLES, (int) m_backgroundModel->indices.size(),
                 GL_UNSIGNED_INT, nullptr);
         glBindVertexArray(0);
@@ -151,7 +151,7 @@ auto Renderer::renderBackground(RenderMode mode) -> void
         m_shader->setMat4("u_model", m_backgroundTransform.model());
         m_shader->setVec3("u_tint", CLEAR_COLOR);
 
-        glBindVertexArray(m_backgroundModel->mesh.getVao());
+        //glBindVertexArray(m_backgroundModel->mesh.getVao());
         glDrawElements(GL_TRIANGLES, (int) m_backgroundModel->indices.size(),
                 GL_UNSIGNED_INT, nullptr);
         glBindVertexArray(0);
@@ -184,7 +184,7 @@ auto Renderer::renderParticles(const std::span<Particle> particles) -> void
         }
     }
     glEnable(GL_BLEND);
-    glBindVertexArray(m_backgroundModel->mesh.getVao());
+    //glBindVertexArray(m_backgroundModel->mesh.getVao());
     glDrawElementsInstanced(GL_TRIANGLES, (int) m_backgroundModel->indices.size(),
             GL_UNSIGNED_INT, nullptr, (int) instanceCounter);
     glBindVertexArray(0);
@@ -193,7 +193,7 @@ auto Renderer::renderParticles(const std::span<Particle> particles) -> void
 
 void Renderer::drawCall()
 {
-    glBindVertexArray(m_model->mesh.getVao());
+    //glBindVertexArray(m_model->mesh.getVao());
     glDrawElementsInstanced(GL_TRIANGLES, (int) m_model->indices.size(),
             GL_UNSIGNED_INT, nullptr, (int) m_instanceCounter);
     glBindVertexArray(0);

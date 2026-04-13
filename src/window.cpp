@@ -1,7 +1,5 @@
 #include "window.h"
 
-#include <imgui.h>
-
 #include "dispatcher.h"
 #include "event.h"
 #include "utils/log.h"
@@ -16,11 +14,12 @@ glm::vec2 Window::mousePos{};
 Window::Window()
 {
     glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    //glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    //glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 }
@@ -46,8 +45,8 @@ auto Window::createWindow(int width, int height, const char *name) -> void
     glfwSetMouseButtonCallback(m_glfwWindow, mouseButtonCallback);
     glfwSetKeyCallback(m_glfwWindow, keyboardCallback);
 
-    ASSERT(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress),
-            "Failed to initialize GLAD");
+    //ASSERT(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress),
+    //        "Failed to initialize GLAD");
 }
 
 auto Window::shouldClose() const -> bool
@@ -78,9 +77,9 @@ auto Window::cursorPositionCallback(double x, double y) -> void
 
 auto Window::mouseButtonCallback(int button, int action) -> void
 {
-    auto& io = ImGui::GetIO();
-    if (io.WantCaptureMouse)
-        return;
+    //auto& io = ImGui::GetIO();
+    //if (io.WantCaptureMouse)
+    //    return;
 
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
     {

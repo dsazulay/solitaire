@@ -5,9 +5,10 @@
 
 #include "game_common/igame_handler.h"
 #include "window.h"
-#include "graphics/renderer.h"
+//#include "graphics/renderer.h"
+#include "graphics/renderer_vulkan.h"
 #include "animation/animation_engine.h"
-#include "ui_renderer.h"
+//#include "ui_renderer.h"
 #include "freecell/freecell.h"
 #include "scoundrel/scoundrel.h"
 #include "event.h"
@@ -47,8 +48,9 @@ private:
 
     AppConfig m_appConfig;
     Window m_window;
-    Renderer m_renderer;
-    std::unique_ptr<UiRenderer> m_uiRenderer;
+    //Renderer m_renderer;
+    RendererVulkan m_vulkanRenderer;
+    //std::unique_ptr<UiRenderer> m_uiRenderer;
     Freecell m_freecell;
     Scoundrel m_scoundrel;
     AnimationEngine m_animationEngine;
@@ -58,6 +60,6 @@ private:
     std::random_device m_r;
     std::default_random_engine m_randomEngine;
 
-    std::vector<ParticleSystem> m_ps;
+    //std::vector<ParticleSystem> m_ps;
 };
 

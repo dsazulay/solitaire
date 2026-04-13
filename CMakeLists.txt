@@ -1,6 +1,6 @@
 # Project Info
 
-cmake_minimum_required(VERSION 3.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 include(FetchContent)
 
 cmake_policy(VERSION 3.6)
@@ -34,6 +34,11 @@ endif()
 
 # Dependencies
 
+# SDL3, Volk, VMA, glm and Slang are taken from the SDK
+include_directories(SYSTEM $ENV{VULKAN_SDK}/include)
+include_directories(external/ktx/include)
+include_directories(external/ktx/other_include)
+
 # glfw
 FetchContent_Declare(
     glfw
@@ -63,6 +68,20 @@ FetchContent_Declare(
     FIND_PACKAGE_ARGS
 )
 FetchContent_MakeAvailable(fmt)
+
+
+set(KTX_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/ktx)
+set(KTX_SOURCES
+    ${KTX_DIR}/lib/texture.c
+    ${KTX_DIR}/lib/hashlist.c
+    ${KTX_DIR}/lib/checkheader.c
+    ${KTX_DIR}/lib/swap.c
+    ${KTX_DIR}/lib/memstream.c
+    ${KTX_DIR}/lib/filestream.c
+    ${KTX_DIR}/lib/vkloader.c)
+add_library(ktx STATIC ${KTX_SOURCES})
+
+find_library(Slang_LIBRARY NAMES slang slang-compiler HINTS "$ENV{VULKAN_SDK}/lib" REQUIRED)
 
 # Glad
 message(STATUS "Installing glad")
@@ -112,12 +131,15 @@ endforeach()
 
 add_executable(Solitaire "${FILE_SOURCES}")
 
+
+target_compile_definitions(Solitaire PRIVATE VK_NO_PROTOTYPES)
+
 # =============================================================
 
 # Finish Dependencies
 
 target_link_libraries(Solitaire Glad ImGui glfw glm fmt stb_image
-                      tiny_obj_loader doctest)
+    tiny_obj_loader doctest ktx ${Slang_LIBRARY})
 
 # =============================================================
 
