@@ -6,7 +6,6 @@
 #include <glm/glm.hpp>
 #include <vector>
 #include <array>
-#include <slang/slang-com-ptr.h>
 #include <GLFW/glfw3.h>
 
 #include "model.h"
@@ -46,7 +45,10 @@ public:
     auto terminate() -> void;
 
     auto loadMeshData(std::vector<Vertex>& vertices, std::vector<uint16_t>& indices) -> void;
+    auto loadShader(size_t bufferSize, uint32_t* bufferPointer) -> void;
     auto setUniformData(glm::mat4 proj, glm::mat4 model) -> void;
+    auto createPipeline() -> void;
+
 private:
     VkInstance m_instance{ VK_NULL_HANDLE };
     VkPhysicalDevice m_physicalDevice{ VK_NULL_HANDLE };
@@ -69,6 +71,8 @@ private:
 	VkDeviceSize m_vBufSize;
 	VkDeviceSize m_indexCount;
 
+    VkShaderModule m_shaderModule;
+
     ShaderData m_shaderData{};
     std::array<ShaderDataBuffer, maxFramesInFlight> m_shaderDataBuffers;
 
@@ -84,9 +88,6 @@ private:
     VkDescriptorPool m_descriptorPool{ VK_NULL_HANDLE };
     VkDescriptorSetLayout m_descriptorSetLayoutTex{ VK_NULL_HANDLE };
     VkDescriptorSet m_descriptorSetTex{ VK_NULL_HANDLE };
-
-    Slang::ComPtr<slang::IGlobalSession> slangGlobalSession;
-
 
     VkPipeline m_pipeline{ VK_NULL_HANDLE };
     VkPipelineLayout m_pipelineLayout{ VK_NULL_HANDLE };

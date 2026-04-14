@@ -1,9 +1,7 @@
 #include "resource_manager.h"
 
-#include <fstream>
-#include <sstream>
-#include <unordered_map>
 #include <filesystem>
+#include <slang/slang.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -13,56 +11,62 @@
 
 #include "../utils/log.h"
 
-std::map<std::string, Shader> ResourceManager::shaders;
+std::unordered_map<std::string, Shader> ResourceManager::shaders;
 //std::map<std::string, Texture> ResourceManager::textures;
-std::map<std::string, Model> ResourceManager::models;
+std::unordered_map<std::string, Model> ResourceManager::models;
+Slang::ComPtr<slang::IGlobalSession> ResourceManager::m_slangGlobalSession;
+Slang::ComPtr<slang::ISession> ResourceManager::m_slangSession;
 
-auto ResourceManager::loadShader(const char *vertShaderFile, const char *fragShaderFile, std::string name) -> Shader*
+auto ResourceManager::initShaderCompiler() -> void
 {
-    std::string vertexCode;
-    std::string fragCode;
+    // Initialize Slang shader compiler
+    slang::createGlobalSession(m_slangGlobalSession.writeRef());
+    auto slangTargets{
+        std::to_array<slang::TargetDesc>({{
+            .format = SLANG_SPIRV,
+            .profile = m_slangGlobalSession->findProfile("spirv_1_4")
+        }})
+    };
+    auto slangOptions{
+        std::to_array<slang::CompilerOptionEntry>({{
+            slang::CompilerOptionName::EmitSpirvDirectly,
+            { slang::CompilerOptionValueKind::Int, 1 }
+        }})
+    };
+    slang::SessionDesc slangSessionDesc{
+        .targets = slangTargets.data(),
+        .targetCount = SlangInt(slangTargets.size()),
+        .defaultMatrixLayoutMode = SLANG_MATRIX_LAYOUT_COLUMN_MAJOR,
+        .compilerOptionEntries = slangOptions.data(),
+        .compilerOptionEntryCount = uint32_t(slangOptions.size())
+    };
 
-    try
+    m_slangGlobalSession->createSession(slangSessionDesc, m_slangSession.writeRef());
+}
+
+auto ResourceManager::loadShader(const char* shaderFile, std::string name) -> Shader*
+{
+    if (m_slangSession == nullptr)
     {
-        std::ifstream vertexFile;
-        vertexFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-        vertexFile.open(vertShaderFile);
-
-        std::ifstream fragFile;
-        fragFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-        fragFile.open(fragShaderFile);
-
-        std::stringstream vertexStream, fragStream;
-        vertexStream << vertexFile.rdbuf();
-        fragStream << fragFile.rdbuf();
-
-        vertexFile.close();
-        fragFile.close();
-
-        vertexCode = vertexStream.str();
-        fragCode = fragStream.str();
+        initShaderCompiler();
+        LOG_INFO("Init slang session");
     }
-    catch (std::ifstream::failure& e)
-    {
-        LOG_ERROR("Shader file not successfully read!");
-    }
+    // Load shader
+    Slang::ComPtr<slang::IModule> slangModule{
+        m_slangSession->loadModuleFromSource("triangle", shaderFile, nullptr, nullptr)
+    };
+    Slang::ComPtr<ISlangBlob> spirv;
+    slangModule->getTargetCode(0, spirv.writeRef());
 
-    if (shaders.contains(name))
-    {
-        shaders[name].compile(vertexCode.c_str(), fragCode.c_str());
-        shaders[name].vertLastWriteTime = std::filesystem::last_write_time(vertShaderFile);
-        shaders[name].fragLastWriteTime = std::filesystem::last_write_time(fragShaderFile);
-    }
-    else
+    if (!shaders.contains(name))
     {
         Shader shader{};
-        shader.compile(vertexCode.c_str(), fragCode.c_str());
-        shader.vertFilePath = vertShaderFile;
-        shader.fragFilePath = fragShaderFile;
-        shader.vertLastWriteTime = std::filesystem::last_write_time(vertShaderFile);
-        shader.fragLastWriteTime = std::filesystem::last_write_time(fragShaderFile);
+        shader.filePath = shaderFile;
         shaders[name] = shader;
     }
+    shaders[name].lastWriteTime = std::filesystem::last_write_time(shaderFile);
+    shaders[name].bufferSize = spirv->getBufferSize();
+    shaders[name].bufferPointer = (uint32_t*) spirv->getBufferPointer();
 
     return &shaders[name];
 }
@@ -71,10 +75,9 @@ auto ResourceManager::recompileShaders() -> void
 {
     for (const auto& [name, shader] : shaders)
     {
-        if (shader.vertLastWriteTime != std::filesystem::last_write_time(shader.vertFilePath) ||
-            shader.fragLastWriteTime != std::filesystem::last_write_time(shader.fragFilePath))
+        if (shader.lastWriteTime != std::filesystem::last_write_time(shader.filePath))
         {
-            loadShader(shader.vertFilePath.c_str(), shader.fragFilePath.c_str(), name);
+            loadShader(shader.filePath.c_str(), name);
             LOG_INFO("{} shader recompiled", name);
         }
     }

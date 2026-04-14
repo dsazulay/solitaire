@@ -33,16 +33,16 @@ auto Renderer::init() -> void
     glDepthFunc(GL_LEQUAL);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     m_proj = glm::ortho(0.0f, WIDTH, 0.0f, HEIGHT, -1.0f, 1.0f);
-    m_unlitShader = ResourceManager::loadShader(
-            UNLITVERTPATH, UNLITFRAGPATH, "UnlitShader");
-    m_wireframeShader = ResourceManager::loadShader(
-            UNLITVERTPATH, WIREFRAMEFRAGPATH, "WireframeShader");
-    m_backgroundShader = ResourceManager::loadShader(
-            BGVERTPATH, BGFRAGPATH, "BackgroundShader");
-    m_backgroundWireframeShader = ResourceManager::loadShader(
-            BGVERTPATH, WIREFRAMEFRAGPATH, "BackgroundWireframeShader");
-    m_particleShader = ResourceManager::loadShader(
-            PARTICLE_VERT_PATH, PARTICLE_FRAG_PATH, "ParticleShader");
+    //m_unlitShader = ResourceManager::loadShader(
+    //        UNLITVERTPATH, UNLITFRAGPATH, "UnlitShader");
+    //m_wireframeShader = ResourceManager::loadShader(
+    //        UNLITVERTPATH, WIREFRAMEFRAGPATH, "WireframeShader");
+    //m_backgroundShader = ResourceManager::loadShader(
+    //        BGVERTPATH, BGFRAGPATH, "BackgroundShader");
+    //m_backgroundWireframeShader = ResourceManager::loadShader(
+    //        BGVERTPATH, WIREFRAMEFRAGPATH, "BackgroundWireframeShader");
+    //m_particleShader = ResourceManager::loadShader(
+    //        PARTICLE_VERT_PATH, PARTICLE_FRAG_PATH, "ParticleShader");
     //m_texture = ResourceManager::loadTexture(CARDSTEXPATH, "CardTex");
 
     m_model = ResourceManager::loadModel(CARDMODELPATH, "CardModel");
@@ -71,7 +71,7 @@ auto Renderer::render(const std::span<CardEntity*> cards, const std::span<CardBg
     {
         m_shader = m_unlitShader;
         m_instanceCounter = 0;
-        m_shader->use();
+        //m_shader->use();
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         glEnable(GL_BLEND);
@@ -94,7 +94,7 @@ auto Renderer::render(const std::span<CardEntity*> cards, const std::span<CardBg
     {
         m_shader = m_wireframeShader;
         m_instanceCounter = 0;
-        m_shader->use();
+        //m_shader->use();
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
         glEnable(GL_BLEND);
@@ -130,11 +130,11 @@ auto Renderer::renderBackground(RenderMode mode) -> void
     if (mode == RenderMode::Shaded || mode == RenderMode::ShadedWireframe)
     {
         m_shader = m_backgroundShader;
-        m_shader->use();
+        //m_shader->use();
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-        m_shader->setMat4("u_model", m_backgroundTransform.model());
-        m_shader->setVec3("u_tint", CLEAR_COLOR);
+        //m_shader->setMat4("u_model", m_backgroundTransform.model());
+        //m_shader->setVec3("u_tint", CLEAR_COLOR);
 
         //glBindVertexArray(m_backgroundModel->mesh.getVao());
         glDrawElements(GL_TRIANGLES, (int) m_backgroundModel->indices.size(),
@@ -145,11 +145,11 @@ auto Renderer::renderBackground(RenderMode mode) -> void
     if (mode == RenderMode::Wireframe || mode == RenderMode::ShadedWireframe)
     {
         m_shader = m_backgroundWireframeShader;
-        m_shader->use();
+        //m_shader->use();
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-        m_shader->setMat4("u_model", m_backgroundTransform.model());
-        m_shader->setVec3("u_tint", CLEAR_COLOR);
+        //m_shader->setMat4("u_model", m_backgroundTransform.model());
+        //m_shader->setVec3("u_tint", CLEAR_COLOR);
 
         //glBindVertexArray(m_backgroundModel->mesh.getVao());
         glDrawElements(GL_TRIANGLES, (int) m_backgroundModel->indices.size(),
@@ -160,10 +160,10 @@ auto Renderer::renderBackground(RenderMode mode) -> void
 
 auto Renderer::renderSprite(Sprite sprite, const glm::mat4& model) -> void
 {
-    m_shader->setMat4("u_model[" + std::to_string(m_instanceCounter) + "]",
-            model);
-    m_shader->setVec2("u_offset[" + std::to_string(m_instanceCounter) + "]",
-            sprite.uv.x, sprite.uv.y);
+    //m_shader->setMat4("u_model[" + std::to_string(m_instanceCounter) + "]",
+    //        model);
+    //m_shader->setVec2("u_offset[" + std::to_string(m_instanceCounter) + "]",
+    //        sprite.uv.x, sprite.uv.y);
 
     m_instanceCounter++;
 }
@@ -172,14 +172,14 @@ auto Renderer::renderParticles(const std::span<Particle> particles) -> void
 {
     unsigned int instanceCounter = 0;
     m_shader = m_particleShader;
-    m_shader->use();
+    //m_shader->use();
     for (const Particle& p: particles)
     {
         if (p.life> 0.0f)
         {
-            m_shader->setMat4("u_model", m_psTransform.model());
-            m_shader->setVec2("u_offset[" + std::to_string(instanceCounter) + "]", p.pos.x, p.pos.y);
-            m_shader->setVec4("u_color[" + std::to_string(instanceCounter) + "]", p.color);
+            //m_shader->setMat4("u_model", m_psTransform.model());
+            //m_shader->setVec2("u_offset[" + std::to_string(instanceCounter) + "]", p.pos.x, p.pos.y);
+            //m_shader->setVec4("u_color[" + std::to_string(instanceCounter) + "]", p.color);
             instanceCounter++;
         }
     }
@@ -217,10 +217,12 @@ auto Renderer::setCameraUBO() -> void
 
 auto Renderer::setShaderUniformBlock() -> void
 {
+    /*
     m_unlitShader->setUniformBlock("Matrices", 0);
     m_wireframeShader->setUniformBlock("Matrices", 0);
     m_backgroundShader->setUniformBlock("Matrices", 0);
     m_backgroundWireframeShader->setUniformBlock("Matrices", 0);
+    */
 }
 
 auto Renderer::setShaderUniforms() -> void
@@ -228,8 +230,8 @@ auto Renderer::setShaderUniforms() -> void
     glActiveTexture(GL_TEXTURE0);
     m_texture->bind();
 
-    m_unlitShader->use();
-    m_unlitShader->setInt("umain_tex", 0);
+    //m_unlitShader->use();
+    //m_unlitShader->setInt("umain_tex", 0);
 }
 
 auto Renderer::clear() -> void

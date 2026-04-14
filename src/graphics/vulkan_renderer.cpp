@@ -4,6 +4,7 @@
 #include "../components.h"
 
 constexpr const char* CARDMODELPATH = "resources/card.obj";
+constexpr const char* BGSHADERPATH = "assets/background.slang";
 
 constexpr const float WIDTH = 1280.0;
 constexpr const float HEIGHT = 720.0;
@@ -18,8 +19,14 @@ auto VulkanRenderer::init(GLFWwindow* window) -> void
     Model* cardModel = ResourceManager::loadModel(CARDMODELPATH, "CardModel");
     Model* backgroundModel = ResourceManager::loadModel(NativeModel::Quad, "QuadModel");
 
+    Shader* bgShader = ResourceManager::loadShader(BGSHADERPATH, "BGShader");
+
     //m_vulkanEngine.loadMeshData(cardModel->vertices, cardModel->indices);
     m_vulkanEngine.loadMeshData(backgroundModel->vertices, backgroundModel->indices);
+
+    m_vulkanEngine.loadShader(bgShader->bufferSize, bgShader->bufferPointer);
+
+    m_vulkanEngine.createPipeline();
 
 
     glm::mat4 proj = glm::ortho(0.0f, WIDTH, 0.0f, HEIGHT, -1.0f, 1.0f);
