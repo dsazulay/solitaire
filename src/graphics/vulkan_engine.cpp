@@ -1,6 +1,7 @@
 #include "vulkan_engine.h"
 #include "GLFW/glfw3.h"
 #include <cstddef>
+#include <vector>
 
 
 #define VOLK_IMPLEMENTATION
@@ -244,36 +245,13 @@ auto VulkanEngine::init(GLFWwindow* window) -> void
     };
     chk(vkCreateImageView(m_device, &depthViewCI, nullptr, &m_depthImageView));
 
-
-    // Uniform buffers
-    for (auto i = 0; i < maxFramesInFlight; ++i)
-    {
-        VkBufferCreateInfo uBufferCI{
-            .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-            .size = sizeof(ShaderData),
-            .usage = VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT
-        };
-        VmaAllocationCreateInfo uBufferAllocCI{
-            .flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT
-                | VMA_ALLOCATION_CREATE_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD_BIT
-                | VMA_ALLOCATION_CREATE_MAPPED_BIT,
-            .usage = VMA_MEMORY_USAGE_AUTO
-        };
-        chk(vmaCreateBuffer(m_allocator, &uBufferCI, &uBufferAllocCI, &m_shaderDataBuffers[i].buffer, &m_shaderDataBuffers[i].allocation, &m_shaderDataBuffers[i].allocationInfo));
-        VkBufferDeviceAddressInfo uBufferBdaInfo{
-            .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,
-            .buffer = m_shaderDataBuffers[i].buffer
-        };
-        m_shaderDataBuffers[i].deviceAddress = vkGetBufferDeviceAddress(m_device, &uBufferBdaInfo);
-    }
-
     // Sync objects
     VkSemaphoreCreateInfo semaphoreCI{ .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO };
     VkFenceCreateInfo fenceCI{
         .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
         .flags = VK_FENCE_CREATE_SIGNALED_BIT
     };
-    for (auto i = 0; i < maxFramesInFlight; ++i)
+    for (auto i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
     {
         chk(vkCreateFence(m_device, &fenceCI, nullptr, &m_fences[i]));
         chk(vkCreateSemaphore(m_device, &semaphoreCI, nullptr, &m_presentSemaphores[i]));
@@ -294,7 +272,7 @@ auto VulkanEngine::init(GLFWwindow* window) -> void
     VkCommandBufferAllocateInfo cbAllocCI{
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
         .commandPool = m_commandPool,
-        .commandBufferCount = maxFramesInFlight
+        .commandBufferCount = MAX_FRAMES_IN_FLIGHT 
     };
     chk(vkAllocateCommandBuffers(m_device, &cbAllocCI, m_commandBuffers.data()));
 
@@ -513,10 +491,10 @@ auto VulkanEngine::init(GLFWwindow* window) -> void
     vkUpdateDescriptorSets(m_device, 1, &writeDescSet, 0, nullptr);
 }
 
-auto VulkanEngine::setUniformData(glm::mat4 proj, glm::mat4 model) -> void
+auto VulkanEngine::setUniformData(size_t id, glm::mat4 proj, glm::mat4 model) -> void
 {
-    m_shaderData.projection = proj;
-    m_shaderData.model[0] = model;
+    m_gameObjects[id].shaderData.projection = proj;
+    m_gameObjects[id].shaderData.model[0] = model;
 }
 
 auto VulkanEngine::render() -> void
@@ -528,13 +506,16 @@ auto VulkanEngine::render() -> void
 
     // Update shader data
     //m_shaderData.projection = glm::perspective(glm::radians(45.0f), (float)m_windowSize.x / (float)m_windowSize.y, 0.1f, 32.0f);
-    m_shaderData.view = glm::translate(glm::mat4(1.0f), camPos);
+    //m_shaderData.view = glm::translate(glm::mat4(1.0f), camPos);
     for (auto i = 0; i < 3; ++i)
     {
         //auto instancePos = glm::vec3((float)(i - 1) * 3.0f, 0.0f, 0.0f);
         //m_shaderData.model[i] = glm::translate(glm::mat4(1.0f), instancePos) * glm::mat4_cast(glm::quat(objectRotations[i]));
     }
-    memcpy(m_shaderDataBuffers[m_frameIndex].allocationInfo.pMappedData, &m_shaderData, sizeof(ShaderData));
+    for (GameObject& go : m_gameObjects)
+    {
+        memcpy(go.shaderDataBuffers[m_frameIndex].allocationInfo.pMappedData, &go.shaderData, sizeof(ShaderData));
+    }
 
     // Build command buffer
     auto cb = m_commandBuffers[m_frameIndex];
@@ -628,11 +609,17 @@ auto VulkanEngine::render() -> void
     vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
     vkCmdSetScissor(cb, 0, 1, &scissor);
     vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSetTex, 0, nullptr);
-    VkDeviceSize vOffset{ 0 };
-    vkCmdBindVertexBuffers(cb, 0, 1, &m_vBuffer, &vOffset);
-    vkCmdBindIndexBuffer(cb, m_vBuffer, m_vBufSize, VK_INDEX_TYPE_UINT16);
-    vkCmdPushConstants(cb, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(VkDeviceAddress), &m_shaderDataBuffers[m_frameIndex].deviceAddress);
-    vkCmdDrawIndexed(cb, m_indexCount, 1, 0, 0, 0);
+
+    for (GameObject& go : m_gameObjects)
+    {
+        MeshBuffer& meshBuffer = m_meshBuffers[go.meshID];
+
+        VkDeviceSize vOffset{ 0 };
+        vkCmdBindVertexBuffers(cb, 0, 1, &meshBuffer.buffer, &vOffset);
+        vkCmdBindIndexBuffer(cb, meshBuffer.buffer, meshBuffer.bufferSize, VK_INDEX_TYPE_UINT16);
+        vkCmdPushConstants(cb, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(VkDeviceAddress), &go.shaderDataBuffers[m_frameIndex].deviceAddress);
+        vkCmdDrawIndexed(cb, meshBuffer.indexCount, 1, 0, 0, 0);
+    }
     vkCmdEndRendering(cb);
     VkImageMemoryBarrier2 barrierPresent{
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
@@ -670,7 +657,7 @@ auto VulkanEngine::render() -> void
         .pSignalSemaphores = &m_renderSemaphores[m_imageIndex],
     };
     chk(vkQueueSubmit(m_queue, 1, &submitInfo, m_fences[m_frameIndex]));
-    m_frameIndex = (m_frameIndex + 1) % maxFramesInFlight;
+    m_frameIndex = (m_frameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
     VkPresentInfoKHR presentInfo{
         .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
         .waitSemaphoreCount = 1,
@@ -802,11 +789,14 @@ auto VulkanEngine::render() -> void
 auto VulkanEngine::terminate() -> void
 {
     chk(vkDeviceWaitIdle(m_device));
-    for (auto i = 0; i < maxFramesInFlight; ++i)
+    for (auto i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
     {
         vkDestroyFence(m_device, m_fences[i], nullptr);
         vkDestroySemaphore(m_device, m_presentSemaphores[i], nullptr);
-        vmaDestroyBuffer(m_allocator, m_shaderDataBuffers[i].buffer, m_shaderDataBuffers[i].allocation);
+        for (GameObject& go : m_gameObjects)
+        {
+            vmaDestroyBuffer(m_allocator, go.shaderDataBuffers[i].buffer, go.shaderDataBuffers[i].allocation);
+        }
     }
     for (auto i = 0; i < m_renderSemaphores.size(); ++i)
     {
@@ -818,7 +808,10 @@ auto VulkanEngine::terminate() -> void
     {
         vkDestroyImageView(m_device, m_swapchainImageViews[i], nullptr);
     }
-    vmaDestroyBuffer(m_allocator, m_vBuffer, m_vBufferAllocation);
+    for (auto meshBuffer : m_meshBuffers)
+    {
+        vmaDestroyBuffer(m_allocator, meshBuffer.buffer, meshBuffer.allocation);
+    }
     for (auto i = 0; i < m_textures.size(); ++i)
     {
         vkDestroyImageView(m_device, m_textures[i].view, nullptr);
@@ -838,14 +831,17 @@ auto VulkanEngine::terminate() -> void
     vkDestroyInstance(m_instance, nullptr);
 }
 
-auto VulkanEngine::loadMeshData(std::vector<Vertex>& vertices, std::vector<uint16_t>& indices) -> void
+auto VulkanEngine::loadMeshData(std::vector<Vertex>& vertices, std::vector<uint16_t>& indices) -> size_t
 {
-    m_vBufSize = sizeof(Vertex) * vertices.size();
+    m_meshBuffers.push_back(MeshBuffer{});
+    MeshBuffer& newMeshBuffer = m_meshBuffers.back();
+
+    newMeshBuffer.bufferSize = sizeof(Vertex) * vertices.size();
     VkDeviceSize iBufSize{ sizeof(uint16_t) * indices.size() };
-    m_indexCount = indices.size();
+    newMeshBuffer.indexCount = indices.size();
     VkBufferCreateInfo bufferCI{
         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-        .size = m_vBufSize + iBufSize,
+        .size = newMeshBuffer.bufferSize + iBufSize,
         .usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT
     };
     VmaAllocationCreateInfo vBufferAllocCI{
@@ -855,9 +851,11 @@ auto VulkanEngine::loadMeshData(std::vector<Vertex>& vertices, std::vector<uint1
         .usage = VMA_MEMORY_USAGE_AUTO
     };
     VmaAllocationInfo vBufferAllocInfo{};
-    chk(vmaCreateBuffer(m_allocator, &bufferCI, &vBufferAllocCI, &m_vBuffer, &m_vBufferAllocation, &vBufferAllocInfo));
-    memcpy(vBufferAllocInfo.pMappedData, vertices.data(), m_vBufSize);
-    memcpy(((char*)vBufferAllocInfo.pMappedData) + m_vBufSize, indices.data(), iBufSize);
+    chk(vmaCreateBuffer(m_allocator, &bufferCI, &vBufferAllocCI, &newMeshBuffer.buffer, &newMeshBuffer.allocation, &vBufferAllocInfo));
+    memcpy(vBufferAllocInfo.pMappedData, vertices.data(), newMeshBuffer.bufferSize);
+    memcpy(((char*)vBufferAllocInfo.pMappedData) + newMeshBuffer.bufferSize, indices.data(), iBufSize);
+
+    return m_meshBuffers.size() - 1;
 }
 
 auto VulkanEngine::loadShader(size_t bufferSize, uint32_t* bufferPointer) -> void
@@ -987,5 +985,40 @@ auto VulkanEngine::createPipeline() -> void
         .layout = m_pipelineLayout
     };
     chk(vkCreateGraphicsPipelines(m_device, VK_NULL_HANDLE, 1, &pipelineCI, nullptr, &m_pipeline));
+}
 
+auto VulkanEngine::createUniformBuffers() -> void
+{
+    for (GameObject& go : m_gameObjects)
+    {
+        for (auto i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
+        {
+            VkBufferCreateInfo uBufferCI{
+                .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+                .size = sizeof(ShaderData),
+                .usage = VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT
+            };
+            VmaAllocationCreateInfo uBufferAllocCI{
+                .flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT
+                    | VMA_ALLOCATION_CREATE_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD_BIT
+                    | VMA_ALLOCATION_CREATE_MAPPED_BIT,
+                .usage = VMA_MEMORY_USAGE_AUTO
+            };
+            chk(vmaCreateBuffer(m_allocator, &uBufferCI, &uBufferAllocCI, &go.shaderDataBuffers[i].buffer, &go.shaderDataBuffers[i].allocation, &go.shaderDataBuffers[i].allocationInfo));
+            VkBufferDeviceAddressInfo uBufferBdaInfo{
+                .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,
+                .buffer = go.shaderDataBuffers[i].buffer
+            };
+            go.shaderDataBuffers[i].deviceAddress = vkGetBufferDeviceAddress(m_device, &uBufferBdaInfo);
+        }
+    }
+}
+
+auto VulkanEngine::addGameObject(size_t id) -> size_t 
+{
+    GameObject go;
+    go.meshID = id;
+    m_gameObjects.push_back(go);
+
+    return m_gameObjects.size() - 1;
 }
