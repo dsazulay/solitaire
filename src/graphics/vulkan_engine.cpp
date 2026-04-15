@@ -3,7 +3,6 @@
 #include <cstddef>
 #include <vector>
 
-
 #define VOLK_IMPLEMENTATION
 #include <vulkan/vulkan.h>
 #include <volk/volk.h>
@@ -282,7 +281,8 @@ auto VulkanEngine::init(GLFWwindow* window) -> void
     for (auto i = 0; i < m_textures.size(); ++i)
     {
         ktxTexture* ktxTexture{ nullptr };
-        std::string filename = "assets/suzanne" + std::to_string(i) + ".ktx";
+        //std::string filename = "assets/suzanne" + std::to_string(i) + ".ktx";
+        std::string filename = "assets/cards.ktx";
         ktxTexture_CreateFromNamedFile(filename.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktxTexture);
         VkImageCreateInfo texImgCI{
             .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
@@ -606,12 +606,13 @@ auto VulkanEngine::render() -> void
             .height = static_cast<uint32_t>(m_windowSize.y)
         }
     };
-    vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
-    vkCmdSetScissor(cb, 0, 1, &scissor);
-    vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSetTex, 0, nullptr);
 
     for (GameObject& go : m_gameObjects)
     {
+
+            vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelines[go.pipelineID]);
+        vkCmdSetScissor(cb, 0, 1, &scissor);
+        vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSetTex, 0, nullptr);
         MeshBuffer& meshBuffer = m_meshBuffers[go.meshID];
 
         VkDeviceSize vOffset{ 0 };
@@ -808,7 +809,7 @@ auto VulkanEngine::terminate() -> void
     {
         vkDestroyImageView(m_device, m_swapchainImageViews[i], nullptr);
     }
-    for (auto meshBuffer : m_meshBuffers)
+    for (auto& meshBuffer : m_meshBuffers)
     {
         vmaDestroyBuffer(m_allocator, meshBuffer.buffer, meshBuffer.allocation);
     }
@@ -821,11 +822,17 @@ auto VulkanEngine::terminate() -> void
     vkDestroyDescriptorSetLayout(m_device, m_descriptorSetLayoutTex, nullptr);
     vkDestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
     vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
-    vkDestroyPipeline(m_device, m_pipeline, nullptr);
+    for (auto& pipeline : m_pipelines)
+    {
+        vkDestroyPipeline(m_device, pipeline, nullptr);
+    }
     vkDestroySwapchainKHR(m_device, m_swapchain, nullptr);
     vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
     vkDestroyCommandPool(m_device, m_commandPool, nullptr);
-    vkDestroyShaderModule(m_device, m_shaderModule, nullptr);
+    for (auto& shader : m_shaderModules)
+    {
+        vkDestroyShaderModule(m_device, shader, nullptr);
+    }
     vmaDestroyAllocator(m_allocator);
     vkDestroyDevice(m_device, nullptr);
     vkDestroyInstance(m_instance, nullptr);
@@ -858,19 +865,23 @@ auto VulkanEngine::loadMeshData(std::vector<Vertex>& vertices, std::vector<uint1
     return m_meshBuffers.size() - 1;
 }
 
-auto VulkanEngine::loadShader(size_t bufferSize, uint32_t* bufferPointer) -> void
+auto VulkanEngine::loadShader(size_t bufferSize, uint32_t* bufferPointer) -> Handle<ShaderTag>
 {
+    VkShaderModule module;
     VkShaderModuleCreateInfo shaderModuleCI{
         .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
         .codeSize = bufferSize,
         .pCode = bufferPointer 
     };
-    chk(vkCreateShaderModule(m_device, &shaderModuleCI, nullptr, &m_shaderModule));
+    chk(vkCreateShaderModule(m_device, &shaderModuleCI, nullptr, &module));
+    m_shaderModules.push_back(module);
+
+    return ShaderID(m_shaderModules.size() - 1);
 }
 
-auto VulkanEngine::createPipeline() -> void
+auto VulkanEngine::createPipeline(ShaderID shaderID) -> PipelineID 
 {
-   VkPushConstantRange pushConstantRange{
+    VkPushConstantRange pushConstantRange{
         .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
         .size = sizeof(VkDeviceAddress)
     };
@@ -886,13 +897,13 @@ auto VulkanEngine::createPipeline() -> void
         {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
             .stage = VK_SHADER_STAGE_VERTEX_BIT,
-            .module = m_shaderModule,
+            .module = m_shaderModules[(size_t)shaderID],
             .pName = "main"
         },
         {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
             .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
-            .module = m_shaderModule,
+            .module = m_shaderModules[(size_t)shaderID],
             .pName = "main"
         }
     };
@@ -984,7 +995,11 @@ auto VulkanEngine::createPipeline() -> void
         .pDynamicState = &dynamicState,
         .layout = m_pipelineLayout
     };
-    chk(vkCreateGraphicsPipelines(m_device, VK_NULL_HANDLE, 1, &pipelineCI, nullptr, &m_pipeline));
+    VkPipeline pipeline;
+    chk(vkCreateGraphicsPipelines(m_device, VK_NULL_HANDLE, 1, &pipelineCI, nullptr, &pipeline));
+    m_pipelines.push_back(pipeline);
+
+    return PipelineID(m_pipelines.size() - 1);
 }
 
 auto VulkanEngine::createUniformBuffers() -> void
@@ -1014,10 +1029,11 @@ auto VulkanEngine::createUniformBuffers() -> void
     }
 }
 
-auto VulkanEngine::addGameObject(size_t id) -> size_t 
+auto VulkanEngine::addGameObject(size_t id, PipelineID pipelineID) -> size_t 
 {
     GameObject go;
     go.meshID = id;
+    go.pipelineID = (size_t)pipelineID;
     m_gameObjects.push_back(go);
 
     return m_gameObjects.size() - 1;

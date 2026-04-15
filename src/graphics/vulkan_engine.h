@@ -10,8 +10,15 @@
 #include <GLFW/glfw3.h>
 
 #include "model.h"
+#include "../utils/handle.h"
 
 constexpr uint32_t MAX_FRAMES_IN_FLIGHT{ 2 };
+
+struct ShaderTag {};
+struct PipelineTag {};
+
+using ShaderID = Handle<ShaderTag>;
+using PipelineID = Handle<PipelineTag>;
 
 struct ShaderData
 {
@@ -49,6 +56,7 @@ struct MeshBuffer
 struct GameObject
 {
     size_t meshID;
+    size_t pipelineID;
     ShaderData shaderData;
     std::array<ShaderDataBuffer, MAX_FRAMES_IN_FLIGHT> shaderDataBuffers;
 };
@@ -61,11 +69,11 @@ public:
     auto terminate() -> void;
 
     auto loadMeshData(std::vector<Vertex>& vertices, std::vector<uint16_t>& indices) -> size_t;
-    auto loadShader(size_t bufferSize, uint32_t* bufferPointer) -> void;
+    auto loadShader(size_t bufferSize, uint32_t* bufferPointer) -> ShaderID;
     auto setUniformData(size_t id, glm::mat4 proj, glm::mat4 model) -> void;
-    auto createPipeline() -> void;
+    auto createPipeline(ShaderID shaderID) -> PipelineID;
     auto createUniformBuffers() -> void;
-    auto addGameObject(size_t id) -> size_t;
+    auto addGameObject(size_t id, PipelineID pipelineID) -> size_t;
 
 private:
     VkInstance m_instance{ VK_NULL_HANDLE };
@@ -87,7 +95,8 @@ private:
     std::vector<MeshBuffer> m_meshBuffers;
     std::vector<GameObject> m_gameObjects;
 
-    VkShaderModule m_shaderModule;
+    std::vector<VkShaderModule> m_shaderModules;
+    std::vector<VkPipeline> m_pipelines;
 
     std::array<VkFence, MAX_FRAMES_IN_FLIGHT> m_fences;
     std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> m_presentSemaphores;
@@ -96,13 +105,12 @@ private:
     VkCommandPool m_commandPool{ VK_NULL_HANDLE };
     std::array<VkCommandBuffer, MAX_FRAMES_IN_FLIGHT> m_commandBuffers;
 
-    std::array<Texture, 3> m_textures{};
+    std::array<Texture, 1> m_textures{};
 
     VkDescriptorPool m_descriptorPool{ VK_NULL_HANDLE };
     VkDescriptorSetLayout m_descriptorSetLayoutTex{ VK_NULL_HANDLE };
     VkDescriptorSet m_descriptorSetTex{ VK_NULL_HANDLE };
 
-    VkPipeline m_pipeline{ VK_NULL_HANDLE };
     VkPipelineLayout m_pipelineLayout{ VK_NULL_HANDLE };
 
     uint32_t m_frameIndex{ 0 };

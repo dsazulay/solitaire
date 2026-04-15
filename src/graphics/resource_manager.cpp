@@ -53,7 +53,7 @@ auto ResourceManager::loadShader(const char* shaderFile, std::string name) -> Sh
     }
     // Load shader
     Slang::ComPtr<slang::IModule> slangModule{
-        m_slangSession->loadModuleFromSource("triangle", shaderFile, nullptr, nullptr)
+        m_slangSession->loadModuleFromSource(shaderFile, shaderFile, nullptr, nullptr)
     };
     Slang::ComPtr<ISlangBlob> spirv;
     slangModule->getTargetCode(0, spirv.writeRef());
