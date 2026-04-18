@@ -58,17 +58,13 @@ auto ResourceManager::loadShader(const char* shaderFile, std::string name) -> Sh
     Slang::ComPtr<ISlangBlob> spirv;
     slangModule->getTargetCode(0, spirv.writeRef());
 
-    if (!shaders.contains(name))
-    {
-        Shader shader{};
-        shader.filePath = shaderFile;
-        shaders[name] = shader;
-    }
-    shaders[name].lastWriteTime = std::filesystem::last_write_time(shaderFile);
-    shaders[name].bufferSize = spirv->getBufferSize();
-    shaders[name].bufferPointer = (uint32_t*) spirv->getBufferPointer();
+    Shader& shader = shaders[name];
+    shader.filePath = shaderFile;
+    shader.lastWriteTime = std::filesystem::last_write_time(shaderFile);
+    shader.bufferSize = spirv->getBufferSize();
+    shader.bufferPointer = (uint32_t*) spirv->getBufferPointer();
 
-    return &shaders[name];
+    return &shader;
 }
 
 auto ResourceManager::recompileShaders() -> void
