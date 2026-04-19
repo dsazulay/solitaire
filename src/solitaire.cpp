@@ -105,12 +105,12 @@ auto Solitaire::mainLoop() -> void
         {
          //   p.update();
         }
-        //m_renderer.render(gameHandler->cards(),
-                //gameHandler->cardBgs(),
-                //m_ps,
+        m_vulkanRenderer.render(gameHandler->cards(),
+                gameHandler->cardBgs(),
+                m_ps,
+                RenderMode::Shaded);
                 //(RenderMode) m_uiRenderer->renderMode());
         //m_uiRenderer->render();
-        m_vulkanRenderer.render();
 
         m_window.swapBuffers();
         m_window.pollEvents();

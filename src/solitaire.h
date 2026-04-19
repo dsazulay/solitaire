@@ -58,6 +58,6 @@ private:
     std::random_device m_r;
     std::default_random_engine m_randomEngine;
 
-    //std::vector<ParticleSystem> m_ps;
+    std::vector<ParticleSystem> m_ps;
 };
 

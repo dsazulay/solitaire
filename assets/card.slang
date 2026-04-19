@@ -9,28 +9,31 @@ Sampler2D textures[];
 struct ShaderData
 {
     float4x4 projection;
-    float4x4 view;
-    float4x4 model[3];
-    float4 lightPos;
-    uint32_t selected;
+    float4x4 model[60];
+    float2 uvOffset[60];
 };
 
-struct VSOutput {
+struct VSOutput
+{
     float4 Pos : SV_POSITION;
     float2 UV;
 };
 
 [shader("vertex")]
-VSOutput main(VSInput input, uniform ShaderData *shaderData, uint instanceIndex : SV_VulkanInstanceID) {
+VSOutput main(VSInput input, uniform ShaderData *shaderData, uint instanceIndex : SV_VulkanInstanceID)
+{
     VSOutput output;
     float4x4 modelMat = shaderData->model[instanceIndex];
-    output.UV = input.UV;
-    output.Pos = mul(shaderData->projection,  mul(modelMat, float4(input.Pos.xy, 0.0, 1.0)));
+    float2 uvOffset = shaderData->uvOffset[instanceIndex];
+    output.UV = input.UV + uvOffset;
+    output.UV.y = 1 - output.UV.y;
+    output.Pos = mul(shaderData->projection,  mul(modelMat, float4(input.Pos, 1.0)));
     return output;
 }
 
 [shader("fragment")]
-float4 main(VSOutput input) {
+float4 main(VSOutput input)
+{
     float3 color = textures[0].Sample(input.UV).rgb;
     return float4(color, 1.0);
 }

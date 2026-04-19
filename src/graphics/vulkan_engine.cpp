@@ -491,10 +491,10 @@ auto VulkanEngine::init(GLFWwindow* window) -> void
     vkUpdateDescriptorSets(m_device, 1, &writeDescSet, 0, nullptr);
 }
 
-auto VulkanEngine::setUniformData(size_t id, glm::mat4 proj, glm::mat4 model) -> void
+auto VulkanEngine::setUniformData(size_t id, void* data, size_t size) -> void
 {
-    m_gameObjects[id].shaderData.projection = proj;
-    m_gameObjects[id].shaderData.model[0] = model;
+    m_gameObjects[id].shaderData.data = data;
+    m_gameObjects[id].shaderData.size = size;
 }
 
 auto VulkanEngine::render() -> void
@@ -504,17 +504,9 @@ auto VulkanEngine::render() -> void
     chk(vkResetFences(m_device, 1, &m_fences[m_frameIndex]));
     chkSwapchain(vkAcquireNextImageKHR(m_device, m_swapchain, UINT64_MAX, m_presentSemaphores[m_frameIndex], VK_NULL_HANDLE, &m_imageIndex));
 
-    // Update shader data
-    //m_shaderData.projection = glm::perspective(glm::radians(45.0f), (float)m_windowSize.x / (float)m_windowSize.y, 0.1f, 32.0f);
-    //m_shaderData.view = glm::translate(glm::mat4(1.0f), camPos);
-    for (auto i = 0; i < 3; ++i)
-    {
-        //auto instancePos = glm::vec3((float)(i - 1) * 3.0f, 0.0f, 0.0f);
-        //m_shaderData.model[i] = glm::translate(glm::mat4(1.0f), instancePos) * glm::mat4_cast(glm::quat(objectRotations[i]));
-    }
     for (GameObject& go : m_gameObjects)
     {
-        memcpy(go.shaderDataBuffers[m_frameIndex].allocationInfo.pMappedData, &go.shaderData, sizeof(ShaderData));
+        memcpy(go.shaderDataBuffers[m_frameIndex].allocationInfo.pMappedData, go.shaderData.data, go.shaderData.size);
     }
 
     // Build command buffer
@@ -610,7 +602,7 @@ auto VulkanEngine::render() -> void
     for (GameObject& go : m_gameObjects)
     {
 
-            vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelines[go.pipelineID]);
+        vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelines[go.pipelineID]);
         vkCmdSetScissor(cb, 0, 1, &scissor);
         vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSetTex, 0, nullptr);
         MeshBuffer& meshBuffer = m_meshBuffers[go.meshID];
@@ -619,7 +611,7 @@ auto VulkanEngine::render() -> void
         vkCmdBindVertexBuffers(cb, 0, 1, &meshBuffer.buffer, &vOffset);
         vkCmdBindIndexBuffer(cb, meshBuffer.buffer, meshBuffer.bufferSize, VK_INDEX_TYPE_UINT16);
         vkCmdPushConstants(cb, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(VkDeviceAddress), &go.shaderDataBuffers[m_frameIndex].deviceAddress);
-        vkCmdDrawIndexed(cb, meshBuffer.indexCount, 1, 0, 0, 0);
+        vkCmdDrawIndexed(cb, meshBuffer.indexCount, go.instanceCount, 0, 0, 0);
     }
     vkCmdEndRendering(cb);
     VkImageMemoryBarrier2 barrierPresent{
@@ -1010,7 +1002,7 @@ auto VulkanEngine::createUniformBuffers() -> void
         {
             VkBufferCreateInfo uBufferCI{
                 .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-                .size = sizeof(ShaderData),
+                .size = go.shaderData.size,
                 .usage = VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT
             };
             VmaAllocationCreateInfo uBufferAllocCI{
@@ -1034,7 +1026,14 @@ auto VulkanEngine::addGameObject(size_t id, PipelineID pipelineID) -> size_t
     GameObject go;
     go.meshID = id;
     go.pipelineID = (size_t)pipelineID;
+    go.instanceCount = 1;
     m_gameObjects.push_back(go);
 
     return m_gameObjects.size() - 1;
+}
+
+
+auto VulkanEngine::updateGameObjectInstanceCount(size_t id, size_t instanceCount) -> void
+{
+    m_gameObjects[id].instanceCount = instanceCount;
 }

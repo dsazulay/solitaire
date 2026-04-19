@@ -3,7 +3,6 @@
 #include <cstddef>
 #include <vulkan/vulkan.h>
 #include <vma/vk_mem_alloc.h>
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <vector>
 #include <array>
@@ -14,19 +13,20 @@
 
 constexpr uint32_t MAX_FRAMES_IN_FLIGHT{ 2 };
 
+struct MeshTag {};
 struct ShaderTag {};
 struct PipelineTag {};
+struct GameObjectTag {};
 
+using MeshID = Handle<MeshTag>;
 using ShaderID = Handle<ShaderTag>;
 using PipelineID = Handle<PipelineTag>;
+using GameObjectID = Handle<GameObjectTag>;
 
 struct ShaderData
 {
-    glm::mat4 projection;
-    glm::mat4 view;
-    glm::mat4 model[3];
-    glm::vec4 lightPos{ 0.0f, -10.0f, 10.0f, 0.0f };
-    uint32_t selected{ 1 };
+    void* data;
+    size_t size;
 };
 
 struct ShaderDataBuffer
@@ -59,6 +59,7 @@ struct GameObject
     size_t pipelineID;
     ShaderData shaderData;
     std::array<ShaderDataBuffer, MAX_FRAMES_IN_FLIGHT> shaderDataBuffers;
+    size_t instanceCount;
 };
 
 class VulkanEngine
@@ -70,10 +71,11 @@ public:
 
     auto loadMeshData(std::vector<Vertex>& vertices, std::vector<uint16_t>& indices) -> size_t;
     auto loadShader(size_t bufferSize, uint32_t* bufferPointer) -> ShaderID;
-    auto setUniformData(size_t id, glm::mat4 proj, glm::mat4 model) -> void;
+    auto setUniformData(size_t id, void* data, size_t size) -> void;
     auto createPipeline(ShaderID shaderID) -> PipelineID;
     auto createUniformBuffers() -> void;
     auto addGameObject(size_t id, PipelineID pipelineID) -> size_t;
+    auto updateGameObjectInstanceCount(size_t id, size_t instanceCount) -> void;
 
 private:
     VkInstance m_instance{ VK_NULL_HANDLE };

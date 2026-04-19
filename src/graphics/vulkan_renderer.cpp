@@ -35,28 +35,52 @@ auto VulkanRenderer::init(GLFWwindow* window) -> void
     PipelineID cardPipelineID = m_vulkanEngine.createPipeline(cardShaderID);
 
     size_t bgGO = m_vulkanEngine.addGameObject(bgID, bgPipelineID);
-    size_t cardGO = m_vulkanEngine.addGameObject(cardID, cardPipelineID);
+    cardGO = m_vulkanEngine.addGameObject(cardID, cardPipelineID);
 
-    m_vulkanEngine.createUniformBuffers();
 
-    glm::mat4 proj = glm::ortho(0.0f, WIDTH, 0.0f, HEIGHT, -1.0f, 1.0f);
+    m_proj = glm::ortho(0.0f, WIDTH, HEIGHT, 0.0f);
+    //m_proj[1][1] *= -1;
     Transform bgTransform;
     bgTransform.pos(BG_POS);
     bgTransform.scale(BG_SCALE);
 
-    m_vulkanEngine.setUniformData(bgGO, proj, bgTransform.model());
+    updateBackgroundUniform(bgTransform.model());
 
-    Transform cardTransform;
-    cardTransform.pos(BG_POS);
-    m_vulkanEngine.setUniformData(cardGO, proj, cardTransform.model());
+    m_vulkanEngine.setUniformData(bgGO, &m_backgroundUniform, sizeof(BackgroundUniform));
+
+    m_vulkanEngine.setUniformData(cardGO, &m_cardUniform, sizeof(CardUniform));
+
+    m_vulkanEngine.createUniformBuffers();
 }
 
-auto VulkanRenderer::render() -> void
+auto VulkanRenderer::render(const std::span<CardEntity*> cards, const std::span<CardBg> cardBgs,
+            const std::span<ParticleSystem> partciles, RenderMode mode) -> void
 {
+    m_vulkanEngine.updateGameObjectInstanceCount(cardGO, cards.size());
+    updateCardUniform(cards);
     m_vulkanEngine.render();
 }
 
 auto VulkanRenderer::terminate() -> void
 {
     m_vulkanEngine.terminate();
+}
+
+auto VulkanRenderer::updateBackgroundUniform(glm::mat4 model) -> void
+{
+    m_backgroundUniform.projection = m_proj;
+    m_backgroundUniform.model = model;
+}
+
+auto VulkanRenderer::updateCardUniform(const std::span<CardEntity*> cards) -> void
+{
+    m_cardUniform.projection = m_proj;
+
+    size_t index = 0;
+    for (CardEntity* card : cards)
+    {
+        m_cardUniform.model[index] = card->transform.model();
+        m_cardUniform.uvOffset[index] = card->sprite.uv;
+        index++;
+    }
 }
