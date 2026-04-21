@@ -944,7 +944,8 @@ auto VulkanEngine::createPipeline(ShaderID shaderID) -> PipelineID
     };
     VkPipelineRasterizationStateCreateInfo rasterizationState{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
-        .lineWidth = 1.0f
+        .lineWidth = 1.0f,
+        .cullMode = VK_CULL_MODE_BACK_BIT,
     };
     VkPipelineMultisampleStateCreateInfo multisampleState{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
