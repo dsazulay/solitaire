@@ -8,7 +8,7 @@
 #include "../window.h"
 #include "../card.h"
 
-constexpr const float Z_OFFSET = -0.0001f;
+constexpr const float Z_OFFSET = 0.0001f;
 constexpr const int MAX_STACK_SIZE = 13;
 
 class DraggingAnimation

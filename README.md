@@ -19,8 +19,9 @@
 - [x] Render background quad
 - [x] Rework model load functions (remove all opengl related stuff)
 - [x] Rework shader load functions (remove all opengl related suff)
-- [ ] Render cards (add new pipeline)
+- [x] Render cards (add new pipeline)
+- [x] Convert and load card texture
+- [x] Rework texture load functions (remove all opengl related suff)
 - [ ] Isolate swapchain creation into its onw function
-- [ ] Convert and load card texture
-- [ ] Rework texture load functions (remove all opengl related suff)
-
+- [ ] Fix rendering order and handness of vulkan and glfw
+- [ ] Fix ImGui

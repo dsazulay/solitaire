@@ -4,6 +4,7 @@
 #include "../components.h"
 #include "vulkan_engine.h"
 #include <cstddef>
+#include <glm/glm.hpp>
 
 constexpr const char* CARD_MODEL_PATH = "resources/card.obj";
 constexpr const char* BG_SHADER_PATH = "assets/background.slang";
@@ -12,11 +13,12 @@ constexpr const char* CARD_SHADER_PATH = "assets/card.slang";
 constexpr const float WIDTH = 1280.0;
 constexpr const float HEIGHT = 720.0;
 
-constexpr const glm::vec3 BG_POS{ 640.0, 360.0, -0.01 };
+constexpr const glm::vec3 BG_POS{ 640.0, 360.0, -0.1f };
 constexpr const glm::vec2 BG_SCALE{ 640, 360 };
 
 auto VulkanRenderer::init(GLFWwindow* window) -> void
 {
+
     m_vulkanEngine.init(window);
 
     Model* cardModel = ResourceManager::loadModel(CARD_MODEL_PATH, "CardModel");
@@ -34,17 +36,17 @@ auto VulkanRenderer::init(GLFWwindow* window) -> void
     PipelineID bgPipelineID = m_vulkanEngine.createPipeline(bgShaderID);
     PipelineID cardPipelineID = m_vulkanEngine.createPipeline(cardShaderID);
 
-    size_t bgGO = m_vulkanEngine.addGameObject(bgID, bgPipelineID);
     cardGO = m_vulkanEngine.addGameObject(cardID, cardPipelineID);
+    size_t bgGO = m_vulkanEngine.addGameObject(bgID, bgPipelineID);
 
 
-    m_proj = glm::ortho(0.0f, WIDTH, HEIGHT, 0.0f);
-    //m_proj[1][1] *= -1;
+    m_proj = glm::ortho(0.0f, WIDTH, HEIGHT, 0.0f, -1.0f, 1.0f);
     Transform bgTransform;
     bgTransform.pos(BG_POS);
     bgTransform.scale(BG_SCALE);
 
     updateBackgroundUniform(bgTransform.model());
+
 
     m_vulkanEngine.setUniformData(bgGO, &m_backgroundUniform, sizeof(BackgroundUniform));
 

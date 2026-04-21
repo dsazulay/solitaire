@@ -133,6 +133,7 @@ add_executable(Solitaire "${FILE_SOURCES}")
 
 
 target_compile_definitions(Solitaire PRIVATE VK_NO_PROTOTYPES)
+target_compile_definitions(Solitaire PRIVATE GLM_FORCE_DEPTH_ZERO_TO_ONE)
 
 # =============================================================
 
