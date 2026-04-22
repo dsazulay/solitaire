@@ -23,6 +23,12 @@ using ShaderID = Handle<ShaderTag>;
 using PipelineID = Handle<PipelineTag>;
 using GameObjectID = Handle<GameObjectTag>;
 
+enum class Blending
+{
+    NONE,
+    ALPHA_BLEND
+};
+
 struct ShaderData
 {
     void* data;
@@ -72,12 +78,14 @@ public:
     auto loadMeshData(std::vector<Vertex>& vertices, std::vector<uint16_t>& indices) -> size_t;
     auto loadShader(size_t bufferSize, uint32_t* bufferPointer) -> ShaderID;
     auto setUniformData(size_t id, void* data, size_t size) -> void;
-    auto createPipeline(ShaderID shaderID) -> PipelineID;
+    auto createPipeline(ShaderID shaderID, Blending blending = Blending::NONE) -> PipelineID;
     auto createUniformBuffers() -> void;
     auto addGameObject(size_t id, PipelineID pipelineID) -> size_t;
     auto updateGameObjectInstanceCount(size_t id, size_t instanceCount) -> void;
 
 private:
+    auto setAlphaBlendAttachment() -> VkPipelineColorBlendAttachmentState;
+
     VkInstance m_instance{ VK_NULL_HANDLE };
     VkPhysicalDevice m_physicalDevice{ VK_NULL_HANDLE };
     VkDevice m_device{ VK_NULL_HANDLE };

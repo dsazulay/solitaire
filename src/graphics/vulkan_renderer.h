@@ -35,12 +35,15 @@ public:
 private:
     auto updateBackgroundUniform(glm::mat4 model) -> void;
     auto updateCardUniform(const std::span<CardEntity*> cards) -> void;
+    auto updateCardBgUniform(const std::span<CardBg> cards) -> void;
 
     VulkanEngine m_vulkanEngine;
     glm::mat4 m_proj;
     BackgroundUniform m_backgroundUniform;
     CardUniform m_cardUniform;
+    CardUniform m_cardBgUniform;
 
     size_t cardGO;
+    size_t cardBgGO;
 };
 

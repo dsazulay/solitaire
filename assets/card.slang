@@ -34,6 +34,6 @@ VSOutput main(VSInput input, uniform ShaderData *shaderData, uint instanceIndex 
 [shader("fragment")]
 float4 main(VSOutput input)
 {
-    float3 color = textures[0].Sample(input.UV).rgb;
-    return float4(color, 1.0);
+    float4 color = textures[0].Sample(input.UV);
+    return color;
 }

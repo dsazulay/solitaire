@@ -11,6 +11,7 @@
 #include "../utils/log.h"
 #include <ktx.h>
 #include <ktxvulkan.h>
+#include "../utils/log.h"
 
 bool updateSwapchain{ false };
 glm::vec3 camPos{ 0.0f, 0.0f, -6.0f };
@@ -601,7 +602,6 @@ auto VulkanEngine::render() -> void
 
     for (GameObject& go : m_gameObjects)
     {
-
         vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelines[go.pipelineID]);
         vkCmdSetScissor(cb, 0, 1, &scissor);
         vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSetTex, 0, nullptr);
@@ -871,7 +871,7 @@ auto VulkanEngine::loadShader(size_t bufferSize, uint32_t* bufferPointer) -> Han
     return ShaderID(m_shaderModules.size() - 1);
 }
 
-auto VulkanEngine::createPipeline(ShaderID shaderID) -> PipelineID 
+auto VulkanEngine::createPipeline(ShaderID shaderID, Blending blending) -> PipelineID
 {
     VkPushConstantRange pushConstantRange{
         .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
@@ -957,13 +957,20 @@ auto VulkanEngine::createPipeline(ShaderID shaderID) -> PipelineID
         .depthWriteEnable = VK_TRUE,
         .depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL
     };
-    VkPipelineColorBlendAttachmentState blendAttachment{ .colorWriteMask = 0xF };
+    VkPipelineColorBlendAttachmentState blendAttachment{
+        .colorWriteMask = 0xF,
+    };
+
+    if (blending == Blending::ALPHA_BLEND)
+    {
+        blendAttachment = setAlphaBlendAttachment();
+    }
+
     VkPipelineColorBlendStateCreateInfo colorBlendState{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
         .attachmentCount = 1,
         .pAttachments = &blendAttachment
     };
-
 
     const VkFormat imageFormat{ VK_FORMAT_B8G8R8A8_SRGB };
     VkFormat depthFormat{ VK_FORMAT_D32_SFLOAT_S8_UINT };
@@ -993,6 +1000,20 @@ auto VulkanEngine::createPipeline(ShaderID shaderID) -> PipelineID
     m_pipelines.push_back(pipeline);
 
     return PipelineID(m_pipelines.size() - 1);
+}
+
+auto VulkanEngine::setAlphaBlendAttachment() -> VkPipelineColorBlendAttachmentState
+{
+    return {
+        .colorWriteMask = 0xF,
+        .blendEnable = VK_TRUE,
+        .srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
+        .dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+        .colorBlendOp = VK_BLEND_OP_ADD,
+        .srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
+        .dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
+        .alphaBlendOp = VK_BLEND_OP_ADD,
+    };
 }
 
 auto VulkanEngine::createUniformBuffers() -> void

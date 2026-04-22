@@ -66,7 +66,7 @@ private:
 
     GameState m_currentState{};
     MatchData m_matchData{};
-    std::array<CardBg, SPECIAL_AREAS_SIZE * 2> m_specialAreas;
+    std::array<CardBg, SPECIAL_AREAS_SIZE * 4> m_specialAreas;
 
     FreecellDataManager m_dataManager;
     FreecellBoardManager m_boardManager;

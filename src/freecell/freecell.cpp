@@ -329,9 +329,14 @@ auto Freecell::createOpenCellsAndFoundations() -> void
     {
         glm::vec3 openCellsPos{m_boardMap.openCells[i], SPECIAL_AREAS_Y, 0.0f};
         glm::vec3 foundationsPos{m_boardMap.foundations[i], SPECIAL_AREAS_Y, 0.0f};
+        glm::vec3 baseStackPos{m_boardMap.tableauX[i], m_boardMap.tableauY[0], 0.0f};
+
+        glm::vec3 middlBaseStackPos{m_boardMap.tableauX[i + FREECELL_TABLEAU_SIZE / 2], m_boardMap.tableauY[0], 0.0f};
         m_specialAreas[i] = CardBg(openCellsUV, openCellsPos);
         m_specialAreas[i + SPECIAL_AREAS_SIZE] = CardBg(foundationsUV,
                 foundationsPos);
+        m_specialAreas[i + SPECIAL_AREAS_SIZE * 2] = CardBg(openCellsUV, baseStackPos);
+        m_specialAreas[i + SPECIAL_AREAS_SIZE * 3] = CardBg(openCellsUV, middlBaseStackPos);
     }
 
     m_board.cardBgs = m_specialAreas;
