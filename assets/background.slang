@@ -28,5 +28,5 @@ VSOutput main(VSInput input, uniform ShaderData *shaderData, uint instanceIndex 
 
 [shader("fragment")]
 float4 main(VSOutput input) {
-    return float4(0.05, 0.4, 0.08, 1.0);
+    return float4(0.22, 0.49, 0.3, 1.0);
 }

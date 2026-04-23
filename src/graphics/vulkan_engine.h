@@ -7,6 +7,7 @@
 #include <vector>
 #include <array>
 #include <GLFW/glfw3.h>
+#include <vulkan/vulkan_core.h>
 
 #include "model.h"
 #include "../utils/handle.h"
@@ -68,6 +69,22 @@ struct GameObject
     size_t instanceCount;
 };
 
+struct Pipeline
+{
+    VkPipelineLayout layout{ VK_NULL_HANDLE };
+    VkPipeline pipeline;
+};
+
+struct VulkanPointers
+{
+    VkInstance instance{ VK_NULL_HANDLE };
+    VkPhysicalDevice physicalDevice{ VK_NULL_HANDLE };
+    VkDevice device{ VK_NULL_HANDLE };
+    VkQueue queue{ VK_NULL_HANDLE };
+    VkDescriptorPool descriptorPool{ VK_NULL_HANDLE };
+    VkFormat imageFormat;
+};
+
 class VulkanEngine
 {
 public:
@@ -75,6 +92,7 @@ public:
     auto render() -> void;
     auto terminate() -> void;
 
+    auto createImguiDescriptorPool() -> void;
     auto loadMeshData(std::vector<Vertex>& vertices, std::vector<uint16_t>& indices) -> size_t;
     auto loadShader(size_t bufferSize, uint32_t* bufferPointer) -> ShaderID;
     auto setUniformData(size_t id, void* data, size_t size) -> void;
@@ -82,6 +100,8 @@ public:
     auto createUniformBuffers() -> void;
     auto addGameObject(size_t id, PipelineID pipelineID) -> size_t;
     auto updateGameObjectInstanceCount(size_t id, size_t instanceCount) -> void;
+    auto getVulkanPointers() -> VulkanPointers;
+    auto waitDevice() -> void;
 
 private:
     auto setAlphaBlendAttachment() -> VkPipelineColorBlendAttachmentState;
@@ -106,7 +126,7 @@ private:
     std::vector<GameObject> m_gameObjects;
 
     std::vector<VkShaderModule> m_shaderModules;
-    std::vector<VkPipeline> m_pipelines;
+    std::vector<Pipeline> m_pipelines;
 
     std::array<VkFence, MAX_FRAMES_IN_FLIGHT> m_fences;
     std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> m_presentSemaphores;
@@ -121,11 +141,12 @@ private:
     VkDescriptorSetLayout m_descriptorSetLayoutTex{ VK_NULL_HANDLE };
     VkDescriptorSet m_descriptorSetTex{ VK_NULL_HANDLE };
 
-    VkPipelineLayout m_pipelineLayout{ VK_NULL_HANDLE };
 
     uint32_t m_frameIndex{ 0 };
     uint32_t m_imageIndex{ 0 };
 
     glm::ivec2 m_windowSize{};
     GLFWwindow* m_window;
+
+    VkDescriptorPool m_imguiPool;
 };

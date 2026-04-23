@@ -7,7 +7,7 @@
 #include "window.h"
 #include "graphics/vulkan_renderer.h"
 #include "animation/animation_engine.h"
-//#include "ui_renderer.h"
+#include "ui_renderer.h"
 #include "freecell/freecell.h"
 #include "scoundrel/scoundrel.h"
 #include "event.h"
@@ -48,7 +48,7 @@ private:
     AppConfig m_appConfig;
     Window m_window;
     VulkanRenderer m_vulkanRenderer;
-    //std::unique_ptr<UiRenderer> m_uiRenderer;
+    std::unique_ptr<UiRenderer> m_uiRenderer;
     Freecell m_freecell;
     Scoundrel m_scoundrel;
     AnimationEngine m_animationEngine;

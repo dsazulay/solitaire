@@ -32,6 +32,8 @@ public:
     auto render(const std::span<CardEntity*> cards, const std::span<CardBg> cardBgs,
             const std::span<ParticleSystem> partciles, RenderMode mode) -> void;
     auto terminate() -> void;
+    auto getVulkanPointers() -> VulkanPointers;
+    auto waitDevice() -> void;
 private:
     auto updateBackgroundUniform(glm::mat4 model) -> void;
     auto updateCardUniform(const std::span<CardEntity*> cards) -> void;

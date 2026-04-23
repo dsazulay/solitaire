@@ -116,7 +116,6 @@ auto Window::frameBufferCallback(GLFWwindow* window, int width,
         int height) -> void
 {
     UNUSED(window);
-    glViewport(0, 0, width, height);
 }
 
 auto Window::cursorPositionCallback(GLFWwindow* window, double xpos,

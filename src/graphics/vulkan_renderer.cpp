@@ -103,3 +103,13 @@ auto VulkanRenderer::updateCardBgUniform(const std::span<CardBg> cards) -> void
         index++;
     }
 }
+
+auto VulkanRenderer::getVulkanPointers() -> VulkanPointers
+{
+    return m_vulkanEngine.getVulkanPointers();
+}
+
+auto VulkanRenderer::waitDevice() -> void
+{
+    m_vulkanEngine.waitDevice();
+}

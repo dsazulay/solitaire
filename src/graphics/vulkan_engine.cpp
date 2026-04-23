@@ -1,5 +1,4 @@
 #include "vulkan_engine.h"
-#include "GLFW/glfw3.h"
 #include <cstddef>
 #include <vector>
 
@@ -12,6 +11,10 @@
 #include <ktx.h>
 #include <ktxvulkan.h>
 #include "../utils/log.h"
+
+#define IMGUI_IMPL_VULKAN_NO_PROTOTYPES
+#include <imgui.h>
+#include "imgui_impl_vulkan.h"
 
 bool updateSwapchain{ false };
 glm::vec3 camPos{ 0.0f, 0.0f, -6.0f };
@@ -490,6 +493,8 @@ auto VulkanEngine::init(GLFWwindow* window) -> void
         .pImageInfo = textureDescriptors.data()
     };
     vkUpdateDescriptorSets(m_device, 1, &writeDescSet, 0, nullptr);
+
+    createImguiDescriptorPool();
 }
 
 auto VulkanEngine::setUniformData(size_t id, void* data, size_t size) -> void
@@ -602,17 +607,19 @@ auto VulkanEngine::render() -> void
 
     for (GameObject& go : m_gameObjects)
     {
-        vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelines[go.pipelineID]);
+        auto& pipeline = m_pipelines[go.pipelineID];
+        vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipeline);
         vkCmdSetScissor(cb, 0, 1, &scissor);
-        vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSetTex, 0, nullptr);
+        vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, 1, &m_descriptorSetTex, 0, nullptr);
         MeshBuffer& meshBuffer = m_meshBuffers[go.meshID];
 
         VkDeviceSize vOffset{ 0 };
         vkCmdBindVertexBuffers(cb, 0, 1, &meshBuffer.buffer, &vOffset);
         vkCmdBindIndexBuffer(cb, meshBuffer.buffer, meshBuffer.bufferSize, VK_INDEX_TYPE_UINT16);
-        vkCmdPushConstants(cb, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(VkDeviceAddress), &go.shaderDataBuffers[m_frameIndex].deviceAddress);
+        vkCmdPushConstants(cb, pipeline.layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(VkDeviceAddress), &go.shaderDataBuffers[m_frameIndex].deviceAddress);
         vkCmdDrawIndexed(cb, meshBuffer.indexCount, go.instanceCount, 0, 0, 0);
     }
+    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cb);
     vkCmdEndRendering(cb);
     VkImageMemoryBarrier2 barrierPresent{
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
@@ -777,6 +784,7 @@ auto VulkanEngine::render() -> void
         };
         chk(vkCreateImageView(m_device, &viewCI, nullptr, &m_depthImageView));
     }
+
 }
 
 auto VulkanEngine::terminate() -> void
@@ -813,10 +821,11 @@ auto VulkanEngine::terminate() -> void
     }
     vkDestroyDescriptorSetLayout(m_device, m_descriptorSetLayoutTex, nullptr);
     vkDestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
-    vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
+    vkDestroyDescriptorPool(m_device, m_imguiPool, nullptr);
     for (auto& pipeline : m_pipelines)
     {
-        vkDestroyPipeline(m_device, pipeline, nullptr);
+        vkDestroyPipelineLayout(m_device, pipeline.layout, nullptr);
+        vkDestroyPipeline(m_device, pipeline.pipeline, nullptr);
     }
     vkDestroySwapchainKHR(m_device, m_swapchain, nullptr);
     vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
@@ -828,6 +837,32 @@ auto VulkanEngine::terminate() -> void
     vmaDestroyAllocator(m_allocator);
     vkDestroyDevice(m_device, nullptr);
     vkDestroyInstance(m_instance, nullptr);
+}
+
+auto VulkanEngine::createImguiDescriptorPool() -> void
+{
+    VkDescriptorPoolSize pool_sizes[] = {
+        { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
+        { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
+        { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
+        { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
+        { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
+        { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
+        { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
+    };
+
+    VkDescriptorPoolCreateInfo pool_info = {};
+    pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+    pool_info.maxSets = 1000;
+    pool_info.poolSizeCount = (uint32_t)std::size(pool_sizes);
+    pool_info.pPoolSizes = pool_sizes;
+
+    chk(vkCreateDescriptorPool(m_device, &pool_info, nullptr, &m_imguiPool));
 }
 
 auto VulkanEngine::loadMeshData(std::vector<Vertex>& vertices, std::vector<uint16_t>& indices) -> size_t
@@ -873,6 +908,7 @@ auto VulkanEngine::loadShader(size_t bufferSize, uint32_t* bufferPointer) -> Han
 
 auto VulkanEngine::createPipeline(ShaderID shaderID, Blending blending) -> PipelineID
 {
+    Pipeline pipeline{};
     VkPushConstantRange pushConstantRange{
         .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
         .size = sizeof(VkDeviceAddress)
@@ -884,7 +920,7 @@ auto VulkanEngine::createPipeline(ShaderID shaderID, Blending blending) -> Pipel
         .pushConstantRangeCount = 1,
         .pPushConstantRanges = &pushConstantRange
     };
-    chk(vkCreatePipelineLayout(m_device, &pipelineLayoutCI, nullptr, &m_pipelineLayout));
+    chk(vkCreatePipelineLayout(m_device, &pipelineLayoutCI, nullptr, &pipeline.layout));
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
         {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
@@ -993,10 +1029,9 @@ auto VulkanEngine::createPipeline(ShaderID shaderID, Blending blending) -> Pipel
         .pDepthStencilState = &depthStencilState,
         .pColorBlendState = &colorBlendState,
         .pDynamicState = &dynamicState,
-        .layout = m_pipelineLayout
+        .layout = pipeline.layout 
     };
-    VkPipeline pipeline;
-    chk(vkCreateGraphicsPipelines(m_device, VK_NULL_HANDLE, 1, &pipelineCI, nullptr, &pipeline));
+    chk(vkCreateGraphicsPipelines(m_device, VK_NULL_HANDLE, 1, &pipelineCI, nullptr, &pipeline.pipeline));
     m_pipelines.push_back(pipeline);
 
     return PipelineID(m_pipelines.size() - 1);
@@ -1058,4 +1093,21 @@ auto VulkanEngine::addGameObject(size_t id, PipelineID pipelineID) -> size_t
 auto VulkanEngine::updateGameObjectInstanceCount(size_t id, size_t instanceCount) -> void
 {
     m_gameObjects[id].instanceCount = instanceCount;
+}
+
+auto VulkanEngine::getVulkanPointers() -> VulkanPointers
+{
+    return {
+        .instance = m_instance,
+        .physicalDevice = m_physicalDevice,
+        .device = m_device,
+        .queue = m_queue,
+        .descriptorPool = m_imguiPool,
+        .imageFormat = VK_FORMAT_B8G8R8A8_SRGB
+    };
+}
+
+auto VulkanEngine::waitDevice() -> void
+{
+    chk(vkDeviceWaitIdle(m_device));
 }

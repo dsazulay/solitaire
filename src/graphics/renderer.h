@@ -5,7 +5,6 @@
 
 #include "model.h"
 #include "shader.h"
-#include "texture.h"
 #include "particle.h"
 #include "../card.h"
 
@@ -43,7 +42,7 @@ private:
     Shader* m_backgroundWireframeShader;
     Shader* m_particleShader;
 
-    Texture* m_texture;
+    //Texture* m_texture;
 
     Model* m_model;
     Model* m_backgroundModel;

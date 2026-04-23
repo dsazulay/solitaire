@@ -36,6 +36,7 @@ endif()
 
 # SDL3, Volk, VMA, glm and Slang are taken from the SDK
 include_directories(SYSTEM $ENV{VULKAN_SDK}/include)
+include_directories(external/imgui)
 include_directories(external/ktx/include)
 include_directories(external/ktx/other_include)
 
@@ -69,7 +70,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(fmt)
 
-
+# ktx
 set(KTX_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/ktx)
 set(KTX_SOURCES
     ${KTX_DIR}/lib/texture.c
@@ -83,15 +84,21 @@ add_library(ktx STATIC ${KTX_SOURCES})
 
 find_library(Slang_LIBRARY NAMES slang slang-compiler HINTS "$ENV{VULKAN_SDK}/lib" REQUIRED)
 
-# Glad
-message(STATUS "Installing glad")
-add_subdirectory(external/glad)
-set_property(TARGET Glad PROPERTY FOLDER "Dependencies")
-
 # ImGui
-message(STATUS "Installing imgui")
-add_subdirectory(external/imgui)
-set_property(TARGET ImGui PROPERTY FOLDER "Dependencies")
+set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui)
+set(IMGUI_SOURCES
+    ${IMGUI_DIR}/imgui_demo.cpp
+    ${IMGUI_DIR}/imgui_draw.cpp
+    ${IMGUI_DIR}/imgui_tables.cpp
+    ${IMGUI_DIR}/imgui_widgets.cpp
+    ${IMGUI_DIR}/imgui.cpp
+    ${IMGUI_DIR}/imgui_impl_glfw.cpp
+    ${IMGUI_DIR}/imgui_impl_vulkan.cpp)
+add_library(imgui STATIC ${IMGUI_SOURCES})
+
+target_compile_definitions(imgui PRIVATE IMGUI_IMPL_VULKAN_NO_PROTOTYPES)
+
+target_link_libraries(imgui glfw)
 
 # stb_image
 message(STATUS "Installing stb_image")
@@ -117,20 +124,11 @@ file(GLOB_RECURSE FILE_SOURCES RELATIVE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h
 )
 
-# Solution Filters
-foreach(source IN LISTS FILE_SOURCES)
-    get_filename_component(source_path "${source}" PATH)
-    string(REPLACE "/" "\\" source_path_msvc "${source_path}")
-    string(REPLACE "src" "" source_path_final "${source_path_msvc}")
-    source_group("${source_path_final}" FILES "${source}")
-endforeach()
-
 # =============================================================
 
 # Finalize App
 
 add_executable(Solitaire "${FILE_SOURCES}")
-
 
 target_compile_definitions(Solitaire PRIVATE VK_NO_PROTOTYPES)
 target_compile_definitions(Solitaire PRIVATE GLM_FORCE_DEPTH_ZERO_TO_ONE)
@@ -139,7 +137,7 @@ target_compile_definitions(Solitaire PRIVATE GLM_FORCE_DEPTH_ZERO_TO_ONE)
 
 # Finish Dependencies
 
-target_link_libraries(Solitaire Glad ImGui glfw glm fmt stb_image
+target_link_libraries(Solitaire glfw glm fmt imgui stb_image
     tiny_obj_loader doctest ktx ${Slang_LIBRARY})
 
 # =============================================================

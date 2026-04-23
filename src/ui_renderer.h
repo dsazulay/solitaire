@@ -1,10 +1,10 @@
 #pragma once
 
-#include <glad/glad.h>
 #include "GLFW/glfw3.h"
 #include <imgui.h>
 
 #include "gamedata.h"
+#include "graphics/vulkan_engine.h"
 
 struct WindowConfig
 {
@@ -16,13 +16,13 @@ struct WindowConfig
 class UiRenderer
 {
 public:
-    UiRenderer(GLFWwindow* window);
+    UiRenderer(GLFWwindow* window, VulkanPointers vulkanPointers);
     UiRenderer(const UiRenderer& u) = delete;
     UiRenderer(UiRenderer&& u) = delete;
     auto operator=(const UiRenderer&) -> UiRenderer& = delete;
     auto operator=(UiRenderer&&) -> UiRenderer& = delete;
-    ~UiRenderer();
 
+    auto terminate() -> void;
     void render();
     auto renderMode() -> int;
     auto showWonWindow() -> void;

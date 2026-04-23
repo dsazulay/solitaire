@@ -1,18 +1,29 @@
 #include "ui_renderer.h"
 
 #include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
+#include <imgui_impl_vulkan.h>
+#include <vulkan/vulkan.h>
+#include <volk/volk.h>
+#include <vulkan/vulkan_core.h>
 #include "fmt/core.h"
+#include "graphics/vulkan_engine.h"
 #include "imgui.h"
 #include "timer.h"
 #include "dispatcher.h"
 #include "event.h"
 #include "utils/log.h"
 
-UiRenderer::UiRenderer(GLFWwindow* window)
+static inline auto chk(VkResult result) -> void
 {
-    const char* glsl_version = "#version 410";
+    if (result != VK_SUCCESS)
+    {
+        LOG_ERROR("Vulkan call returned an error ({})", (int)result);
+        // TODO: return error
+    }
+}
 
+UiRenderer::UiRenderer(GLFWwindow* window, VulkanPointers vulkanPointers)
+{
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -20,23 +31,58 @@ UiRenderer::UiRenderer(GLFWwindow* window)
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
 
+    ImGui_ImplVulkan_LoadFunctions(VK_API_VERSION_1_3, [] (const char *functionName, 
+        void *vulkanInstance) {
+        return vkGetInstanceProcAddr(*(reinterpret_cast<VkInstance *>(
+            vulkanInstance)), functionName);
+    }, &vulkanPointers.instance);
+/*
+    ImGui_ImplVulkan_LoadFunctions(
+        VK_API_VERSION_1_3,
+        [](const char* functionName, void* userData) -> PFN_vkVoidFunction {
+            LoaderData* data = (LoaderData*)userData;
+            return vkGetInstanceProcAddr(data->instance, functionName);
+        },
+        &loader
+    );*/
+
+    VkFormat format = VK_FORMAT_B8G8R8A8_SRGB;
+    VkFormat depthFormat{ VK_FORMAT_D32_SFLOAT_S8_UINT };
     // Setup Platform/Renderer backends
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init(glsl_version);
+    ImGui_ImplGlfw_InitForVulkan(window, true);
+    ImGui_ImplVulkan_InitInfo init_info = {};
+    init_info.ApiVersion = VK_API_VERSION_1_3;              // Pass in your value of VkApplicationInfo::apiVersion, otherwise will default to header version.
+    init_info.Instance = vulkanPointers.instance;
+    init_info.PhysicalDevice = vulkanPointers.physicalDevice;
+    init_info.Device = vulkanPointers.device;
+    init_info.Queue = vulkanPointers.queue;
+    init_info.DescriptorPool = vulkanPointers.descriptorPool;
+    init_info.MinImageCount = 2;
+    init_info.ImageCount = 2;
+    init_info.UseDynamicRendering = true;
+    init_info.CheckVkResultFn = chk;
+    init_info.PipelineInfoMain.PipelineRenderingCreateInfo = {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO
+    };
+    init_info.PipelineInfoMain.PipelineRenderingCreateInfo.colorAttachmentCount = 1;
+    init_info.PipelineInfoMain.PipelineRenderingCreateInfo.pColorAttachmentFormats = &format;
+    init_info.PipelineInfoMain.PipelineRenderingCreateInfo.depthAttachmentFormat = depthFormat;
+    init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+    ImGui_ImplVulkan_Init(&init_info);
 
     initStyleValues();
 }
 
-UiRenderer::~UiRenderer()
+auto UiRenderer::terminate() -> void
 {
-    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 }
 
 auto UiRenderer::render() -> void
 {
-    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
@@ -49,7 +95,7 @@ auto UiRenderer::render() -> void
 
     if (m_shouldRenderWonWindow)
         renderWonWindow();
-    
+
     if (m_shouldRenderStatsWindow)
         renderStatsWindow();
 
@@ -62,7 +108,6 @@ auto UiRenderer::render() -> void
         ImGui::ShowDemoWindow();
 
     ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 auto UiRenderer::renderMode() -> int

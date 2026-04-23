@@ -35,17 +35,16 @@ auto Solitaire::init() -> void
 {
     m_window.createWindow(m_appConfig.windowWidth,
             m_appConfig.windowHeight, m_appConfig.windowName.c_str());
-    //m_renderer.init();
 
     m_vulkanRenderer.init(m_window.getGlfwWindow());
 
 
-    //m_uiRenderer = std::make_unique<UiRenderer>(m_window.getGlfwWindow());
+    m_uiRenderer = std::make_unique<UiRenderer>(m_window.getGlfwWindow(), m_vulkanRenderer.getVulkanPointers());
 
     // Game init
     m_freecell.init(&m_animationEngine);
     m_scoundrel.init(&m_animationEngine);
-    //m_uiRenderer->setPlayerAndMatchData(m_freecell.playerData(), m_freecell.matchData());
+    m_uiRenderer->setPlayerAndMatchData(m_freecell.playerData(), m_freecell.matchData());
     gameInputHandler = &m_freecell;
     gameHandler= &m_freecell;
 
@@ -105,18 +104,23 @@ auto Solitaire::mainLoop() -> void
         {
          //   p.update();
         }
+        m_uiRenderer->render();
         m_vulkanRenderer.render(gameHandler->cards(),
                 gameHandler->cardBgs(),
                 m_ps,
                 RenderMode::Shaded);
                 //(RenderMode) m_uiRenderer->renderMode());
-        //m_uiRenderer->render();
 
         m_window.swapBuffers();
         m_window.pollEvents();
 
         std::this_thread::sleep_until(targetFps);
     }
+
+    m_vulkanRenderer.waitDevice();
+
+    m_uiRenderer->terminate();
+    m_vulkanRenderer.terminate();
 }
 
 auto Solitaire::sleepToTargetFps(std::chrono::time_point<std::chrono::steady_clock> startTime,
@@ -153,10 +157,10 @@ auto Solitaire::onKeyboardPress(const KeyboardPressEvent& e) -> void
         gameInputHandler->handleRestart();
     else if (e.key() == KeyCode::N)
         gameInputHandler->handleNewGame();
-    //else if (e.key() == KeyCode::S)
-        //m_uiRenderer->toggleStatsWindow();
-    //else if (e.key() == KeyCode::D)
-        //m_uiRenderer->toggleDebugWindow();
+    else if (e.key() == KeyCode::S)
+        m_uiRenderer->toggleStatsWindow();
+    else if (e.key() == KeyCode::D)
+        m_uiRenderer->toggleDebugWindow();
     else if (e.key() == KeyCode::P)
         gameInputHandler->handlePause();
     else if (e.key() == KeyCode::C)
@@ -182,7 +186,7 @@ auto Solitaire::onKeyboardPress(const KeyboardPressEvent& e) -> void
 
 auto Solitaire::onGameWin(const GameWinEvent& e) -> void
 {
-    //m_uiRenderer->showWonWindow();
+    m_uiRenderer->showWonWindow();
 }
 
 auto Solitaire::onUiGameEvent(const UiGameEvent& e) -> void

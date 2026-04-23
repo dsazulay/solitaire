@@ -1,6 +1,5 @@
 #include "timer.h"
 
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 float Timer::time = 0.0f;
