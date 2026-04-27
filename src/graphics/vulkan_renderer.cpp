@@ -16,10 +16,17 @@ constexpr const float HEIGHT = 720.0;
 constexpr const glm::vec3 BG_POS{ 640.0, 360.0, -0.1f };
 constexpr const glm::vec2 BG_SCALE{ 640, 360 };
 
-auto VulkanRenderer::init(GLFWwindow* window) -> void
+auto VulkanRenderer::init(Window* window) -> void
 {
+    u32 extensionsCount;
+    const char** extensions = window->getRequiredExtensions(&extensionsCount);
+    m_vulkanEngine.init(extensionsCount, extensions);
 
-    m_vulkanEngine.init(window);
+    VkSurfaceKHR surface = window->createVulkanSurface(m_vulkanEngine.instance());
+    glm::ivec2 framebufferSize = window->getFramebufferSize();
+    m_vulkanEngine.setSurfaceAndWindowSize(surface, framebufferSize.x, framebufferSize.y);
+    m_vulkanEngine.createSwapchain();
+    m_vulkanEngine.createSyncObjects();
 
     Model* cardModel = ResourceManager::loadModel(CARD_MODEL_PATH, "CardModel");
     Model* backgroundModel = ResourceManager::loadModel(NativeModel::Quad, "QuadModel");

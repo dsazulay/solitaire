@@ -24,4 +24,4 @@
 - [x] Rework texture load functions (remove all opengl related suff)
 - [ ] Isolate swapchain creation into its onw function
 - [ ] Fix rendering order and handness of vulkan and glfw
-- [ ] Fix ImGui
+- [x] Fix ImGui

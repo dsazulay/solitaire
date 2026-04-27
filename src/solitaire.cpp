@@ -5,18 +5,18 @@
 #include <chrono>
 
 #include "event.h"
-//#include "graphics/particle.h"
-#include "graphics/resource_manager.h"
+#include "graphics/particle.h"
 #include "timer.h"
 #include "keycodes.h"
 #include "dispatcher.h"
+#include "utils/types.h"
 
 Solitaire::Solitaire() : m_randomEngine(m_r())
 {
-    constexpr const int defaultWindowWidth = 1280;
-    constexpr const int defaultWindowHeight = 720;
-    constexpr const double fps = 60.0;
-    constexpr const double idleFps = 5.0;
+    constexpr int defaultWindowWidth = 1280;
+    constexpr int defaultWindowHeight = 720;
+    constexpr double fps = 60.0;
+    constexpr double idleFps = 5.0;
 
     m_appConfig.windowName = "Solitaire";
     m_appConfig.windowWidth = defaultWindowWidth;
@@ -33,11 +33,11 @@ auto Solitaire::run() -> void
 
 auto Solitaire::init() -> void
 {
+    SystemInit(m_window);
     m_window.createWindow(m_appConfig.windowWidth,
             m_appConfig.windowHeight, m_appConfig.windowName.c_str());
 
-    m_vulkanRenderer.init(m_window.getGlfwWindow());
-
+    m_vulkanRenderer.init(&m_window);
 
     m_uiRenderer = std::make_unique<UiRenderer>(m_window.getGlfwWindow(), m_vulkanRenderer.getVulkanPointers());
 
@@ -48,8 +48,8 @@ auto Solitaire::init() -> void
     gameInputHandler = &m_freecell;
     gameHandler= &m_freecell;
 
-    //m_ps.push_back(ParticleSystem());
-    //m_ps.back().init(&m_randomEngine, { .amount = 100, .spawnRate = 0 });
+    m_ps.push_back(ParticleSystem());
+    m_ps.back().init(&m_randomEngine, { .amount = 100, .spawnRate = 0 });
 
     Dispatcher<MouseClickEvent>::subscribe(
         [&] (const auto& arg) { Solitaire::onMouseClick(arg); });
@@ -100,9 +100,9 @@ auto Solitaire::mainLoop() -> void
 
         gameHandler->update();
         m_animationEngine.update();
-        //for (ParticleSystem& p : m_ps)
+        for (ParticleSystem& p : m_ps)
         {
-         //   p.update();
+            p.update();
         }
         m_uiRenderer->render();
         m_vulkanRenderer.render(gameHandler->cards(),
@@ -121,6 +121,7 @@ auto Solitaire::mainLoop() -> void
 
     m_uiRenderer->terminate();
     m_vulkanRenderer.terminate();
+    SystemTerminate(m_window);
 }
 
 auto Solitaire::sleepToTargetFps(std::chrono::time_point<std::chrono::steady_clock> startTime,
@@ -184,7 +185,7 @@ auto Solitaire::onKeyboardPress(const KeyboardPressEvent& e) -> void
     }
 }
 
-auto Solitaire::onGameWin(const GameWinEvent& e) -> void
+auto Solitaire::onGameWin(const GameWinEvent&) -> void
 {
     m_uiRenderer->showWonWindow();
 }
@@ -208,21 +209,21 @@ auto Solitaire::onUiGameEvent(const UiGameEvent& e) -> void
     }
 }
 
-auto Solitaire::onUiRecompileShaderEvent(const UiRecompileShaderEvent& e) -> void
+auto Solitaire::onUiRecompileShaderEvent(const UiRecompileShaderEvent&) -> void
 {
     //ResourceManager::recompileShaders();
     //m_renderer.reloadShaders();
 }
 
-auto Solitaire::onUiPrintCardEvent(const UiPrintCardEvent& e) -> void
+auto Solitaire::onUiPrintCardEvent(const UiPrintCardEvent&) -> void
 {
     gameInputHandler->handlePrintCards();
 }
 
-auto Solitaire::onUiRestartParticlesEvent(const UiRestartParticlesEvent& e) -> void
+auto Solitaire::onUiRestartParticlesEvent(const UiRestartParticlesEvent&) -> void
 {
-    //for (ParticleSystem& ps : m_ps)
+    for (ParticleSystem& ps : m_ps)
     {
-     //   ps.start();
+        ps.start();
     }
 }

@@ -46,7 +46,7 @@ UiRenderer::UiRenderer(GLFWwindow* window, VulkanPointers vulkanPointers)
         &loader
     );*/
 
-    VkFormat format = VK_FORMAT_B8G8R8A8_SRGB;
+    VkFormat format = VK_FORMAT_B8G8R8A8_UNORM;
     VkFormat depthFormat{ VK_FORMAT_D32_SFLOAT_S8_UINT };
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForVulkan(window, true);

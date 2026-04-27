@@ -37,8 +37,8 @@ endif()
 # SDL3, Volk, VMA, glm and Slang are taken from the SDK
 include_directories(SYSTEM $ENV{VULKAN_SDK}/include)
 include_directories(external/imgui)
-include_directories(external/ktx/include)
-include_directories(external/ktx/other_include)
+include_directories(SYSTEM external/ktx/include)
+include_directories(SYSTEM external/ktx/other_include)
 
 # glfw
 FetchContent_Declare(

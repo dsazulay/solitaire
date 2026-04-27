@@ -6,11 +6,11 @@
 #include <glm/glm.hpp>
 #include <vector>
 #include <array>
-#include <GLFW/glfw3.h>
 #include <vulkan/vulkan_core.h>
 
 #include "model.h"
 #include "../utils/handle.h"
+#include "../utils/types.h"
 
 constexpr uint32_t MAX_FRAMES_IN_FLIGHT{ 2 };
 
@@ -88,10 +88,12 @@ struct VulkanPointers
 class VulkanEngine
 {
 public:
-    auto init(GLFWwindow* window) -> void;
-    auto render() -> void;
+    auto init(u32 extensionsCount, const char** requiredExtensions) -> void;
     auto terminate() -> void;
+    auto createSwapchain() -> void;
+    auto render() -> void;
 
+    auto setSurfaceAndWindowSize(VkSurfaceKHR surface, u32 sizeX, u32 sizeY) -> void;
     auto createImguiDescriptorPool() -> void;
     auto loadMeshData(std::vector<Vertex>& vertices, std::vector<uint16_t>& indices) -> size_t;
     auto loadShader(size_t bufferSize, uint32_t* bufferPointer) -> ShaderID;
@@ -101,7 +103,10 @@ public:
     auto addGameObject(size_t id, PipelineID pipelineID) -> size_t;
     auto updateGameObjectInstanceCount(size_t id, size_t instanceCount) -> void;
     auto getVulkanPointers() -> VulkanPointers;
+    auto instance() -> VkInstance;
     auto waitDevice() -> void;
+
+    auto createSyncObjects() -> void;
 
 private:
     auto setAlphaBlendAttachment() -> VkPipelineColorBlendAttachmentState;
@@ -146,7 +151,6 @@ private:
     uint32_t m_imageIndex{ 0 };
 
     glm::ivec2 m_windowSize{};
-    GLFWwindow* m_window;
 
     VkDescriptorPool m_imguiPool;
 };

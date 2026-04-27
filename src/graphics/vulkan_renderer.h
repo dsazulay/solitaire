@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vulkan_engine.h"
+#include "../window.h"
 #include "particle.h"
 #include "../card.h"
 
@@ -28,7 +29,7 @@ struct CardUniform
 class VulkanRenderer
 {
 public:
-    auto init(GLFWwindow* window) -> void;
+    auto init(Window* window) -> void;
     auto render(const std::span<CardEntity*> cards, const std::span<CardBg> cardBgs,
             const std::span<ParticleSystem> partciles, RenderMode mode) -> void;
     auto terminate() -> void;

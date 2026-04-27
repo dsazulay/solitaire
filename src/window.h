@@ -1,44 +1,45 @@
 #pragma once
 
+#include "utils/types.h"
+
 #define GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#include <vulkan/vulkan.h>
 #include <glm/vec2.hpp>
 
 class Window
 {
 public:
-    Window();
-    Window(const Window& w) = delete;
-    Window(Window&& w) = delete;
-    auto operator=(const Window& w) -> Window& = delete;
-    auto operator=(Window&& w) -> Window& = delete;
-    ~Window();
-
+    auto init() -> void;
+    auto terminate() -> void;
     auto createWindow(int width, int height, const char* name) -> void;
-    [[nodiscard]] auto shouldClose() const -> bool;
-    [[nodiscard]] auto isFocused() const -> bool;
+    auto shouldClose() const -> bool;
+    auto isFocused() const -> bool;
     auto swapBuffers() const -> void;
     auto pollEvents() -> void;
+    auto createVulkanSurface(VkInstance instance) -> VkSurfaceKHR;
+    auto getRequiredExtensions(u32* extensionsCount) -> const char**;
+    auto getFramebufferSize() -> glm::ivec2;
     auto getGlfwWindow() -> GLFWwindow*;
 
     static glm::vec2 mousePos;
 
 private:
-    auto cursorPositionCallback(double x, double y) -> void;
-    auto mouseButtonCallback(int button, int action) -> void;
+    auto cursorPositionCallback(f64 x, f64 y) -> void;
+    auto mouseButtonCallback(i32 button, i32 action) -> void;
 
-    static auto frameBufferCallback(GLFWwindow* window, int width,
-            int height) -> void;
-    static auto cursorPositionCallback(GLFWwindow* window, double xpos,
-            double ypos) -> void;
-    static auto mouseButtonCallback(GLFWwindow* window, int button, int action,
-            int mods) -> void;
-    static auto keyboardCallback(GLFWwindow* window, int key, int scancode,
-            int action, int mods) -> void;
+    static auto frameBufferSizeCallback(
+        GLFWwindow* window, i32 width, i32 height) -> void;
+    static auto cursorPositionCallback(
+        GLFWwindow* window, f64 xpos, f64 ypos) -> void;
+    static auto mouseButtonCallback(
+        GLFWwindow* window, i32 button, i32 action, int mods) -> void;
+    static auto keyboardCallback(
+        GLFWwindow* window, i32 key, i32 scancode, i32 action, i32 mods) -> void;
 
-    float m_lastClickTime{};
-    float m_dragStartTime{};
-    glm::vec2 m_windowSize{};
+    f32 m_lastClickTime{};
+    f32 m_dragStartTime{};
+    glm::ivec2 m_windowSize{};
     GLFWwindow* m_glfwWindow{};
 };

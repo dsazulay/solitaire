@@ -1,7 +1,7 @@
 #include "particle.h"
+
 #include "../timer.h"
-#include "glm/common.hpp"
-#include "../utils/log.h"
+#include <glm/common.hpp>
 
 auto ParticleSystem::init(std::default_random_engine* engine, ParticleConfig config) -> void
 {
