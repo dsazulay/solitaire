@@ -22,18 +22,18 @@ static inline auto chk(VkResult result) -> void
     }
 }
 
-UiRenderer::UiRenderer(GLFWwindow* window, VulkanPointers vulkanPointers)
+auto UiRenderer::init(GLFWwindow* window, VulkanPointers vulkanPointers) -> void
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGuiIO& io = ImGui::GetIO(); (void) io;
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
 
     ImGui_ImplVulkan_LoadFunctions(VK_API_VERSION_1_3, [] (const char *functionName, 
         void *vulkanInstance) {
-        return vkGetInstanceProcAddr(*(reinterpret_cast<VkInstance *>(
+        return vkGetInstanceProcAddr(*(reinterpret_cast<VkInstance*>(
             vulkanInstance)), functionName);
     }, &vulkanPointers.instance);
 /*

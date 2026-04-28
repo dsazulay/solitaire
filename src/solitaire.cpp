@@ -1,6 +1,5 @@
 #include "solitaire.h"
 
-#include <cstddef>
 #include <thread>
 #include <chrono>
 
@@ -9,47 +8,48 @@
 #include "timer.h"
 #include "keycodes.h"
 #include "dispatcher.h"
-#include "utils/types.h"
 
-Solitaire::Solitaire() : m_randomEngine(m_r())
+
+auto Solitaire::run() -> void
 {
-    constexpr int defaultWindowWidth = 1280;
-    constexpr int defaultWindowHeight = 720;
-    constexpr double fps = 60.0;
-    constexpr double idleFps = 5.0;
+    init();
+    mainLoop();
+    terminate();
+}
+
+auto Solitaire::init() -> void
+{
+    constexpr i32 defaultWindowWidth = 1280;
+    constexpr i32 defaultWindowHeight = 720;
+    constexpr f64 fps = 60.0;
+    constexpr f64 idleFps = 5.0;
 
     m_appConfig.windowName = "Solitaire";
     m_appConfig.windowWidth = defaultWindowWidth;
     m_appConfig.windowHeight = defaultWindowHeight;
     m_appConfig.fps = fps;
     m_appConfig.idleFps = idleFps;
-}
 
-auto Solitaire::run() -> void
-{
-    init();
-    mainLoop();
-}
-
-auto Solitaire::init() -> void
-{
-    SystemInit(m_window);
-    m_window.createWindow(m_appConfig.windowWidth,
-            m_appConfig.windowHeight, m_appConfig.windowName.c_str());
+    m_window.init();
+    m_window.createWindow(
+        m_appConfig.windowWidth,
+        m_appConfig.windowHeight,
+        m_appConfig.windowName.c_str()
+    );
 
     m_vulkanRenderer.init(&m_window);
 
-    m_uiRenderer = std::make_unique<UiRenderer>(m_window.getGlfwWindow(), m_vulkanRenderer.getVulkanPointers());
+    m_uiRenderer.init(m_window.getGlfwWindow(), m_vulkanRenderer.getVulkanPointers());
 
     // Game init
     m_freecell.init(&m_animationEngine);
     m_scoundrel.init(&m_animationEngine);
-    m_uiRenderer->setPlayerAndMatchData(m_freecell.playerData(), m_freecell.matchData());
+    m_uiRenderer.setPlayerAndMatchData(m_freecell.playerData(), m_freecell.matchData());
     gameInputHandler = &m_freecell;
     gameHandler= &m_freecell;
 
     m_ps.push_back(ParticleSystem());
-    m_ps.back().init(&m_randomEngine, { .amount = 100, .spawnRate = 0 });
+    m_ps.back().init({ .amount = 100, .spawnRate = 0 });
 
     Dispatcher<MouseClickEvent>::subscribe(
         [&] (const auto& arg) { Solitaire::onMouseClick(arg); });
@@ -72,6 +72,14 @@ auto Solitaire::init() -> void
 
     // VSync not working on macos ventura
     //glfwSwapInterval(1); // Enable vsync
+}
+
+auto Solitaire::terminate() -> void
+{
+    m_vulkanRenderer.waitDevice();
+    m_uiRenderer.terminate();
+    m_vulkanRenderer.terminate();
+    m_window.terminate();
 }
 
 auto Solitaire::mainLoop() -> void
@@ -104,7 +112,7 @@ auto Solitaire::mainLoop() -> void
         {
             p.update();
         }
-        m_uiRenderer->render();
+        m_uiRenderer.render();
         m_vulkanRenderer.render(gameHandler->cards(),
                 gameHandler->cardBgs(),
                 m_ps,
@@ -116,12 +124,6 @@ auto Solitaire::mainLoop() -> void
 
         std::this_thread::sleep_until(targetFps);
     }
-
-    m_vulkanRenderer.waitDevice();
-
-    m_uiRenderer->terminate();
-    m_vulkanRenderer.terminate();
-    SystemTerminate(m_window);
 }
 
 auto Solitaire::sleepToTargetFps(std::chrono::time_point<std::chrono::steady_clock> startTime,
@@ -159,9 +161,9 @@ auto Solitaire::onKeyboardPress(const KeyboardPressEvent& e) -> void
     else if (e.key() == KeyCode::N)
         gameInputHandler->handleNewGame();
     else if (e.key() == KeyCode::S)
-        m_uiRenderer->toggleStatsWindow();
+        m_uiRenderer.toggleStatsWindow();
     else if (e.key() == KeyCode::D)
-        m_uiRenderer->toggleDebugWindow();
+        m_uiRenderer.toggleDebugWindow();
     else if (e.key() == KeyCode::P)
         gameInputHandler->handlePause();
     else if (e.key() == KeyCode::C)
@@ -187,7 +189,7 @@ auto Solitaire::onKeyboardPress(const KeyboardPressEvent& e) -> void
 
 auto Solitaire::onGameWin(const GameWinEvent&) -> void
 {
-    m_uiRenderer->showWonWindow();
+    m_uiRenderer.showWonWindow();
 }
 
 auto Solitaire::onUiGameEvent(const UiGameEvent& e) -> void

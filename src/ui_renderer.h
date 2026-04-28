@@ -16,14 +16,9 @@ struct WindowConfig
 class UiRenderer
 {
 public:
-    UiRenderer(GLFWwindow* window, VulkanPointers vulkanPointers);
-    UiRenderer(const UiRenderer& u) = delete;
-    UiRenderer(UiRenderer&& u) = delete;
-    auto operator=(const UiRenderer&) -> UiRenderer& = delete;
-    auto operator=(UiRenderer&&) -> UiRenderer& = delete;
-
+    auto init(GLFWwindow* window, VulkanPointers vulkanPointers) -> void;
     auto terminate() -> void;
-    void render();
+    auto render() -> void;
     auto renderMode() -> int;
     auto showWonWindow() -> void;
     auto hideWonWindow() -> void;

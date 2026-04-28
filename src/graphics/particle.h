@@ -2,7 +2,6 @@
 
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
-#include <random>
 #include <vector>
 #include <span>
 
@@ -29,7 +28,7 @@ struct ParticleConfig
 class ParticleSystem
 {
 public:
-    auto init(std::default_random_engine* engine, ParticleConfig config) -> void;
+    auto init(ParticleConfig config) -> void;
     auto start() -> void;
     auto update() -> void;
 
@@ -43,7 +42,5 @@ private:
     float m_spawnInterval;
     std::vector<Particle> m_particles;
     unsigned int m_lastUsedParticle;
-
-    std::default_random_engine* randomEngine;
 };
 

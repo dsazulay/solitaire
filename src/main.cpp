@@ -1,4 +1,5 @@
 #include "solitaire.h"
+
 #include <doctest.h>
 
 auto main(int argc, char** argv) -> int

@@ -30,9 +30,9 @@ auto AnimationEngine::stopDraggingAnimation() -> void
         m_draggingAnimation.stop();
 }
 
-auto AnimationEngine::getMovingAnimationQuantity() -> int
+auto AnimationEngine::getMovingAnimationQuantity() -> i32
 {
-    return static_cast<int>(m_movingAnimation.size());
+    return (i32) m_movingAnimation.size();
 }
 
 auto AnimationEngine::isAnyAnimationPlaying() -> bool

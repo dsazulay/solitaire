@@ -2,10 +2,8 @@
 
 #include "dispatcher.h"
 #include "event.h"
-#include "glm/ext/vector_int2.hpp"
 #include "keycodes.h"
 #include "utils/log.h"
-#include <vulkan/vulkan_core.h>
 
 constexpr f32 DOUBLE_CLICK_MIN_TIME = 0.05f;
 constexpr f32 DOUBLE_CLICK_MAX_TIME = 0.2f;
@@ -23,7 +21,7 @@ auto Window::terminate() -> void
     glfwTerminate();
 }
 
-auto Window::createWindow(i32 width, i32 height, const char *name) -> void
+auto Window::createWindow(i32 width, i32 height, const char* name) -> void
 {
     m_windowSize = { width, height };
     m_glfwWindow = glfwCreateWindow(width, height, name, nullptr, nullptr);
@@ -137,13 +135,13 @@ auto Window::frameBufferSizeCallback(GLFWwindow*, i32, i32) -> void
 
 auto Window::cursorPositionCallback(GLFWwindow* window, f64 xpos, f64 ypos) -> void
 {
-    Window* w = (Window*)glfwGetWindowUserPointer(window);
+    Window* w = (Window*) glfwGetWindowUserPointer(window);
     w->cursorPositionCallback(xpos, ypos);
 }
 
 auto Window::mouseButtonCallback(GLFWwindow* window, i32 button, i32 action, i32) -> void
 {
-    Window* w = (Window*)glfwGetWindowUserPointer(window);
+    Window* w = (Window*) glfwGetWindowUserPointer(window);
     w->mouseButtonCallback(button, action);
 }
 

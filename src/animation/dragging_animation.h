@@ -1,27 +1,19 @@
 #pragma once
 
-#include <span>
+#include "../utils/types.h"
+#include "../window.h"
+#include "../card.h"
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
-#include "../window.h"
-#include "../card.h"
-
-constexpr const float Z_OFFSET = 0.0001f;
-constexpr const int MAX_STACK_SIZE = 13;
+#include <span>
 
 class DraggingAnimation
 {
 public:
+    // TODO: Find a better way to init this class
     DraggingAnimation() = default;
-    DraggingAnimation(DraggingAnimation &other) = default;
-    DraggingAnimation(DraggingAnimation &&other) = default;
-    auto operator=(const DraggingAnimation &other) ->
-        DraggingAnimation&  = default;
-    auto operator=(DraggingAnimation &&other) ->
-        DraggingAnimation& = default;
-    ~DraggingAnimation() = default;
 
     DraggingAnimation(std::span<CardEntity*> cards) : m_cards{ cards }
     {
@@ -61,6 +53,9 @@ public:
     }
 
 private:
+    constexpr static f32 Z_OFFSET = 0.0001f;
+    constexpr static i32 MAX_STACK_SIZE = 13;
+
     std::span<CardEntity*> m_cards;
     std::array<glm::vec2, MAX_STACK_SIZE> m_dragOffset{};
     bool m_isDone{true};

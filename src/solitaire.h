@@ -1,39 +1,40 @@
 #pragma once
 
-#include <memory>
-#include <string>
-
-#include "game_common/igame_handler.h"
 #include "window.h"
+#include "utils/types.h"
+#include "event.h"
 #include "graphics/vulkan_renderer.h"
-#include "animation/animation_engine.h"
 #include "ui_renderer.h"
+#include "animation/animation_engine.h"
+#include "game_common/igame_handler.h"
 #include "freecell/freecell.h"
 #include "scoundrel/scoundrel.h"
-#include "event.h"
+
+#include <string>
 
 struct AppConfig
 {
     std::string windowName;
-    int windowWidth{};
-    int windowHeight{};
-    double fps{};
-    double idleFps{};
+    i32 windowWidth{};
+    i32 windowHeight{};
+    f64 fps{};
+    f64 idleFps{};
 };
 
 class Solitaire
 {
 public:
-    Solitaire();
     auto run() -> void;
 
 private:
     auto init() -> void;
+    auto terminate() -> void;
     auto mainLoop() -> void;
 
     auto sleepToTargetFps(
             std::chrono::time_point<std::chrono::steady_clock> startTime,
-            std::chrono::duration<double, std::milli> frameTime) -> void;
+            std::chrono::duration<double, std::milli> frameTime
+    ) -> void;
 
     auto onMouseClick(const MouseClickEvent& e) -> void;
     auto onMouseDoubleClick(const MouseDoubleClickEvent& e) -> void;
@@ -48,15 +49,13 @@ private:
     AppConfig m_appConfig;
     Window m_window;
     VulkanRenderer m_vulkanRenderer;
-    std::unique_ptr<UiRenderer> m_uiRenderer;
+    UiRenderer m_uiRenderer;
     Freecell m_freecell;
     Scoundrel m_scoundrel;
     AnimationEngine m_animationEngine;
+
     IInputHandler* gameInputHandler;
     IGameHandler* gameHandler;
-
-    std::random_device m_r;
-    std::default_random_engine m_randomEngine;
 
     std::vector<ParticleSystem> m_ps;
 };

@@ -1,11 +1,12 @@
 #include "particle.h"
 
 #include "../timer.h"
+#include "../utils/random.h"
+
 #include <glm/common.hpp>
 
-auto ParticleSystem::init(std::default_random_engine* engine, ParticleConfig config) -> void
+auto ParticleSystem::init(ParticleConfig config) -> void
 {
-    randomEngine = engine;
     m_config = config;
 
     m_particles.reserve(m_config.amount);
@@ -89,19 +90,18 @@ auto ParticleSystem::firstUnused() -> int
 
 auto ParticleSystem::respawn(Particle& p) -> void
 {
-    std::uniform_real_distribution<float> uniformDist(-1.0f, 1.0f);
+    p.pos = glm::vec3(Random::randFloat() * 2.f - 1.f, 0.f, 0.f);
 
-    p.pos = glm::vec3(uniformDist(*randomEngine), 0.0, 0.0);
+    p.velocity.x = Random::randFloat() * 15.f - 7.5f;
+    p.velocity.y = Random::randFloat() * 15.f - 7.5f;
 
-    p.velocity.x = uniformDist(*randomEngine) * 15.0f;
-    p.velocity.y = uniformDist(*randomEngine) * 15.0f;
 
-    p.color.r = uniformDist(*randomEngine) * 0.5f + 0.5f;
-    p.color.g = uniformDist(*randomEngine) * 0.5f + 0.5f;
-    p.color.b = uniformDist(*randomEngine) * 0.5f + 0.5f;
-    p.color.a = 1.0f;
+    p.color.r = Random::randFloat();
+    p.color.g = Random::randFloat();
+    p.color.b = Random::randFloat();
+    p.color.a = 1.f;
 
-    p.life = uniformDist(*randomEngine) + 2.0f;
+    p.life = Random::randFloat() * 2.f + 1.f;
 
     m_config.endVelocity = glm::vec3{ 0.f };
 
