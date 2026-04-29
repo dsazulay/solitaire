@@ -37,9 +37,20 @@ auto Solitaire::init() -> void
         m_appConfig.windowName.c_str()
     );
 
-    m_vulkanRenderer.init(&m_window);
 
-    m_uiRenderer.init(m_window.getGlfwWindow(), m_vulkanRenderer.getVulkanPointers());
+    u32 extensionsCount;
+    const char** extensions = m_window.getRequiredExtensions(&extensionsCount);
+    m_vulkanEngine.init(extensionsCount, extensions);
+
+    VkSurfaceKHR surface = m_window.createVulkanSurface(m_vulkanEngine.instance());
+    glm::ivec2 framebufferSize = m_window.getFramebufferSize();
+    m_vulkanEngine.setSurfaceAndWindowSize(surface, framebufferSize.x, framebufferSize.y);
+    m_vulkanEngine.createSwapchain();
+    m_vulkanEngine.createSyncObjects();
+
+    m_vulkanRenderer.init(&m_vulkanEngine);
+
+    m_uiRenderer.init(&m_window, m_vulkanEngine.getVulkanPointers());
 
     // Game init
     m_freecell.init(&m_animationEngine);
@@ -76,9 +87,10 @@ auto Solitaire::init() -> void
 
 auto Solitaire::terminate() -> void
 {
-    m_vulkanRenderer.waitDevice();
+    m_vulkanEngine.waitDevice();
     m_uiRenderer.terminate();
     m_vulkanRenderer.terminate();
+    m_vulkanEngine.terminate();
     m_window.terminate();
 }
 

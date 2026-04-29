@@ -1,10 +1,11 @@
 #pragma once
 
-#include "GLFW/glfw3.h"
-#include <imgui.h>
 
+#include "window.h"
 #include "gamedata.h"
 #include "graphics/vulkan_engine.h"
+
+#include <imgui.h>
 
 struct WindowConfig
 {
@@ -16,7 +17,7 @@ struct WindowConfig
 class UiRenderer
 {
 public:
-    auto init(GLFWwindow* window, VulkanPointers vulkanPointers) -> void;
+    auto init(Window* window, VulkanPointers vulkanPointers) -> void;
     auto terminate() -> void;
     auto render() -> void;
     auto renderMode() -> int;

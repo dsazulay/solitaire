@@ -22,6 +22,10 @@
 - [x] Render cards (add new pipeline)
 - [x] Convert and load card texture
 - [x] Rework texture load functions (remove all opengl related suff)
-- [ ] Isolate swapchain creation into its onw function
+- [x] Isolate swapchain creation into its onw function
 - [ ] Fix rendering order and handness of vulkan and glfw
 - [x] Fix ImGui
+- [ ] Particle system
+- [ ] Remove opengl completly
+- [ ] Add wireframe mode
+- [ ] Hot reload shaders

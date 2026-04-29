@@ -1,5 +1,6 @@
 #pragma once
 
+#include "graphics/vulkan_engine.h"
 #include "window.h"
 #include "utils/types.h"
 #include "event.h"
@@ -48,11 +49,12 @@ private:
 
     AppConfig m_appConfig;
     Window m_window;
+    VulkanEngine m_vulkanEngine;
     VulkanRenderer m_vulkanRenderer;
     UiRenderer m_uiRenderer;
+    AnimationEngine m_animationEngine;
     Freecell m_freecell;
     Scoundrel m_scoundrel;
-    AnimationEngine m_animationEngine;
 
     IInputHandler* gameInputHandler;
     IGameHandler* gameHandler;

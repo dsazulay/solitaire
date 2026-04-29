@@ -2,12 +2,8 @@
 
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_vulkan.h>
-#include <vulkan/vulkan.h>
 #include <volk/volk.h>
-#include <vulkan/vulkan_core.h>
-#include "fmt/core.h"
-#include "graphics/vulkan_engine.h"
-#include "imgui.h"
+
 #include "timer.h"
 #include "dispatcher.h"
 #include "event.h"
@@ -22,7 +18,7 @@ static inline auto chk(VkResult result) -> void
     }
 }
 
-auto UiRenderer::init(GLFWwindow* window, VulkanPointers vulkanPointers) -> void
+auto UiRenderer::init(Window* window, VulkanPointers vulkanPointers) -> void
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -31,25 +27,21 @@ auto UiRenderer::init(GLFWwindow* window, VulkanPointers vulkanPointers) -> void
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
 
-    ImGui_ImplVulkan_LoadFunctions(VK_API_VERSION_1_3, [] (const char *functionName, 
-        void *vulkanInstance) {
-        return vkGetInstanceProcAddr(*(reinterpret_cast<VkInstance*>(
-            vulkanInstance)), functionName);
-    }, &vulkanPointers.instance);
-/*
     ImGui_ImplVulkan_LoadFunctions(
         VK_API_VERSION_1_3,
-        [](const char* functionName, void* userData) -> PFN_vkVoidFunction {
-            LoaderData* data = (LoaderData*)userData;
-            return vkGetInstanceProcAddr(data->instance, functionName);
+        [] (const char *functionName, void *vulkanInstance) {
+            return vkGetInstanceProcAddr(
+                (VkInstance) vulkanInstance,
+                functionName
+            );
         },
-        &loader
-    );*/
+        (void*) vulkanPointers.instance
+    );
 
     VkFormat format = VK_FORMAT_B8G8R8A8_UNORM;
     VkFormat depthFormat{ VK_FORMAT_D32_SFLOAT_S8_UINT };
     // Setup Platform/Renderer backends
-    ImGui_ImplGlfw_InitForVulkan(window, true);
+    ImGui_ImplGlfw_InitForVulkan(window->getGlfwWindow(), true);
     ImGui_ImplVulkan_InitInfo init_info = {};
     init_info.ApiVersion = VK_API_VERSION_1_3;              // Pass in your value of VkApplicationInfo::apiVersion, otherwise will default to header version.
     init_info.Instance = vulkanPointers.instance;
