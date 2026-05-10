@@ -8,6 +8,7 @@
 #include "timer.h"
 #include "keycodes.h"
 #include "dispatcher.h"
+#include "graphics/resource_manager.h"
 
 
 auto Solitaire::run() -> void
@@ -180,8 +181,7 @@ auto Solitaire::onKeyboardPress(const KeyboardPressEvent& e) -> void
         gameInputHandler->handlePause();
     else if (e.key() == KeyCode::C)
     {
-        //ResourceManager::recompileShaders();
-        //m_renderer.reloadShaders();
+        m_vulkanRenderer.reloadShaders();
     }
     else if (e.key() == KeyCode::G)
     {
@@ -225,8 +225,7 @@ auto Solitaire::onUiGameEvent(const UiGameEvent& e) -> void
 
 auto Solitaire::onUiRecompileShaderEvent(const UiRecompileShaderEvent&) -> void
 {
-    //ResourceManager::recompileShaders();
-    //m_renderer.reloadShaders();
+    m_vulkanRenderer.reloadShaders();
 }
 
 auto Solitaire::onUiPrintCardEvent(const UiPrintCardEvent&) -> void

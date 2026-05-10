@@ -92,6 +92,8 @@ public:
     auto terminate() -> void;
     auto createSwapchain() -> void;
     auto render() -> void;
+    auto reloadShader(ShaderID shader, u64 bufferSize, u32* bufferPointer) -> void;
+    auto reloadPipeline(PipelineID pipeline, ShaderID shader, Blending blending) -> void;
 
     auto setSurfaceAndWindowSize(VkSurfaceKHR surface, u32 sizeX, u32 sizeY) -> void;
     auto createImguiDescriptorPool() -> void;
@@ -110,6 +112,9 @@ public:
 
 private:
     auto setAlphaBlendAttachment() -> VkPipelineColorBlendAttachmentState;
+    auto createPipelineLayout() -> VkPipelineLayout;
+    auto internalCreatePipeline(VkPipelineLayout layout, ShaderID shaderID, Blending blending = Blending::NONE) -> Pipeline;
+    auto internalLoadShader(size_t bufferSize, uint32_t* bufferPointer) -> VkShaderModule;
 
     VkInstance m_instance{ VK_NULL_HANDLE };
     VkPhysicalDevice m_physicalDevice{ VK_NULL_HANDLE };

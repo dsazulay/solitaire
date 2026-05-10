@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 include(FetchContent)
 
-cmake_policy(VERSION 3.6)
+cmake_policy(VERSION 3.20)
 project(Solitaire
         VERSION 1.0.0.0
         LANGUAGES C CXX
@@ -16,7 +16,7 @@ project(Solitaire
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_SUPPRESS_REGENERATION true)
 set(DCMAKE_GENERATOR_PLATFORM "x64")
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)

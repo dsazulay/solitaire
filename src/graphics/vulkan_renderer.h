@@ -3,6 +3,8 @@
 #include "vulkan_engine.h"
 #include "particle.h"
 #include "../card.h"
+#include "shader.h"
+#include <vector>
 
 enum class RenderMode
 {
@@ -11,6 +13,18 @@ enum class RenderMode
     ShadedWireframe
 };
 
+struct PipelineMap
+{
+    PipelineID id;
+    Blending blending{ Blending::NONE };
+};
+
+struct ShaderPipelineMap
+{
+    Shader* shader;
+    ShaderID shaderID;
+    std::vector<PipelineMap> pipelines;
+};
 
 struct BackgroundUniform
 {
@@ -42,6 +56,7 @@ public:
         const std::span<CardEntity*> cards, const std::span<CardBg> cardBgs,
         const std::span<ParticleSystem> partciles, RenderMode mode) -> void;
     auto terminate() -> void;
+    auto reloadShaders() -> void;
 private:
     auto updateBackgroundUniform(glm::mat4 model) -> void;
     auto updateCardUniform(const std::span<CardEntity*> cards) -> void;
@@ -61,5 +76,6 @@ private:
     size_t particleGO;
 
     VulkanEngine* m_vulkanEngine;
+    std::vector<ShaderPipelineMap> m_shaderPipelineMap;
 };
 

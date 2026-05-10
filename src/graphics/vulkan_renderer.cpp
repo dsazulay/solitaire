@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <glm/glm.hpp>
 
-constexpr const char* CARD_MODEL_PATH = "resources/card.obj";
+constexpr const char* CARD_MODEL_PATH = "assets/card.obj";
 constexpr const char* BG_SHADER_PATH = "assets/background.slang";
 constexpr const char* CARD_SHADER_PATH = "assets/card.slang";
 constexpr const char* PARTICLE_SHADER_PATH = "assets/particle.slang";
@@ -39,6 +39,16 @@ auto VulkanRenderer::init(VulkanEngine* vulkanEngine) -> void
     PipelineID cardPipelineID = m_vulkanEngine->createPipeline(cardShaderID);
     PipelineID cardBgPipelineID = m_vulkanEngine->createPipeline(cardShaderID, Blending::ALPHA_BLEND);
     PipelineID particlePipelineID = m_vulkanEngine->createPipeline(particleShaderID, Blending::ALPHA_BLEND);
+
+    m_shaderPipelineMap.push_back(
+        { bgShader, bgShaderID, { { bgPipelineID } } }
+    );
+    m_shaderPipelineMap.push_back(
+        { cardShader, cardShaderID, { { cardPipelineID }, { cardBgPipelineID, Blending::ALPHA_BLEND } } }
+    );
+    m_shaderPipelineMap.push_back(
+        { particleShader, particleShaderID, { { particlePipelineID, Blending::ALPHA_BLEND } } }
+    );
 
     size_t bgGO = m_vulkanEngine->addGameObject(bgID, bgPipelineID);
     cardBgGO = m_vulkanEngine->addGameObject(cardID, cardBgPipelineID);
@@ -76,6 +86,23 @@ auto VulkanRenderer::render(
 
 auto VulkanRenderer::terminate() -> void
 {
+}
+
+auto VulkanRenderer::reloadShaders() -> void
+{
+    ResourceManager::recompileShaders();
+    for (ShaderPipelineMap& map : m_shaderPipelineMap)
+    {
+        if (map.shader->reloaded)
+        {
+            map.shader->reloaded = false;
+            m_vulkanEngine->reloadShader(map.shaderID, map.shader->bufferSize, map.shader->bufferPointer);
+            for (PipelineMap& pipeline : map.pipelines)
+            {
+                m_vulkanEngine->reloadPipeline(pipeline.id, map.shaderID, pipeline.blending);
+            }
+        }
+    }
 }
 
 auto VulkanRenderer::updateBackgroundUniform(glm::mat4 model) -> void

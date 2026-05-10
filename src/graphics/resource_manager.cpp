@@ -1,66 +1,85 @@
 #include "resource_manager.h"
 
-#include <filesystem>
-#include <slang/slang.h>
-
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
-#define TINYOBJLOADER_IMPLEMENTATION
-#include "tiny_obj_loader.h"
-
 #include "../utils/log.h"
+
+#include <slang/slang.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+#define TINYOBJLOADER_IMPLEMENTATION
+#include <tiny_obj_loader.h>
+
+#include <filesystem>
+
 
 std::unordered_map<std::string, Shader> ResourceManager::shaders;
 //std::map<std::string, Texture> ResourceManager::textures;
 std::unordered_map<std::string, Model> ResourceManager::models;
 Slang::ComPtr<slang::IGlobalSession> ResourceManager::m_slangGlobalSession;
-Slang::ComPtr<slang::ISession> ResourceManager::m_slangSession;
+std::vector<slang::TargetDesc> ResourceManager::m_targets;
+std::vector<slang::CompilerOptionEntry> ResourceManager::m_options;
+slang::SessionDesc ResourceManager::m_slangSessionDesc;
+bool ResourceManager::initialized = false;
 
 auto ResourceManager::initShaderCompiler() -> void
 {
     // Initialize Slang shader compiler
     slang::createGlobalSession(m_slangGlobalSession.writeRef());
-    auto slangTargets{
-        std::to_array<slang::TargetDesc>({{
-            .format = SLANG_SPIRV,
-            .profile = m_slangGlobalSession->findProfile("spirv_1_4")
-        }})
-    };
-    auto slangOptions{
-        std::to_array<slang::CompilerOptionEntry>({{
-            slang::CompilerOptionName::EmitSpirvDirectly,
-            { slang::CompilerOptionValueKind::Int, 1 }
-        }})
-    };
-    slang::SessionDesc slangSessionDesc{
-        .targets = slangTargets.data(),
-        .targetCount = SlangInt(slangTargets.size()),
+    m_targets = {{
+        .format = SLANG_SPIRV,
+        .profile = m_slangGlobalSession->findProfile("spirv_1_4")
+    }};
+    m_options = {{
+        slang::CompilerOptionName::EmitSpirvDirectly,
+        { slang::CompilerOptionValueKind::Int, 1 }
+    }};
+    m_slangSessionDesc = slang::SessionDesc{
+        .targets = m_targets.data(),
+        .targetCount = SlangInt(m_targets.size()),
         .defaultMatrixLayoutMode = SLANG_MATRIX_LAYOUT_COLUMN_MAJOR,
-        .compilerOptionEntries = slangOptions.data(),
-        .compilerOptionEntryCount = uint32_t(slangOptions.size())
+        .compilerOptionEntries = m_options.data(),
+        .compilerOptionEntryCount = uint32_t(m_options.size())
     };
+}
 
-    m_slangGlobalSession->createSession(slangSessionDesc, m_slangSession.writeRef());
+template <typename TP>
+std::time_t to_time_t(TP tp) {
+    using namespace std::chrono;
+    auto sctp = time_point_cast<system_clock::duration>(
+        tp - TP::clock::now() + system_clock::now());
+    return system_clock::to_time_t(sctp);
 }
 
 auto ResourceManager::loadShader(const char* shaderFile, std::string name) -> Shader*
 {
-    if (m_slangSession == nullptr)
+    if (!initialized)
     {
         initShaderCompiler();
+        initialized = true;
         LOG_INFO("Init slang session");
     }
+
+    Slang::ComPtr<slang::ISession> session;
+    m_slangGlobalSession->createSession(m_slangSessionDesc, session.writeRef());
+
     // Load shader
+    Slang::ComPtr<ISlangBlob> diagnostics;
     Slang::ComPtr<slang::IModule> slangModule{
-        m_slangSession->loadModuleFromSource(shaderFile, shaderFile, nullptr, nullptr)
+        session->loadModuleFromSource(shaderFile, shaderFile, nullptr, diagnostics.writeRef())
     };
+
+    if (diagnostics)
+    {
+        LOG_ERROR("Slang diagnostics: {}", (char*)diagnostics->getBufferPointer());
+    }
+
     Slang::ComPtr<ISlangBlob> spirv;
     slangModule->getTargetCode(0, spirv.writeRef());
 
     Shader& shader = shaders[name];
     shader.filePath = shaderFile;
     shader.lastWriteTime = std::filesystem::last_write_time(shaderFile);
+    shader.reloaded = false;
+    shader.spirv = spirv;
     shader.bufferSize = spirv->getBufferSize();
     shader.bufferPointer = (uint32_t*) spirv->getBufferPointer();
 
@@ -69,11 +88,12 @@ auto ResourceManager::loadShader(const char* shaderFile, std::string name) -> Sh
 
 auto ResourceManager::recompileShaders() -> void
 {
-    for (const auto& [name, shader] : shaders)
+    for (auto& [name, shader] : shaders)
     {
         if (shader.lastWriteTime != std::filesystem::last_write_time(shader.filePath))
         {
             loadShader(shader.filePath.c_str(), name);
+            shader.reloaded = true;
             LOG_INFO("{} shader recompiled", name);
         }
     }
