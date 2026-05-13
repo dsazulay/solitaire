@@ -1,81 +1,39 @@
 #include "dealer.h"
 
-#include <cmath>
+#include "utils/random.h"
 
-Dealer::Dealer() : m_randomEngine(m_r()) {}
+#include <cmath>
 
 auto Dealer::createFreecellDeck() -> void
 {
-    constexpr const int deckSize = 52;
-    constexpr const int suitSize = 4;
-    constexpr const int cardSize = 13;
-    constexpr const int texCardsPerRow = 8;
-    constexpr const float texTile = 0.125f;
-
-    m_deck.reserve(deckSize);
-    m_deckUVs.reserve(deckSize);
-    int count = 0;
-    for (int i = 0; i < suitSize; i++)
-    {
-        for (int j = 0; j < cardSize; j++)
-        {
-            glm::vec2 uvOffset = {
-                static_cast<float>(count % texCardsPerRow) * texTile,
-                std::floorf(static_cast<float>(count) * texTile) * texTile,
-            };
-            m_deck.emplace_back(j, i, uvOffset);
-            m_deckUVs.emplace_back(uvOffset);
-            count++;
-        }
-    }
+    constexpr i32 deckSize = 52;
+    createDeck(deckSize);
 }
 
 auto Dealer::createScoundrelDeck() -> void
 {
-    constexpr const int deckSize = 44;
-    constexpr const int suitSize = 4;
-    constexpr const int cardSize = 13;
-    constexpr const int texCardsPerRow = 8;
-    constexpr const float texTile = 0.125f;
-
-    m_deck.reserve(deckSize);
-    m_deckUVs.reserve(deckSize);
-    int count = 0;
-    for (int i = 0; i < suitSize; i++)
-    {
-        for (int j = 0; j < cardSize; j++)
-        {
-            glm::vec2 uvOffset = {
-                static_cast<float>(count % texCardsPerRow) * texTile,
-                std::floorf(static_cast<float>(count) * texTile) * texTile,
-            };
-
-            count++;
-            if ((i == 0 || i == 2) && (j == 0 || j > 9)) { continue; }
-            m_deck.emplace_back(j, i, uvOffset);
-            m_deckUVs.emplace_back(uvOffset);
-        }
-    }
+    constexpr i32 deckSize = 44;
+    createDeck(deckSize, [](i32 i, i32 j) {
+        return (i == 0 || i == 2) && (j == 0 || j > 9);
+    });
 }
 
 auto Dealer::shuffleDeck() -> void
 {
-    std::uniform_int_distribution<int> unifomDist(0,
-            static_cast<int>(m_deck.size()) - 1);
-
+    i32 maxIndex = (i32) (m_deck.size() - 1);
     auto uv = m_deckUVs.begin();
     for (auto& card : m_deck)
     {
-        int index = unifomDist(m_randomEngine);
-        swapCard(card, m_deck[index]);
-        swapUVs(*uv, m_deckUVs[index]);
+        i32 index = Random::randInt(maxIndex);
+        swap<CardEntity>(card, m_deck[index]);
+        swap<glm::vec2>(*uv, m_deckUVs[index]);
         ++uv;
     }
 }
 
 auto Dealer::turnCardsDown() -> void
 {
-    constexpr const glm::vec2 backTile{ 0.0, 0.875 };
+    constexpr glm::vec2 backTile{ 0.0f, 0.875f };
     for (auto& c : m_deck)
     {
         c.sprite.uv = backTile;
@@ -84,7 +42,7 @@ auto Dealer::turnCardsDown() -> void
 
 auto Dealer::turnCardsUp() -> void
 {
-    for (int i = 0; i < m_deck.size(); ++i)
+    for (u64 i = 0; i < m_deck.size(); ++i)
     {
         m_deck[i].sprite.uv = m_deckUVs[i];
     }
@@ -95,17 +53,29 @@ auto Dealer::deck() -> std::vector<CardEntity>&
     return m_deck;
 }
 
-auto Dealer::swapCard(CardEntity& a, CardEntity& b) -> void
+auto Dealer::createDeck(i32 deckSize, std::function<bool(i32, i32)> filter) -> void
 {
-    auto tmp = a;
-    a = b;
-    b = tmp;
-}
+    constexpr i32 suitSize = 4;
+    constexpr i32 cardSize = 13;
+    constexpr i32 texCardsPerRow = 8;
+    constexpr f32 texTile = 0.125f;
 
-auto Dealer::swapUVs(glm::vec2& a, glm::vec2& b) -> void
-{
-    auto tmp = a;
-    a = b;
-    b = tmp;
+    m_deck.reserve(deckSize);
+    m_deckUVs.reserve(deckSize);
+    i32 count = 0;
+    for (i32 i = 0; i < suitSize; ++i)
+    {
+        for (i32 j = 0; j < cardSize; ++j)
+        {
+            glm::vec2 uvOffset = {
+                ((f32) (count % texCardsPerRow)) * texTile,
+                std::floorf(((f32) count) * texTile) * texTile,
+            };
+            count++;
+            if (filter != nullptr && filter(i, j)) { continue; }
+            m_deck.emplace_back(j, i, uvOffset);
+            m_deckUVs.emplace_back(uvOffset);
+        }
+    }
 }
 

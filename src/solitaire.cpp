@@ -8,7 +8,7 @@
 #include "timer.h"
 #include "keycodes.h"
 #include "dispatcher.h"
-#include "graphics/resource_manager.h"
+#include "utils/random.h"
 
 
 auto Solitaire::run() -> void
@@ -30,6 +30,8 @@ auto Solitaire::init() -> void
     m_appConfig.windowHeight = defaultWindowHeight;
     m_appConfig.fps = fps;
     m_appConfig.idleFps = idleFps;
+
+    Random::init();
 
     m_window.init();
     m_window.createWindow(

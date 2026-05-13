@@ -14,13 +14,14 @@
 
 ## Vulkan
 
-- [ ] Remove slang warnings
-- [ ] Hot reload shaders
-- [ ] Move ktx texture to resource manager
 - [ ] Update handles for gpu assets
-- [ ] Update dealer class to use random class
+- [ ] Remove slang warnings
+- [ ] Move ktx texture to resource manager
 - [ ] Update resource manager
 - [ ] Add wireframe mode
 - [ ] Fix rendering order and handness of vulkan and glfw
 - [ ] Spwan particles on win
 - [ ] Fix particles lifetime
+- [x] Update dealer class to use random class
+- [x] Add player data to .gitignore
+- [x] Hot reload shaders

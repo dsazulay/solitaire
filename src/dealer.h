@@ -1,14 +1,15 @@
 #pragma once
 
-#include <vector>
-#include <random>
-#include <glm/vec2.hpp>
 #include "card.h"
+#include "utils/types.h"
+
+#include <functional>
+#include <glm/vec2.hpp>
+#include <vector>
 
 class Dealer
 {
 public:
-    Dealer();
     auto createFreecellDeck() -> void;
     auto createScoundrelDeck() -> void;
     auto shuffleDeck() -> void;
@@ -17,11 +18,18 @@ public:
     auto deck() -> std::vector<CardEntity>&;
 
 private:
-    auto swapCard(CardEntity& a, CardEntity& b) -> void;
-    auto swapUVs(glm::vec2& a, glm::vec2& b) -> void;
+    auto createDeck(i32 deckSize, std::function<bool(i32, i32)> filter = nullptr) -> void;
+    template<typename T>
+    auto swap(T& a, T& b) -> void;
 
     std::vector<CardEntity> m_deck;
     std::vector<glm::vec2> m_deckUVs;
-    std::random_device m_r;
-    std::default_random_engine m_randomEngine;
 };
+
+template<typename T>
+auto Dealer::swap(T& a, T& b) -> void
+{
+    auto tmp = a;
+    a = b;
+    b = tmp;
+}
