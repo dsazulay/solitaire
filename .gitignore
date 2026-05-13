@@ -14,3 +14,7 @@ cmake-build-debug/
 
 # imgui
 imgui.ini
+
+# players data
+resources/gamedata.dat
+
