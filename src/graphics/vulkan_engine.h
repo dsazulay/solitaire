@@ -62,8 +62,8 @@ struct MeshBuffer
 
 struct GameObject
 {
-    size_t meshID;
-    size_t pipelineID;
+    MeshID meshID;
+    PipelineID pipelineID;
     ShaderData shaderData;
     std::array<ShaderDataBuffer, MAX_FRAMES_IN_FLIGHT> shaderDataBuffers;
     size_t instanceCount;
@@ -97,13 +97,13 @@ public:
 
     auto setSurfaceAndWindowSize(VkSurfaceKHR surface, u32 sizeX, u32 sizeY) -> void;
     auto createImguiDescriptorPool() -> void;
-    auto loadMeshData(std::vector<Vertex>& vertices, std::vector<uint16_t>& indices) -> size_t;
+    auto loadMeshData(std::vector<Vertex>& vertices, std::vector<uint16_t>& indices) -> MeshID;
     auto loadShader(size_t bufferSize, uint32_t* bufferPointer) -> ShaderID;
-    auto setUniformData(size_t id, void* data, size_t size) -> void;
+    auto setUniformData(GameObjectID id, void* data, size_t size) -> void;
     auto createPipeline(ShaderID shaderID, Blending blending = Blending::NONE) -> PipelineID;
     auto createUniformBuffers() -> void;
-    auto addGameObject(size_t id, PipelineID pipelineID) -> size_t;
-    auto updateGameObjectInstanceCount(size_t id, size_t instanceCount) -> void;
+    auto addGameObject(MeshID id, PipelineID pipelineID) -> GameObjectID;
+    auto updateGameObjectInstanceCount(GameObjectID id, u64 instanceCount) -> void;
     auto getVulkanPointers() -> VulkanPointers;
     auto instance() -> VkInstance;
     auto waitDevice() -> void;

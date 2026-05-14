@@ -398,10 +398,10 @@ auto VulkanEngine::init(u32 extensionsCount, const char** requiredExtensions) ->
     createImguiDescriptorPool();
 }
 
-auto VulkanEngine::setUniformData(size_t id, void* data, size_t size) -> void
+auto VulkanEngine::setUniformData(GameObjectID id, void* data, size_t size) -> void
 {
-    m_gameObjects[id].shaderData.data = data;
-    m_gameObjects[id].shaderData.size = size;
+    m_gameObjects[(u64) id].shaderData.data = data;
+    m_gameObjects[(u64) id].shaderData.size = size;
 }
 
 auto VulkanEngine::render() -> void
@@ -508,11 +508,11 @@ auto VulkanEngine::render() -> void
 
     for (GameObject& go : m_gameObjects)
     {
-        auto& pipeline = m_pipelines[go.pipelineID];
+        auto& pipeline = m_pipelines[(u64) go.pipelineID];
         vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipeline);
         vkCmdSetScissor(cb, 0, 1, &scissor);
         vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, 1, &m_descriptorSetTex, 0, nullptr);
-        MeshBuffer& meshBuffer = m_meshBuffers[go.meshID];
+        MeshBuffer& meshBuffer = m_meshBuffers[(u64) go.meshID];
 
         VkDeviceSize vOffset{ 0 };
         vkCmdBindVertexBuffers(cb, 0, 1, &meshBuffer.buffer, &vOffset);
@@ -657,7 +657,7 @@ auto VulkanEngine::createImguiDescriptorPool() -> void
     chk(vkCreateDescriptorPool(m_device, &pool_info, nullptr, &m_imguiPool));
 }
 
-auto VulkanEngine::loadMeshData(std::vector<Vertex>& vertices, std::vector<uint16_t>& indices) -> size_t
+auto VulkanEngine::loadMeshData(std::vector<Vertex>& vertices, std::vector<uint16_t>& indices) -> MeshID
 {
     m_meshBuffers.push_back(MeshBuffer{});
     MeshBuffer& newMeshBuffer = m_meshBuffers.back();
@@ -681,7 +681,7 @@ auto VulkanEngine::loadMeshData(std::vector<Vertex>& vertices, std::vector<uint1
     memcpy(vBufferAllocInfo.pMappedData, vertices.data(), newMeshBuffer.bufferSize);
     memcpy(((char*)vBufferAllocInfo.pMappedData) + newMeshBuffer.bufferSize, indices.data(), iBufSize);
 
-    return m_meshBuffers.size() - 1;
+    return MeshID(m_meshBuffers.size() - 1);
 }
 
 auto VulkanEngine::setAlphaBlendAttachment() -> VkPipelineColorBlendAttachmentState
@@ -725,21 +725,21 @@ auto VulkanEngine::createUniformBuffers() -> void
     }
 }
 
-auto VulkanEngine::addGameObject(size_t id, PipelineID pipelineID) -> size_t 
+auto VulkanEngine::addGameObject(MeshID id, PipelineID pipelineID) -> GameObjectID
 {
     GameObject go;
     go.meshID = id;
-    go.pipelineID = (size_t)pipelineID;
+    go.pipelineID = pipelineID;
     go.instanceCount = 1;
     m_gameObjects.push_back(go);
 
-    return m_gameObjects.size() - 1;
+    return GameObjectID(m_gameObjects.size() - 1);
 }
 
 
-auto VulkanEngine::updateGameObjectInstanceCount(size_t id, size_t instanceCount) -> void
+auto VulkanEngine::updateGameObjectInstanceCount(GameObjectID id, u64 instanceCount) -> void
 {
-    m_gameObjects[id].instanceCount = instanceCount;
+    m_gameObjects[(u64) id].instanceCount = instanceCount;
 }
 
 auto VulkanEngine::getVulkanPointers() -> VulkanPointers
@@ -897,8 +897,9 @@ auto VulkanEngine::loadShader(size_t bufferSize, uint32_t* bufferPointer) -> Han
 
 auto VulkanEngine::reloadShader(ShaderID shader, u64 bufferSize, u32* bufferPointer) -> void
 {
-    vkDestroyShaderModule(m_device, m_shaderModules[(size_t) shader], nullptr);
-    m_shaderModules[(size_t) shader] = internalLoadShader(bufferSize, bufferPointer);
+    u64 shaderIndex = (u64) shader;
+    vkDestroyShaderModule(m_device, m_shaderModules[shaderIndex], nullptr);
+    m_shaderModules[shaderIndex] = internalLoadShader(bufferSize, bufferPointer);
 }
 
 auto VulkanEngine::createPipeline(ShaderID shaderID, Blending blending) -> PipelineID
@@ -910,10 +911,11 @@ auto VulkanEngine::createPipeline(ShaderID shaderID, Blending blending) -> Pipel
 
 auto VulkanEngine::reloadPipeline(PipelineID pipeline, ShaderID shader, Blending blending) -> void
 {
+    u64 pipelineIndex = (u64) pipeline;
     chk(vkDeviceWaitIdle(m_device));
-    Pipeline old = m_pipelines[(size_t) pipeline];
+    Pipeline old = m_pipelines[pipelineIndex];
     vkDestroyPipeline(m_device, old.pipeline, nullptr);
-    m_pipelines[(size_t) pipeline] = internalCreatePipeline(old.layout, shader, blending);
+    m_pipelines[pipelineIndex] = internalCreatePipeline(old.layout, shader, blending);
 }
 
 auto VulkanEngine::internalLoadShader(size_t bufferSize, uint32_t* bufferPointer) -> VkShaderModule
@@ -955,13 +957,13 @@ auto VulkanEngine::internalCreatePipeline(VkPipelineLayout layout, ShaderID shad
         {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
             .stage = VK_SHADER_STAGE_VERTEX_BIT,
-            .module = m_shaderModules[(size_t)shaderID],
+            .module = m_shaderModules[(u64) shaderID],
             .pName = "main"
         },
         {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
             .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
-            .module = m_shaderModules[(size_t)shaderID],
+            .module = m_shaderModules[(u64) shaderID],
             .pName = "main"
         }
     };

@@ -28,8 +28,8 @@ auto VulkanRenderer::init(VulkanEngine* vulkanEngine) -> void
     Shader* cardShader = ResourceManager::loadShader(CARD_SHADER_PATH, "CardShader");
     Shader* particleShader = ResourceManager::loadShader(PARTICLE_SHADER_PATH, "ParticleShader");
 
-    size_t bgID = m_vulkanEngine->loadMeshData(backgroundModel->vertices, backgroundModel->indices);
-    size_t cardID = m_vulkanEngine->loadMeshData(cardModel->vertices, cardModel->indices);
+    MeshID bgID = m_vulkanEngine->loadMeshData(backgroundModel->vertices, backgroundModel->indices);
+    MeshID cardID = m_vulkanEngine->loadMeshData(cardModel->vertices, cardModel->indices);
 
     ShaderID bgShaderID = m_vulkanEngine->loadShader(bgShader->bufferSize, bgShader->bufferPointer);
     ShaderID cardShaderID = m_vulkanEngine->loadShader(cardShader->bufferSize, cardShader->bufferPointer);
@@ -50,7 +50,7 @@ auto VulkanRenderer::init(VulkanEngine* vulkanEngine) -> void
         { particleShader, particleShaderID, { { particlePipelineID, Blending::ALPHA_BLEND } } }
     );
 
-    size_t bgGO = m_vulkanEngine->addGameObject(bgID, bgPipelineID);
+    GameObjectID bgGO = m_vulkanEngine->addGameObject(bgID, bgPipelineID);
     cardBgGO = m_vulkanEngine->addGameObject(cardID, cardBgPipelineID);
     cardGO = m_vulkanEngine->addGameObject(cardID, cardPipelineID);
     particleGO = m_vulkanEngine->addGameObject(bgID, particlePipelineID);

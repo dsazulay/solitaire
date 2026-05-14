@@ -71,9 +71,9 @@ private:
     CardUniform m_cardBgUniform;
     ParticleUniform m_particleUniform;
 
-    size_t cardGO;
-    size_t cardBgGO;
-    size_t particleGO;
+    GameObjectID cardGO;
+    GameObjectID cardBgGO;
+    GameObjectID particleGO;
 
     VulkanEngine* m_vulkanEngine;
     std::vector<ShaderPipelineMap> m_shaderPipelineMap;
