@@ -98,7 +98,7 @@ add_library(imgui STATIC ${IMGUI_SOURCES})
 
 target_compile_definitions(imgui PRIVATE IMGUI_IMPL_VULKAN_NO_PROTOTYPES)
 
-target_link_libraries(imgui glfw)
+target_link_libraries(imgui PUBLIC glfw)
 
 # stb_image
 message(STATUS "Installing stb_image")
@@ -137,7 +137,7 @@ target_compile_definitions(Solitaire PRIVATE GLM_FORCE_DEPTH_ZERO_TO_ONE)
 
 # Finish Dependencies
 
-target_link_libraries(Solitaire glfw glm fmt imgui stb_image
+target_link_libraries(Solitaire glm fmt imgui stb_image
     tiny_obj_loader doctest ktx ${Slang_LIBRARY})
 
 # =============================================================
@@ -145,7 +145,7 @@ target_link_libraries(Solitaire glfw glm fmt imgui stb_image
 # Finish Settings
 
 target_compile_options(Solitaire PRIVATE -Wall -Wextra -Wshadow
-                       -Wnon-virtual-dtor -pedantic)
+    -pedantic)
 
 # Change output dir to bin
 set_target_properties(Solitaire PROPERTIES
