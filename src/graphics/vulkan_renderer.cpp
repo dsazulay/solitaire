@@ -27,6 +27,9 @@ auto VulkanRenderer::init(VulkanEngine* vulkanEngine) -> void
     Shader* bgShader = ResourceManager::loadShader(BG_SHADER_PATH, "BGShader");
     Shader* cardShader = ResourceManager::loadShader(CARD_SHADER_PATH, "CardShader");
     Shader* particleShader = ResourceManager::loadShader(PARTICLE_SHADER_PATH, "ParticleShader");
+    Texture* cardTexture = ResourceManager::loadTexture("assets/cards.ktx", "CardTexture");
+
+    m_vulkanEngine->loadTextureData(*cardTexture);
 
     MeshID bgID = m_vulkanEngine->loadMeshData(backgroundModel->vertices, backgroundModel->indices);
     MeshID cardID = m_vulkanEngine->loadMeshData(cardModel->vertices, cardModel->indices);

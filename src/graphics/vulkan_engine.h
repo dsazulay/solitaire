@@ -1,16 +1,17 @@
 #pragma once
 
-#include <cstddef>
+#include "model.h"
+#include "texture.h"
+#include "../utils/handle.h"
+#include "../utils/types.h"
+
 #include <vulkan/vulkan.h>
 #include <vma/vk_mem_alloc.h>
 #include <glm/glm.hpp>
+
+#include <cstddef>
 #include <vector>
 #include <array>
-#include <vulkan/vulkan_core.h>
-
-#include "model.h"
-#include "../utils/handle.h"
-#include "../utils/types.h"
 
 constexpr uint32_t MAX_FRAMES_IN_FLIGHT{ 2 };
 
@@ -44,7 +45,7 @@ struct ShaderDataBuffer
     VkDeviceAddress deviceAddress{};
 };
 
-struct Texture
+struct TextureGPU
 {
     VmaAllocation allocation{ VK_NULL_HANDLE };
     VkImage image{ VK_NULL_HANDLE };
@@ -98,6 +99,7 @@ public:
     auto setSurfaceAndWindowSize(VkSurfaceKHR surface, u32 sizeX, u32 sizeY) -> void;
     auto createImguiDescriptorPool() -> void;
     auto loadMeshData(std::vector<Vertex>& vertices, std::vector<uint16_t>& indices) -> MeshID;
+    auto loadTextureData(Texture& texture) -> void;
     auto loadShader(size_t bufferSize, uint32_t* bufferPointer) -> ShaderID;
     auto setUniformData(GameObjectID id, void* data, size_t size) -> void;
     auto createPipeline(ShaderID shaderID, Blending blending = Blending::NONE) -> PipelineID;
@@ -145,7 +147,7 @@ private:
     VkCommandPool m_commandPool{ VK_NULL_HANDLE };
     std::array<VkCommandBuffer, MAX_FRAMES_IN_FLIGHT> m_commandBuffers;
 
-    std::array<Texture, 1> m_textures{};
+    std::array<TextureGPU, 1> m_textures{};
 
     VkDescriptorPool m_descriptorPool{ VK_NULL_HANDLE };
     VkDescriptorSetLayout m_descriptorSetLayoutTex{ VK_NULL_HANDLE };

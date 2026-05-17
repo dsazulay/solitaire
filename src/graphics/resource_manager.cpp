@@ -5,6 +5,8 @@
 #include <slang/slang.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#include <ktx.h>
+#include <ktxvulkan.h>
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
@@ -12,8 +14,9 @@
 
 
 std::unordered_map<std::string, Shader> ResourceManager::shaders;
-//std::map<std::string, Texture> ResourceManager::textures;
+std::unordered_map<std::string, Texture> ResourceManager::textures;
 std::unordered_map<std::string, Model> ResourceManager::models;
+
 Slang::ComPtr<slang::IGlobalSession> ResourceManager::m_slangGlobalSession;
 std::vector<slang::TargetDesc> ResourceManager::m_targets;
 std::vector<slang::CompilerOptionEntry> ResourceManager::m_options;
@@ -98,21 +101,34 @@ auto ResourceManager::recompileShaders() -> void
         }
     }
 }
-/*
+
 auto ResourceManager::loadTexture(const char* textureFile, std::string name) -> Texture*
 {
-    stbi_set_flip_vertically_on_load(true);
-    Texture texture{};
+    ktxTexture* ktxTex{ nullptr };
+    ktxTexture_CreateFromNamedFile(textureFile, KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktxTex);
 
-    int width{}, height{}, nrChannels{};
-    unsigned char* data = stbi_load(textureFile, &width, &height, &nrChannels, 0);
-    texture.generate(width, height, data);
+    Texture& texture = textures[name];
+    texture.width = ktxTex->baseWidth;
+    texture.height = ktxTex->baseHeight;
+    texture.depth = ktxTex->baseDepth;
+    texture.mipLevels = ktxTex->numLevels;
 
-    textures[name] = texture;
+    for (u32 j = 0; j < ktxTex->numLevels; ++j)
+    {
+        ktx_size_t mipOffset{0};
+        KTX_error_code ret = ktxTexture_GetImageOffset(ktxTex, j, 0, 0, &mipOffset);
+        if (ret != KTX_SUCCESS)
+        {
+            LOG_ERROR("Error when querying mip offset");
+        }
+        texture.mipOffset.push_back(mipOffset);
+    }
 
-    stbi_image_free(data);
+    texture.setTextureData(ktxTex->dataSize, ktxTex->pData);
+
+    ktxTexture_Destroy(ktxTex);
     return &textures[name];
-}*/
+}
 
 auto ResourceManager::loadModel(const char* modelFile, std::string name) -> Model*
 {

@@ -14,12 +14,13 @@
 
 ## Vulkan
 
-- [ ] Move ktx texture to resource manager
+- [ ] Check how to use bindless textures
 - [ ] Update resource manager
 - [ ] Add wireframe mode
 - [ ] Fix rendering order and handness of vulkan and glfw
 - [ ] Spwan particles on win
 - [ ] Fix particles lifetime
+- [x] Move ktx texture to resource manager
 - [x] Update handles for gpu assets
 - [x] Remove slang warnings
 - [x] Update dealer class to use random class

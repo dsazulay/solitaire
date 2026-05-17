@@ -145,7 +145,7 @@ target_link_libraries(Solitaire glm fmt imgui stb_image
 # Finish Settings
 
 target_compile_options(Solitaire PRIVATE -Wall -Wextra -Wshadow
-    -pedantic)
+    -pedantic -g)
 
 # Change output dir to bin
 set_target_properties(Solitaire PROPERTIES
