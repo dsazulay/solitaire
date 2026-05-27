@@ -848,7 +848,7 @@ auto VulkanEngine::internalCreatePipeline(VkPipelineLayout layout, ShaderID shad
 auto VulkanEngine::loadTextureData(Texture& texture) -> void
 {
     std::vector<VkDescriptorImageInfo> textureDescriptors{};
-    for (auto i = 0; i < m_textures.size(); ++i)
+    for (u64 i = 0; i < m_textures.size(); ++i)
     {
         VkImageCreateInfo texImgCI{
             .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,

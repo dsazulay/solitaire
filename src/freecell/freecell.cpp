@@ -99,6 +99,7 @@ auto Freecell::handleClick(double xPos, double yPos, bool isDraging, bool isDrag
         return;
     }
 
+    glm::vec2 pos = cardClicked->pos;
     IsLegalMoveFunc checkMoveFunc = &FreecellGameLogic::openCellsIsLegalMove;
     switch (cardClicked->area)
     {
@@ -110,9 +111,10 @@ auto Freecell::handleClick(double xPos, double yPos, bool isDraging, bool isDrag
         break;
     case FreecellArea::Tableau:
         checkMoveFunc = &FreecellGameLogic::tableauIsLegalMove;
+        pos.y = m_boardManager.boardMap().tableauY.at(cardClicked->stack->size());
         break;
     }
-    handleClick(*cardClicked->stack, cardClicked->pos, checkMoveFunc);
+    handleClick(*cardClicked->stack, pos, checkMoveFunc);
 }
 
 auto Freecell::handleDoubleClick(double xPos, double yPos) -> void

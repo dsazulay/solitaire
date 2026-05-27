@@ -62,9 +62,6 @@ auto Solitaire::init() -> void
     gameInputHandler = &m_freecell;
     gameHandler= &m_freecell;
 
-    m_ps.push_back(ParticleSystem());
-    m_ps.back().init({ .amount = 100, .spawnRate = 0 });
-
     Dispatcher<MouseClickEvent>::subscribe(
         [&] (const auto& arg) { Solitaire::onMouseClick(arg); });
     Dispatcher<MouseDoubleClickEvent>::subscribe(
@@ -203,6 +200,9 @@ auto Solitaire::onKeyboardPress(const KeyboardPressEvent& e) -> void
 
 auto Solitaire::onGameWin(const GameWinEvent&) -> void
 {
+    // TODO: Update particle position
+    m_ps.push_back(ParticleSystem());
+    m_ps.back().init({ .amount = 100, .spawnRate = 0 });
     m_uiRenderer.showWonWindow();
 }
 

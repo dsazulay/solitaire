@@ -14,7 +14,6 @@
 
 ## Vulkan
 
-- [ ] Check how to use bindless textures
 - [ ] Update resource manager
 - [ ] Add wireframe mode
 - [ ] Fix rendering order and handness of vulkan and glfw
